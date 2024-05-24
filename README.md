@@ -46,3 +46,5 @@ The days until quota deadline is now unaffected by the day speed (Yeah I have no
 !!!This heavily uses LLL so only moons and dungeons supported by LLL will function.
 
 LethalLib scrap *does* load in, they just don't appear in the `scan` command.
+
+Honestly just @ me on discord if you find a buggy, I will see it.
