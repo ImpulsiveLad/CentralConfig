@@ -46,6 +46,6 @@ Note: Dungeons still break if too small to have a main entrance.
 
 Quota Deadline: Days until the quota deadline are now unaffected by the day speed.
 # Notes
-This mod heavily relies on LLL, so only moons and dungeons supported by LLL will function.
+This mod heavily relies on LLL, so only moons and dungeons supported by LLL will function, scrap and enemies that use LLL work.
 
-LethalLib scrap loads but doesn't appear in the `scan` command.
+LethalLib scrap loads but doesn't appear in the `scan` command, LL enemies work perfectly.
