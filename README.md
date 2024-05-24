@@ -26,9 +26,8 @@ Allows altering the max power counts and lists for enemies on each moon (Interio
 **Enable Trap Overrides?**
 Allows altering the min/max count for each trap on each moon. (I have to add support for modded traps manually.)
 
-Note: Modded traps are not yet supported and require manual addition using SpawnableMapObject data.
-Enable Weather and Tag Overrides?
-Allows altering possible weathers and adding (not removing or editing) tags to each moon.
+**Enable Weather and Tag Overrides?**
+Allows altering possible weathers for, and adding (not removing or editing) tags to each moon.
 
 **Enable Misc Overrides?**
 Allows altering miscellaneous traits such as hidden/unhidden status, locked/unlocked status, time existence, time speed multiplier, and if time should wait until the ship lands to begin moving.
