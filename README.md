@@ -14,31 +14,31 @@ If you close the game without opening a lobby, you may notice orphaned entries. 
 The mod generates these config sections late to pull current values from other configs and have "the final say."
 # Configuration Options
 ## Moons Config
-**Enable General Overrides?**
+**Enable General Overrides?** -
 Allows altering basic properties like route price, risk level, and description for each moon.
 
-**Enable Scrap Overrides?**
+**Enable Scrap Overrides?** -
 Allows altering the min/max scrap count, the list of scrap objects on each moon, and a multiplier for individual scrap item values.
 
-**Enable Enemy Overrides?**
+**Enable Enemy Overrides?** -
 Allows altering the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).
 
-**Enable Trap Overrides?**
+**Enable Trap Overrides?** -
 Allows altering the min/max count for each trap on each moon. (I have to add support for modded traps manually.)
 
-**Enable Weather and Tag Overrides?**
+**Enable Weather and Tag Overrides?** -
 Allows altering possible weathers for, and adding (not removing or editing) tags to each moon.
 
-**Enable Misc Overrides?**
+**Enable Misc Overrides?** -
 Allows altering miscellaneous traits such as hidden/unhidden status, locked/unlocked status, time existence, time speed multiplier, and if time should wait until the ship lands to begin moving.
 ## Dungeon Config
-**Enable Overhauled Dungeon Generation?**
+**Enable Overhauled Dungeon Generation?** -
 Enabled by default; changes dungeon generation to hopefully prevent any loading failures caused by a large multiplier. Testing has shown no issues, but this is a complex mechanic.
 
-**Enable Dungeon Size Overrides?**
+**Enable Dungeon Size Overrides?** -
 Allows altering the min/max dungeon size multipliers and the size scaler. Also allows setting the dungeon size multiplier applied by individual moons.
 
-**Enable Dungeon Selection Overrides?**
+**Enable Dungeon Selection Overrides?** -
 Allows altering the dungeon selection settings by moon name, route price range, and mod name.
 # Miscellaneous Fixes
 Dungeon Generation: Enhanced dungeon generation to prevent tile placement failures, even with extremely large dungeons (e.g., vanilla facility and Wesley's toystore at 1000x size).
