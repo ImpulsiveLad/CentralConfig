@@ -5,9 +5,9 @@ The mod currently focuses on moon and dungeon settings but I have plans to add s
 # Usage
 When you open the game with the mod, only the broad settings will be generated. This is a two step process:
 
-1. Initial Setup: You can blacklist or whitelist elements (moons/dungeons) from being modified by the mod and choose which groups of settings you want to configure.
+1. Initial Setup: You can blacklist or whitelist elements (moons/dungeons) from being modified by the mod and choose which groups of settings you want to configure. (Modify this after first launch)
 
-2. Reboot Required: After choosing your settings, reboot the game and enter a lobby. This will generate and apply the config section for each individual element.
+2. Reboot Required: After choosing your settings, reboot the game and enter a lobby. This will generate and apply the config section for each individual element. (You can now set the rest of the config when you close out)
 
 If you close the game without opening a lobby, you may notice orphaned entries. ***This is not a concern***; they will be applied when you next open a lobby, and current values will remain unchanged.
 
