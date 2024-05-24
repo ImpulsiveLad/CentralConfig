@@ -1,6 +1,6 @@
 CentralConfig is a mod for Lethal Company designed to help organize and set config values in one place. Initially intended as a backup for when/if LLL removes its config, it now includes numerous requested functions and miscellaneous fixes for the base game and LLL.
 
-The mod currently focuses on moon and dungeon settings but I have plans to add settings for enemies, scrap, and added scrap, enemies, and dungeons based on the moon's tags.
+The mod currently focuses on moon and dungeon settings but I have plans to add settings for enemies, scrap, and adding enemies, scrap, and dungeons to moons based on the moon's tags.
 
 # Usage
 When you open the game with the mod, only the broad settings will be generated. Here’s how to use the mod effectively:
