@@ -44,4 +44,5 @@ Dungeons still break if they are made too small to have a main entrance.
 The days until quota deadline is now unaffected by the day speed (Yeah I have no idea why it was to begin with either).
 
 !!!This heavily uses LLL so only moons and dungeons supported by LLL will function.
+
 LethalLib scrap *does* load in, they just don't appear in the `scan` command.
