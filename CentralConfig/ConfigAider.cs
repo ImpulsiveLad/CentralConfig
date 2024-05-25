@@ -101,7 +101,6 @@ namespace CentralConfig
 
             return stringList;
         }
-
         public static (string, string) SplitStringsByDaColon(string inputString)
         {
             return SplitStringByChars(inputString, DaColon);
@@ -110,7 +109,6 @@ namespace CentralConfig
         {
             return SplitStringByChars(inputString, DaDash);
         }
-
         public static (string, string) SplitStringByChars(string newInputString, string splitValue)
         {
             if (!newInputString.Contains(splitValue))
@@ -124,6 +122,7 @@ namespace CentralConfig
                 return ((firstValue, secondValue));
             }
         }
+
         public static List<StringWithRarity> ConvertStringToList(string newInputString, Vector2 clampRarity)
         {
             List<StringWithRarity> returnList = new List<StringWithRarity>();
@@ -268,7 +267,6 @@ namespace CentralConfig
 
             return returnString;
         }
-
         public static RandomWeatherWithVariables[] ConvertStringToWeatherArray(string newInputString)
         {
             if (string.IsNullOrEmpty(newInputString) || newInputString == "Default Values Were Empty")
