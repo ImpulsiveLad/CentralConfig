@@ -16,7 +16,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.5.0";
+        private const string modVersion = "0.5.1";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -94,7 +94,7 @@ namespace CentralConfig
             DoScrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Scrap Overrides?",
                 false,
-                "If set to true, allows altering of the min/max scrap count and the list of scrap objects on each moon.");
+                "If set to true, allows altering of the min/max scrap count, the list of scrap objects on each moon, and a multiplier for the individual scrap item's values.");
 
             DoEnemyOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Enemy Overrides?",
@@ -114,7 +114,7 @@ namespace CentralConfig
             DoDangerBools = cfg.BindSyncedEntry("_Moons_",
                 "Enable Misc Overrides?",
                 false,
-                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden, locked/unlocked, timed/timeless, and the time multiplier (Keep this false for Selene's Choice to work).");
+                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, locked/unlocked status, if time exists, the time speed multiplier, and if time should wait until the ship lands to begin moving (Keep this false for Selene's Choice to work).");
 
             BlackListDungeons = cfg.BindSyncedEntry("_DungeonLists_",
                 "Blacklisted Dungeons",
@@ -127,7 +127,7 @@ namespace CentralConfig
                 "If set to true, only the dungeons listed above will be generated.");
 
             UseNewGen = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Overhauled Dungeon Generation",
+                "Enable Overhauled Dungeon Generation?",
                 true,
                 "If set to true, this reconfigures the dungeon loading process to avoid loading failure.");
 
@@ -139,7 +139,7 @@ namespace CentralConfig
             DoDungeonSelectionOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Selection Overrides?",
                 false,
-                "If set to true, allows altering of the dungeon selection settings.");
+                "If set to true, allows altering of the dungeon selection settings (By moon name, route price range, and mod name.");
         }
     }
 }

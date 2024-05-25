@@ -716,9 +716,13 @@ namespace CentralConfig
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
     public static class TimeFix
     {
-        static void Postfix(TimeOfDay __instance)
+        static bool Prefix(TimeOfDay __instance)
         {
-            __instance.timeUntilDeadline -= Time.deltaTime;
+            float gum = __instance.globalTime;
+            __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
+            gum = Mathf.Clamp(__instance.globalTime + Time.deltaTime, 0f, __instance.globalTimeAtEndOfDay) - gum;
+            __instance.timeUntilDeadline -= gum;
+            return false;
         }
     }
     public class Ororo
