@@ -148,7 +148,7 @@ namespace CentralConfig
 
                         ScrapValueMultiplier[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " -  Scrap Value Multiplier",
-                            RoundManager.Instance.scrapValueMultiplier,
+                            1f,
                             "Each scrap object on this moon will have its personal min/max values multiplied by this amount.");
 
                         string ScrapList = ConfigAider.ConvertItemListToString(level.SelectableLevel.spawnableScrap); // Method turns the scrap list into string (check postfix)
@@ -679,7 +679,7 @@ namespace CentralConfig
 
             if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
             {
-                __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value;
+                __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value / 2.5f;
             }
             return false;
         }
@@ -694,7 +694,7 @@ namespace CentralConfig
 
             if (!CentralConfig.SyncConfig.DoDangerBools)
             {
-                CentralConfig.instance.mls.LogInfo("Time override is disabled, not applying it.");
+                // CentralConfig.instance.mls.LogInfo("Time override is disabled, using vanilla time.");
                 return true;
             }
 
@@ -728,7 +728,6 @@ namespace CentralConfig
         {
             if (!CentralConfig.SyncConfig.DoDangerBools)
             {
-                CentralConfig.instance.mls.LogInfo("Time multiplier not in use, using vanilla time.");
                 return true;
             }
             float num = __instance.globalTime;
