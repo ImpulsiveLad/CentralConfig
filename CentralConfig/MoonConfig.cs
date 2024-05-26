@@ -681,7 +681,7 @@ namespace CentralConfig
             {
                 __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value / 2.5f;
             }
-            return false;
+            return true;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay))]
@@ -718,7 +718,7 @@ namespace CentralConfig
                 __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
                 // CentralConfig.instance.mls.LogInfo("Isn't waiting / auto-set");
             }
-            return false;
+            return true;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
