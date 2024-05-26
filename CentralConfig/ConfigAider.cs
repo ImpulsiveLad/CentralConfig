@@ -153,7 +153,7 @@ namespace CentralConfig
 
             foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in spawnableEnemiesList)
             {
-                if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso")
+                if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
                 {
                     returnString += spawnableEnemyWithRarity.enemyType.enemyName + DaColon + spawnableEnemyWithRarity.rarity.ToString() + DaComma;
                 }
@@ -210,7 +210,12 @@ namespace CentralConfig
             string returnString = string.Empty;
 
             foreach (SpawnableItemWithRarity spawnableItemWithRarity in spawnableItemsList)
-                returnString += spawnableItemWithRarity.spawnableItem.itemName + DaColon + spawnableItemWithRarity.rarity.ToString() + DaComma;
+            {
+                if (spawnableItemWithRarity.rarity > 0)
+                {
+                    returnString += spawnableItemWithRarity.spawnableItem.itemName + DaColon + spawnableItemWithRarity.rarity.ToString() + DaComma;
+                }
+            }
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
 
@@ -349,7 +354,12 @@ namespace CentralConfig
             string returnString = string.Empty;
 
             foreach (StringWithRarity name in names)
-                returnString += name.Name + DaColon + name.Rarity.ToString() + DaComma;
+            {
+                if (name.Rarity > 0)
+                {
+                    returnString += name.Name + DaColon + name.Rarity.ToString() + DaComma;
+                }
+            }
 
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);

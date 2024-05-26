@@ -7,7 +7,6 @@ using HarmonyLib;
 using System.Runtime.Serialization;
 using static CentralConfig.WaitForMoonsToRegister;
 using static CentralConfig.WaitForDungeonsToRegister;
-using System.Reflection;
 
 namespace CentralConfig
 {
@@ -16,7 +15,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.5.1";
+        private const string modVersion = "0.5.2";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;

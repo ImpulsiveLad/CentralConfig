@@ -148,7 +148,7 @@ namespace CentralConfig
 
                         ScrapValueMultiplier[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " -  Scrap Value Multiplier",
-                            1f,
+                            RoundManager.Instance.scrapValueMultiplier,
                             "Each scrap object on this moon will have its personal min/max values multiplied by this amount.");
 
                         string ScrapList = ConfigAider.ConvertItemListToString(level.SelectableLevel.spawnableScrap); // Method turns the scrap list into string (check postfix)
@@ -667,50 +667,58 @@ namespace CentralConfig
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ApplyScrapValueMultiplier
     {
-        static void Prefix(RoundManager __instance)
+        static bool Prefix(RoundManager __instance)
         {
-            if (CentralConfig.SyncConfig.DoScrapOverrides)
+            if (!CentralConfig.SyncConfig.DoScrapOverrides)
             {
-                string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-
-                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
-                {
-                    __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value;
-                }
+                CentralConfig.instance.mls.LogInfo("Scrap Overrides are disabled, not applying multiplier.");
+                return true;
             }
+
+            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+
+            if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
+            {
+                __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value;
+            }
+            return false;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay))]
     [HarmonyPatch("MoveGlobalTime")]
     public static class TimeOfDayPatch
     {
-        static void Prefix(TimeOfDay __instance)
+        static bool Prefix(TimeOfDay __instance)
         {
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (CentralConfig.SyncConfig.DoDangerBools)
+            if (!CentralConfig.SyncConfig.DoDangerBools)
             {
-                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
-                {
-                    StartOfRound startOfRound = StartOfRound.Instance;
+                CentralConfig.instance.mls.LogInfo("Time override is disabled, not applying it.");
+                return true;
+            }
 
-                    if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
-                    {
-                        __instance.globalTimeSpeedMultiplier = float.MinValue;
-                        // CentralConfig.instance.mls.LogInfo("Ship hasn't landed");
-                    }
-                    else
-                    {
-                        __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
-                        // CentralConfig.instance.mls.LogInfo("Ship landed");
-                    }
+            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+            {
+                StartOfRound startOfRound = StartOfRound.Instance;
+
+                if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
+                {
+                    __instance.globalTimeSpeedMultiplier = float.MinValue;
+                    // CentralConfig.instance.mls.LogInfo("Ship hasn't landed");
                 }
                 else
                 {
                     __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
-                    // CentralConfig.instance.mls.LogInfo("Isn't waiting / auto-set");
+                    // CentralConfig.instance.mls.LogInfo("Ship landed");
                 }
             }
+            else
+            {
+                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+                // CentralConfig.instance.mls.LogInfo("Isn't waiting / auto-set");
+            }
+            return false;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
@@ -718,10 +726,17 @@ namespace CentralConfig
     {
         static bool Prefix(TimeOfDay __instance)
         {
-            float gum = __instance.globalTime;
+            if (!CentralConfig.SyncConfig.DoDangerBools)
+            {
+                CentralConfig.instance.mls.LogInfo("Time multiplier not in use, using vanilla time.");
+                return true;
+            }
+            float num = __instance.globalTime;
+            float shid = Mathf.Clamp(__instance.globalTime + Time.deltaTime, 0f, __instance.globalTimeAtEndOfDay);
+            num = shid - num;
+            __instance.timeUntilDeadline -= num;
+
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
-            gum = Mathf.Clamp(__instance.globalTime + Time.deltaTime, 0f, __instance.globalTimeAtEndOfDay) - gum;
-            __instance.timeUntilDeadline -= gum;
             return false;
         }
     }

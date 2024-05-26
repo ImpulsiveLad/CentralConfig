@@ -287,6 +287,10 @@ namespace CentralConfig
 
         static bool Prefix(DungeonGenerator __instance, bool isRetry, ref IEnumerator __result)
         {
+            if (!CentralConfig.SyncConfig.UseNewGen)
+            {
+                return true;
+            }
             IEnumerator TerminateCoroutine()
             {
                 yield break;
