@@ -215,7 +215,8 @@ namespace CentralConfig
                 list.Add(__instance.currentLevel.dungeonFlowTypes[i].rarity);
             }
 
-            int DungeonID = __instance.currentLevel.dungeonFlowTypes[__instance.GetRandomWeightedIndex(list.ToArray(), __instance.LevelRandom)].id;
+            System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
+            int DungeonID = __instance.currentLevel.dungeonFlowTypes[__instance.GetRandomWeightedIndex(list.ToArray(), seededRandom)].id;
             __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[DungeonID].dungeonFlow;
 
             if (DungeonID < __instance.firstTimeDungeonAudios.Length && __instance.firstTimeDungeonAudios[DungeonID] != null)
@@ -238,11 +239,11 @@ namespace CentralConfig
             Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
             string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
 
-            __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = true;
+            __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
 
             while (failureCount < 20)
             {
-                __instance.dungeonGenerator.Generator.Seed = __instance.LevelRandom.Next();
+                __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
                 float NewMultiplier = __instance.currentLevel.factorySizeMultiplier / __instance.dungeonFlowTypes[DungeonID].MapTileSize * __instance.mapSizeMultiplier;
 
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler.ContainsKey(DungeonName))

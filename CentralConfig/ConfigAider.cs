@@ -263,12 +263,27 @@ namespace CentralConfig
 
         public static string ConvertWeatherArrayToString(RandomWeatherWithVariables[] randomWeatherArray)
         {
-            string returnString = "None" + DaComma;
+            string returnString = "";
+            bool noneExists = false;
 
             foreach (RandomWeatherWithVariables randomWeather in randomWeatherArray)
+            {
+                if (randomWeather.weatherType.ToString() == "None")
+                {
+                    noneExists = true;
+                }
                 returnString += randomWeather.weatherType + DaComma;
+            }
+
+            if (!noneExists)
+            {
+                returnString = "None" + DaComma + returnString;
+            }
+
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
+            {
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
+            }
 
             return returnString;
         }

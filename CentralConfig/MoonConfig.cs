@@ -10,10 +10,14 @@ using LethalLevelLoader.Tools;
 using UnityEngine;
 using System.Threading.Tasks;
 using System;
+using Steamworks;
+using Steamworks.Data;
+using Unity.Netcode;
 
 namespace CentralConfig
 {
     [HarmonyPatch(typeof(StartMatchLever), "Start")]
+    [HarmonyPriority(500)]
     public class WaitForMoonsToRegister
     {
         public static CreateMoonConfig Config;
@@ -606,7 +610,7 @@ namespace CentralConfig
                     if (WeatherStr != PossibleWeatherArray)
                     {
                         Ororo Ororo = new Ororo();
-                        Ororo.SetSinglePlanetWeather(level.SelectableLevel);
+                        Ororo.SetSinglePlanetWeather(level);
                     }
 
                     string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[PlanetName];
@@ -741,20 +745,20 @@ namespace CentralConfig
     }
     public class Ororo
     {
-        string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-        public void SetSinglePlanetWeather(SelectableLevel level)
+        public void SetSinglePlanetWeather(ExtendedLevel level)
         {
+            string currentMoon = level.NumberlessPlanetName;
             string WeatherStr = WaitForMoonsToRegister.CreateMoonConfig.WeatherTypeOverride[currentMoon];
             RandomWeatherWithVariables[] PossibleWeathers = ConfigAider.ConvertStringToWeatherArray(WeatherStr);
 
-            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed + 69);
+            System.Random rand = new System.Random(StartOfRound.Instance.randomMapSeed + 69);
             if (PossibleWeathers != null && PossibleWeathers.Length != 0)
             {
-                level.currentWeather = PossibleWeathers[random.Next(0, PossibleWeathers.Length)].weatherType;
+                level.SelectableLevel.currentWeather = PossibleWeathers[rand.Next(0, PossibleWeathers.Length)].weatherType;
             }
             else
             {
-                level.currentWeather = LevelWeatherType.None;
+                level.SelectableLevel.currentWeather = LevelWeatherType.None;
             }
         }
     }
