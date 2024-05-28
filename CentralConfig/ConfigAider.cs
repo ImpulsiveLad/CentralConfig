@@ -138,7 +138,7 @@ namespace CentralConfig
                     rarity = value;
 
                 if (clampRarity != Vector2.zero)
-                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+                    rarity = Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
                 returnList.Add(new StringWithRarity(levelName, rarity));
             }

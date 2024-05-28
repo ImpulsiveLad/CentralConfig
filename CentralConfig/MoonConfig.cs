@@ -10,14 +10,12 @@ using LethalLevelLoader.Tools;
 using UnityEngine;
 using System.Threading.Tasks;
 using System;
-using Steamworks;
-using Steamworks.Data;
 using Unity.Netcode;
 
 namespace CentralConfig
 {
     [HarmonyPatch(typeof(StartMatchLever), "Start")]
-    [HarmonyPriority(500)]
+    [HarmonyPriority(666)]
     public class WaitForMoonsToRegister
     {
         public static CreateMoonConfig Config;
@@ -467,6 +465,11 @@ namespace CentralConfig
         }
         static void Prefix()
         {
+            if (StartOfRound.Instance.randomMapSeed == 0 && NetworkManager.Singleton.IsHost)
+            {
+                StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
+                CentralConfig.instance.mls.LogInfo("Starting Seed " + StartOfRound.Instance.randomMapSeed);
+            }
             CentralConfig.ConfigFile = new CreateMoonConfig(CentralConfig.instance.Config); // Moon config is created when you join a lobby (So every other config is already applied)
         }
     }
@@ -607,11 +610,9 @@ namespace CentralConfig
                     level.SelectableLevel.randomWeathers = PossibleWeathers;
                     level.SelectableLevel.overrideWeather = false;
                     string PossibleWeatherArray = ConfigAider.ConvertWeatherArrayToString(level.SelectableLevel.randomWeathers);
-                    if (WeatherStr != PossibleWeatherArray)
-                    {
-                        Ororo Ororo = new Ororo();
-                        Ororo.SetSinglePlanetWeather(level);
-                    }
+
+                    Ororo Ororo = new Ororo();
+                    Ororo.SetSinglePlanetWeather(level);
 
                     string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[PlanetName];
                     List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
