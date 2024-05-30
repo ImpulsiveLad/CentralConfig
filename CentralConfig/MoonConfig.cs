@@ -8,13 +8,12 @@ using System.Runtime.Serialization;
 using HarmonyLib;
 using LethalLevelLoader.Tools;
 using UnityEngine;
-using System.Threading.Tasks;
 using System;
 using Unity.Netcode;
 
 namespace CentralConfig
 {
-    [HarmonyPatch(typeof(StartMatchLever), "Start")]
+    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
     [HarmonyPriority(666)]
     public class WaitForMoonsToRegister
     {
@@ -459,7 +458,7 @@ namespace CentralConfig
                             "Sets the dungeon size multiplier granted by this moon.");
                     }
                 }
-                Task.Run(() => ConfigAider.CleanConfig(cfg)); // Cleans out orphaned config entries (ones that you don't want to use anymore)
+                ConfigAider.Instance.CleanConfig(cfg); // Cleans out orphaned config entries (ones that you don't want to use anymore)
                 CentralConfig.instance.mls.LogInfo("Moon config has been registered.");
             }
         }
@@ -642,7 +641,7 @@ namespace CentralConfig
             Ready = true;
         }
     }
-    [HarmonyPatch(typeof(StartMatchLever), "Start")]
+    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
     public class FrApplyMoon
     {
         static void Postfix()

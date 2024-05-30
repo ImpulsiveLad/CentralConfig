@@ -2,17 +2,29 @@
 using LethalLevelLoader;
 using LethalLib.Modules;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CentralConfig
 {
-    public class ConfigAider
+    public class ConfigAider : MonoBehaviour
     {
+        private static ConfigAider _instance;
+        public static ConfigAider Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new GameObject("ConfigAider").AddComponent<ConfigAider>();
+                }
+                return _instance;
+            }
+        }
         // Safety box of LLL config stuff renamed + some other random methods
         public const string DaComma = ",";
         public const string DaColon = ":";
@@ -501,12 +513,20 @@ namespace CentralConfig
 
         // Modified cfg cleaner from Kitten :3
 
-        public static async Task CleanConfig(ConfigFile cfg)
+        public void CleanConfig(ConfigFile cfg)
+        {
+            StartCoroutine(CQueen(cfg));
+        }
+        private IEnumerator CQueen(ConfigFile cfg)
         {
             while (!ApplyMoonConfig.Ready || !ApplyDungeonConfig.Ready)
             {
-                await Task.Delay(1000);
+                yield return null;
             }
+            ConfigCleaner(cfg);
+        }
+        private void ConfigCleaner(ConfigFile cfg)
+        {
             PropertyInfo orphanedEntriesProp = cfg.GetType().GetProperty("OrphanedEntries", BindingFlags.NonPublic | BindingFlags.Instance);
             var orphanedEntries = (Dictionary<ConfigDefinition, string>)orphanedEntriesProp.GetValue(cfg, null);
             orphanedEntries.Clear();

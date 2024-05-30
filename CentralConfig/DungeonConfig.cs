@@ -14,7 +14,7 @@ using System.Collections;
 
 namespace CentralConfig
 {
-    [HarmonyPatch(typeof(StartMatchLever), "Start")]
+    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
     public class WaitForDungeonsToRegister
     {
         public static CreateDungeonConfig Config;
@@ -187,7 +187,7 @@ namespace CentralConfig
             Ready = true;
         }
     }
-    [HarmonyPatch(typeof(StartMatchLever), "Start")]
+    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
     public class FrApplyDungeon
     {
         static void Postfix()
@@ -291,6 +291,11 @@ namespace CentralConfig
             if (!CentralConfig.SyncConfig.UseNewGen)
             {
                 return true;
+            }
+            if (DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SectorFlow")
+            {
+                retryCount = 10;
+                CentralConfig.instance.mls.LogInfo("Current Dungeon is Sector, adding extra loading attempts.");
             }
             IEnumerator TerminateCoroutine()
             {
