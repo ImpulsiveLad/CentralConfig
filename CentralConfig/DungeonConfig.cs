@@ -292,10 +292,10 @@ namespace CentralConfig
             {
                 return true;
             }
-            if (DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SectorFlow")
+            if (DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SectorFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "CozyOffice" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa")
             {
-                retryCount = 10;
-                CentralConfig.instance.mls.LogInfo("Current Dungeon is Sector, adding extra loading attempts.");
+                retryCount = 15;
+                CentralConfig.instance.mls.LogInfo("Current Dungeon is incompatible, granting retries.");
             }
             IEnumerator TerminateCoroutine()
             {

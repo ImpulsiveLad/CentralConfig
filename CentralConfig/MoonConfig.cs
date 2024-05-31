@@ -732,17 +732,16 @@ namespace CentralConfig
         {
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (!CentralConfig.SyncConfig.DoDangerBools)
-            {
-                return true;
-            }
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
 
-            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+            if (CentralConfig.SyncConfig.DoDangerBools)
             {
-                if (__instance.globalTime >= 20)
+                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
                 {
-                    __instance.timeUntilDeadline -= Time.deltaTime;
+                    if (__instance.globalTime >= 20)
+                    {
+                        __instance.timeUntilDeadline -= Time.deltaTime;
+                    }
                 }
             }
             else
