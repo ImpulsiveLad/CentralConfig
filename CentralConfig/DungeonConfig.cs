@@ -292,7 +292,7 @@ namespace CentralConfig
             {
                 return true;
             }
-            if (DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SectorFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "CozyOffice" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa")
+            if (DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SectorFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "CozyOffice" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow")
             {
                 retryCount = 15;
                 CentralConfig.instance.mls.LogInfo("Current Dungeon is incompatible, granting retries.");
