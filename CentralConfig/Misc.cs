@@ -26,27 +26,27 @@ namespace CentralConfig
             {
                 if (CentralConfig.SyncConfig.DoFineOverrides)
                 {
-                    FineAmount = cfg.BindSyncedEntry("_Misc_",
+                    FineAmount = cfg.BindSyncedEntry("~Misc~",
                         "Penalty for each fallen player",
                         20f,
                         "This is the percentage of current credits that will be deducted for each fallen player.");
 
-                    InsuranceReduction = cfg.BindSyncedEntry("_Misc_",
+                    InsuranceReduction = cfg.BindSyncedEntry("~Misc~",
                         "Penalty reduction for player revival",
                         40f,
                         "This value determines the reduction in penalty if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
 
-                    CompanyFineAmount = cfg.BindSyncedEntry("_Misc_",
+                    CompanyFineAmount = cfg.BindSyncedEntry("~Misc~",
                         "Penalty for each fallen player (on Gordion)",
                         0f,
                         "This is the percentage of current credits that will be deducted for each fallen player on Gordion.");
 
-                    CompanyInsuranceReduction = cfg.BindSyncedEntry("_Misc_",
+                    CompanyInsuranceReduction = cfg.BindSyncedEntry("~Misc~",
                         "Penalty reduction for player revival (on Gordion)",
                         0f,
                         "This value determines the reduction in penalty on Gordion if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
 
-                    ProportionalFine = cfg.BindSyncedEntry("?Misc?",
+                    ProportionalFine = cfg.BindSyncedEntry("~Misc~",
                         "Proportional Fine",
                         false,
                         "Should the fine to proportional to the ratio of dead players over total players?\nFor instance, if the penatly if 50% and half of the lobby dies, the fine will be 25% as opposed to being 50% for each dead player.");

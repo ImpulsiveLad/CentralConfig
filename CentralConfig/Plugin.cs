@@ -148,7 +148,7 @@ namespace CentralConfig
                 false,
                 "If set to true, allows altering of the dungeon selection settings (By moon name, route price range, and mod name.");
 
-            DoFineOverrides = cfg.BindSyncedEntry("_Misc_",
+            DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",
                 false,
                 "If set to true, allows you to set the fine for dead/missing players and the reduction on the fine for having brought the body back to the ship.");
