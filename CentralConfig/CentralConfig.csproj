@@ -71,6 +71,10 @@
     <Reference Include="Unity.Netcode.Runtime">
       <HintPath>..\..\Arachnophilia\Arachnophilia\bin\Debug\Unity.Netcode.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -84,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DungeonConfig.cs" />
+    <Compile Include="Misc.cs" />
     <Compile Include="MoonConfig.cs" />
     <Compile Include="ConfigAider.cs" />
     <Compile Include="Plugin.cs" />

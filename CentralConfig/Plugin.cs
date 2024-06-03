@@ -7,6 +7,7 @@ using HarmonyLib;
 using System.Runtime.Serialization;
 using static CentralConfig.WaitForMoonsToRegister;
 using static CentralConfig.WaitForDungeonsToRegister;
+using static CentralConfig.MiscConfig;
 
 namespace CentralConfig
 {
@@ -15,7 +16,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.5.8";
+        private const string modVersion = "0.6.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -27,6 +28,8 @@ namespace CentralConfig
         public static CreateMoonConfig ConfigFile;
 
         public static CreateDungeonConfig ConfigFile2;
+
+        public static CreateMiscConfig ConfigFile3;
 
         public static GeneralConfig SyncConfig;
 
@@ -42,6 +45,8 @@ namespace CentralConfig
 
             ConfigFile2 = new CreateDungeonConfig(base.Config);
 
+            ConfigFile3 = new CreateMiscConfig(base.Config);
+
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
@@ -52,6 +57,8 @@ namespace CentralConfig
             harmony.PatchAll(typeof(NewDungeonGenerator));
             harmony.PatchAll(typeof(InnerGenerateWithRetries));
             harmony.PatchAll(typeof(LogFinalSize));
+            harmony.PatchAll(typeof(MiscConfig));
+            harmony.PatchAll(typeof(ChangeFineAmount));
             // harmony.PatchAll(typeof(Balls));
         }
     }
@@ -68,9 +75,10 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoDangerBools { get; private set; }
         [DataMember] public SyncedEntry<string> BlackListDungeons { get; private set; }
         [DataMember] public SyncedEntry<bool> IsDunWhiteList { get; private set; }
-        [DataMember] public SyncedEntry<bool> UseNewGen {  get; private set; }
+        [DataMember] public SyncedEntry<bool> UseNewGen { get; private set; }
         [DataMember] public SyncedEntry<bool> DoDunSizeOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoDungeonSelectionOverrides { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoFineOverrides { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -139,6 +147,11 @@ namespace CentralConfig
                 "Enable Dungeon Selection Overrides?",
                 false,
                 "If set to true, allows altering of the dungeon selection settings (By moon name, route price range, and mod name.");
+
+            DoFineOverrides = cfg.BindSyncedEntry("_Misc_",
+                "Enable Fine Overrides?",
+                false,
+                "If set to true, allows you to set the fine for dead/missing players and the reduction on the fine for having brought the body back to the ship.");
         }
     }
 }
