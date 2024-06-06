@@ -10,6 +10,7 @@ using LethalLevelLoader.Tools;
 using UnityEngine;
 using System;
 using Unity.Netcode;
+using System.Collections;
 
 namespace CentralConfig
 {
@@ -688,58 +689,70 @@ namespace CentralConfig
             return true;
         }
     }
-    [HarmonyPatch(typeof(TimeOfDay))]
-    [HarmonyPatch("MoveGlobalTime")]
-    public static class TimeOfDayPatch
-    {
-        static bool Prefix(TimeOfDay __instance)
-        {
-            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-
-            if (!CentralConfig.SyncConfig.DoDangerBools)
-            {
-                // CentralConfig.instance.mls.LogInfo("Time override is disabled, using vanilla time.");
-                return true;
-            }
-
-            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
-            {
-                StartOfRound startOfRound = StartOfRound.Instance;
-
-                if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
-                {
-                    __instance.globalTimeSpeedMultiplier = float.MinValue;
-                    // CentralConfig.instance.mls.LogInfo("Ship hasn't landed");
-                }
-                else
-                {
-                    __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
-                    // CentralConfig.instance.mls.LogInfo("Ship landed");
-                }
-            }
-            else
-            {
-                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
-                // CentralConfig.instance.mls.LogInfo("Isn't waiting / auto-set");
-            }
-            return true;
-        }
-    }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
     public static class TimeFix
     {
-        static float penum;
-        static float faketime;
-        
         static bool Prefix(TimeOfDay __instance)
         {
+            StartOfRound startOfRound = StartOfRound.Instance;
+            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+            if (CentralConfig.SyncConfig.DoDangerBools)
+            {
+                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+                {
+                    if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
+                    {
+                        return false;
+                    }
+                }
+            }
+            if (!__instance.shipLeavingAlertCalled)
+            {
+                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+            }
+            else
+            {
+                __instance.globalTimeSpeedMultiplier = 1;
+            }
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
 
-            penum = faketime;
-            faketime = Mathf.Clamp(faketime + Time.deltaTime, 0f, __instance.globalTimeAtEndOfDay);
-            penum = faketime - penum;
-            __instance.timeUntilDeadline -= penum;
             return false;
+        }
+    }
+    [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
+    public static class DayTimePassFix
+    {
+        static bool Prefix(StartOfRound __instance, int connectedPlayersOnServer = 0)
+        {
+            if (__instance.isChallengeFile)
+            {
+                TimeOfDay.Instance.globalTime = 100f;
+                __instance.SetMapScreenInfoToCurrentLevel();
+                return false;
+            }
+            if (__instance.currentLevel.planetHasTime || TimeOfDay.Instance.daysUntilDeadline <= 0)
+            {
+                TimeOfDay.Instance.timeUntilDeadline -= TimeOfDay.Instance.totalTime;
+                TimeOfDay.Instance.OnDayChanged();
+            }
+            TimeOfDay.Instance.globalTime = 100f;
+            TimeOfDay.Instance.UpdateProfitQuotaCurrentTime();
+            if (__instance.currentLevel.planetHasTime)
+            {
+                HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
+            }
+            UnityEngine.Object.FindObjectOfType<Terminal>().SetItemSales();
+            __instance.SetMapScreenInfoToCurrentLevel();
+            if (TimeOfDay.Instance.timeUntilDeadline > 0f && TimeOfDay.Instance.daysUntilDeadline <= 0 && TimeOfDay.Instance.timesFulfilledQuota <= 0)
+            {
+                __instance.StartCoroutine(playDaysLeftAlertSFXDelayed());
+            }
+            return false;
+        }
+        public static IEnumerator playDaysLeftAlertSFXDelayed()
+        {
+            yield return new WaitForSeconds(3f);
+            StartOfRound.Instance.speakerAudioSource.PlayOneShot(StartOfRound.Instance.zeroDaysLeftAlertSFX);
         }
     }
     public class Ororo
