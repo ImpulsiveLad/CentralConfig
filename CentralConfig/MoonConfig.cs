@@ -728,26 +728,17 @@ namespace CentralConfig
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
     public static class TimeFix
     {
+        static float penum;
+        static float faketime;
+        
         static bool Prefix(TimeOfDay __instance)
         {
-            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
 
-            if (CentralConfig.SyncConfig.DoDangerBools)
-            {
-                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
-                {
-                    if (__instance.globalTime >= 20)
-                    {
-                        __instance.timeUntilDeadline -= Time.deltaTime;
-                    }
-                }
-            }
-            else
-            {
-                __instance.timeUntilDeadline -= Time.deltaTime;
-            }
+            penum = faketime;
+            faketime = Mathf.Clamp(faketime + Time.deltaTime, 0f, __instance.globalTimeAtEndOfDay);
+            penum = faketime - penum;
+            __instance.timeUntilDeadline -= penum;
             return false;
         }
     }
