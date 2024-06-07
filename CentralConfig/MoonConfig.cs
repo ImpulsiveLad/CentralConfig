@@ -714,7 +714,7 @@ namespace CentralConfig
             num = __instance.globalTime - num;
             __instance.timeUntilDeadline -= num;
             CentralConfig.shid += num;
-             CentralConfig.instance.mls.LogInfo("shid is now : " + CentralConfig.shid);
+            // CentralConfig.instance.mls.LogInfo("shid is now : " + CentralConfig.shid);
 
             return false;
         }
@@ -735,16 +735,18 @@ namespace CentralConfig
                 return false;
             }
             float num = 980 - CentralConfig.shid;
-            if (TimeOfDay.Instance.daysUntilDeadline >= 0)
+            if (LevelManager.CurrentExtendedLevel.NumberlessPlanetName != "Gordion" || TimeOfDay.Instance.daysUntilDeadline <= 0)
             {
                 TimeOfDay.Instance.timeUntilDeadline -= num;
-                 CentralConfig.instance.mls.LogInfo("timeUntilDeadline adjustment was: " + num);
+                // CentralConfig.instance.mls.LogInfo("timeUntilDeadline adjustment was: " + num);
                 TimeOfDay.Instance.OnDayChanged();
             }
             TimeOfDay.Instance.globalTime = 100f;
             TimeOfDay.Instance.UpdateProfitQuotaCurrentTime();
-            HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
-
+            if (LevelManager.CurrentExtendedLevel.NumberlessPlanetName != "Gordion" || TimeOfDay.Instance.daysUntilDeadline <= 0)
+            {
+                HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
+            }
             UnityEngine.Object.FindObjectOfType<Terminal>().SetItemSales();
             __instance.SetMapScreenInfoToCurrentLevel();
             if (TimeOfDay.Instance.timeUntilDeadline > 0f && TimeOfDay.Instance.daysUntilDeadline <= 0 && TimeOfDay.Instance.timesFulfilledQuota <= 0)
