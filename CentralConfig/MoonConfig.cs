@@ -694,6 +694,10 @@ namespace CentralConfig
     {
         static bool Prefix(TimeOfDay __instance)
         {
+            if (!CentralConfig.SyncConfig.DoDangerBools)
+            {
+                return true;
+            }
             StartOfRound startOfRound = StartOfRound.Instance;
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
             if (CentralConfig.SyncConfig.DoDangerBools)
@@ -724,6 +728,10 @@ namespace CentralConfig
     {
         static bool Prefix(StartOfRound __instance, int connectedPlayersOnServer = 0)
         {
+            if (!CentralConfig.SyncConfig.DoDangerBools)
+            {
+                return true;
+            }
             if (__instance.isChallengeFile)
             {
                 TimeOfDay.Instance.globalTime = 100f;
