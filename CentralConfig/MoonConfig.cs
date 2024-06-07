@@ -700,25 +700,21 @@ namespace CentralConfig
             }
             StartOfRound startOfRound = StartOfRound.Instance;
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (CentralConfig.SyncConfig.DoDangerBools)
+            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
             {
-                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+                if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
                 {
-                    if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
-            if (!__instance.shipLeavingAlertCalled)
-            {
-                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
-            }
-            else
-            {
-                __instance.globalTimeSpeedMultiplier = 1;
-            }
+            __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+
+            float num = __instance.globalTime;
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);
+            num = __instance.globalTime - num;
+            __instance.timeUntilDeadline -= num;
+            CentralConfig.shid += num;
+             CentralConfig.instance.mls.LogInfo("shid is now : " + CentralConfig.shid);
 
             return false;
         }
@@ -738,23 +734,24 @@ namespace CentralConfig
                 __instance.SetMapScreenInfoToCurrentLevel();
                 return false;
             }
-            if (__instance.currentLevel.planetHasTime || TimeOfDay.Instance.daysUntilDeadline <= 0)
+            float num = 980 - CentralConfig.shid;
+            if (TimeOfDay.Instance.daysUntilDeadline >= 0)
             {
-                TimeOfDay.Instance.timeUntilDeadline -= TimeOfDay.Instance.totalTime;
+                TimeOfDay.Instance.timeUntilDeadline -= num;
+                 CentralConfig.instance.mls.LogInfo("timeUntilDeadline adjustment was: " + num);
                 TimeOfDay.Instance.OnDayChanged();
             }
             TimeOfDay.Instance.globalTime = 100f;
             TimeOfDay.Instance.UpdateProfitQuotaCurrentTime();
-            if (__instance.currentLevel.planetHasTime)
-            {
-                HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
-            }
+            HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
+
             UnityEngine.Object.FindObjectOfType<Terminal>().SetItemSales();
             __instance.SetMapScreenInfoToCurrentLevel();
             if (TimeOfDay.Instance.timeUntilDeadline > 0f && TimeOfDay.Instance.daysUntilDeadline <= 0 && TimeOfDay.Instance.timesFulfilledQuota <= 0)
             {
                 __instance.StartCoroutine(playDaysLeftAlertSFXDelayed());
             }
+            CentralConfig.shid = 0;
             return false;
         }
         public static IEnumerator playDaysLeftAlertSFXDelayed()
