@@ -133,12 +133,12 @@ namespace CentralConfig
             FreeEnemies = cfg.BindSyncedEntry("_Moons_",
                 "Free Them?",
                 false,
-                "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be every hour instead of every other hour.");
+                "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be hourly instead of every other hour.");
 
             ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Moons_",
                 "Scale Enemy Spawn Rate?",
                 false,
-                "When enabled, this setting adjusts the enemy spawn rate to match the new maximum power counts. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default maximum power count of 4 for interior enemies. If you set this to 6, interior enemies will spawn 1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
+                "When enabled, this setting adjusts the enemy spawn rate to match the new enemy powers. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default max power of 4 for interior enemies. If you set this to 6, interior enemies will spawn ~1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
 
             DoTrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Trap Overrides?",
@@ -198,7 +198,7 @@ namespace CentralConfig
             DoEnemyTagInjections = cfg.BindSyncedEntry("_Tags_",
                 "Enable Enemy Injection by Tag?",
                 false,
-                "If set to true, allows adding enemies to levels based on matching tags.");
+                "If set to true, allows adding enemies to levels based on matching tags (inside,day, and night).");
 
             DoScrapTagInjections = cfg.BindSyncedEntry("_Tags_",
                 "Enable Scrap Injection by Tag?",
