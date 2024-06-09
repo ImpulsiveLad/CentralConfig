@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using static CentralConfig.WaitForMoonsToRegister;
 using static CentralConfig.WaitForDungeonsToRegister;
 using static CentralConfig.MiscConfig;
+using static CentralConfig.WaitForTagsToRegister;
 
 namespace CentralConfig
 {
@@ -16,7 +17,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.6.6";
+        private const string modVersion = "0.7.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -32,6 +33,8 @@ namespace CentralConfig
         public static CreateDungeonConfig ConfigFile2;
 
         public static CreateMiscConfig ConfigFile3;
+
+        public static CreateTagConfig ConfigFile4;
 
         public static GeneralConfig SyncConfig;
 
@@ -49,6 +52,8 @@ namespace CentralConfig
 
             ConfigFile3 = new CreateMiscConfig(base.Config);
 
+            ConfigFile4 = new CreateTagConfig(base.Config);
+
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
@@ -61,7 +66,15 @@ namespace CentralConfig
             harmony.PatchAll(typeof(LogFinalSize));
             harmony.PatchAll(typeof(MiscConfig));
             harmony.PatchAll(typeof(ChangeFineAmount));
-            // harmony.PatchAll(typeof(Balls));
+            harmony.PatchAll(typeof(WaitForTagsToRegister));
+            harmony.PatchAll(typeof(FrApplyTag));
+            harmony.PatchAll(typeof(EnactTagInjections));
+            harmony.PatchAll(typeof(MoarEnemies1));
+            harmony.PatchAll(typeof(MoarEnemies2));
+            harmony.PatchAll(typeof(MoarEnemies3));
+            // Logging stuff
+            // harmony.PatchAll(typeof(ShowIntEnemyCount));
+            // harmony.PatchAll(typeof(CountTraps));
         }
     }
     [DataContract]
@@ -81,6 +94,13 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoDunSizeOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoDungeonSelectionOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoFineOverrides { get; private set; }
+        [DataMember] public SyncedEntry<string> BlacklistTags { get; private set; }
+        [DataMember] public SyncedEntry<bool> IsTagWhiteList { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoEnemyTagInjections { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoScrapTagInjections { get; private set; }
+        [DataMember] public SyncedEntry<bool> FreeEnemies { get; private set; }
+        [DataMember] public SyncedEntry<bool> ScaleEnemySpawnRate { get; private set; }
+
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -109,6 +129,16 @@ namespace CentralConfig
                 "Enable Enemy Overrides?",
                 false,
                 "If set to true, allows altering of the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).");
+
+            FreeEnemies = cfg.BindSyncedEntry("_Moons_",
+                "Free Them?",
+                false,
+                "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be every hour instead of every other hour.");
+
+            ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Moons_",
+                "Scale Enemy Spawn Rate?",
+                false,
+                "When enabled, this setting adjusts the enemy spawn rate to match the new maximum power counts. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default maximum power count of 4 for interior enemies. If you set this to 6, interior enemies will spawn 1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
 
             DoTrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Trap Overrides?",
@@ -154,6 +184,26 @@ namespace CentralConfig
                 "Enable Fine Overrides?",
                 false,
                 "If set to true, allows you to set the fine for dead/missing players and the reduction on the fine for having brought the body back to the ship.");
+
+            BlacklistTags = cfg.BindSyncedEntry("_TagLists_",
+                "Blacklisted Tags",
+                "",
+                "Excludes the listed tags from the config. If they are already created, they will be removed on config regeneration.");
+
+            IsTagWhiteList = cfg.BindSyncedEntry("_TagLists_",
+                "Is Tag Blacklist a Whitelist?",
+                false,
+                "If set to true, only the tags listed above will be generated.");
+
+            DoEnemyTagInjections = cfg.BindSyncedEntry("_Tags_",
+                "Enable Enemy Injection by Tag?",
+                false,
+                "If set to true, allows adding enemies to levels based on matching tags.");
+
+            DoScrapTagInjections = cfg.BindSyncedEntry("_Tags_",
+                "Enable Scrap Injection by Tag?",
+                false,
+                "If set to true, allows adding scrap to levels based on matching tags.");
         }
     }
 }

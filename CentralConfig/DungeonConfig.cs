@@ -29,6 +29,7 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<float>> DungeonSizeScaler;
 
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonPlanetNameList;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonTagList;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonRoutePriceList;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonModNameList;
 
@@ -41,6 +42,7 @@ namespace CentralConfig
                 DungeonSizeScaler = new Dictionary<string, SyncedEntry<float>>();
 
                 DungeonPlanetNameList = new Dictionary<string, SyncedEntry<string>>();
+                DungeonTagList = new Dictionary<string, SyncedEntry<string>>();
                 DungeonRoutePriceList = new Dictionary<string, SyncedEntry<string>>();
                 DungeonModNameList = new Dictionary<string, SyncedEntry<string>>();
 
@@ -91,6 +93,13 @@ namespace CentralConfig
                             DungeonName + " - Add Dungeon by Planet Name",
                             DungeonPlanetList,
                             "The dungeon will be added to any moons listed here. This must be the exact numberless name. \"Experimentatio\" =/= \"Experimentation\"");
+
+                        string dungeonTagList = ConfigAider.ConvertStringWithRarityToString(dungeon.LevelMatchingProperties.levelTags);
+
+                        DungeonTagList[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Add Dungeon by Planet Tags",
+                            dungeonTagList,
+                            "The dungeon will be added to all moons with a matching tag");
 
                         string DungeonRouteList = ConfigAider.ConvertVector2WithRaritiesToString(dungeon.LevelMatchingProperties.currentRoutePrice);
 
@@ -164,6 +173,15 @@ namespace CentralConfig
                         dungeon.LevelMatchingProperties.planetNames = InjectionPlanets;
                     }
 
+                    // Tags
+                    string TagStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonTagList[DungeonName];
+                    Vector2 tagRarity = new Vector2(0, 99999);
+                    List<StringWithRarity> InjectionTags = ConfigAider.ConvertTagStringToStringWithRarityList(TagStr, tagRarity);
+                    if (InjectionTags.Count > 0)
+                    {
+                        dungeon.LevelMatchingProperties.levelTags = InjectionTags;
+                    }
+
                     // ModName
                     string ModNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonModNameList[DungeonName];
                     Vector2 modNameRarity = new Vector2(0, 99999);
@@ -183,7 +201,7 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Dungeon config Values Applied");
+            CentralConfig.instance.mls.LogInfo("Dungeon config Values Applied.");
             Ready = true;
         }
     }

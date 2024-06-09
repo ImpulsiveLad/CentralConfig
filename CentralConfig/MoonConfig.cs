@@ -11,6 +11,7 @@ using UnityEngine;
 using System;
 using Unity.Netcode;
 using System.Collections;
+using System.Reflection.Emit;
 
 namespace CentralConfig
 {
@@ -23,6 +24,7 @@ namespace CentralConfig
         public static SpawnableMapObject turretContainerObjectReference = null;
         public static SpawnableMapObject landmineObjectReference = null;
         public static SpawnableMapObject spikeRoofTrapHazardObjectReference = null;
+
         [DataContract]
         public class CreateMoonConfig : ConfigTemplate
         {
@@ -529,6 +531,15 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoEnemyOverrides)
                 {
+                    if (CentralConfig.SyncConfig.ScaleEnemySpawnRate)
+                    {
+                        float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxEnemyPowerCount;
+                        level.SelectableLevel.enemySpawnChanceThroughoutDay = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
+                        float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
+                        level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
+                        float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxOutsideEnemyPowerCount;
+                        level.SelectableLevel.outsideEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
+                    }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
                     // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[PlanetName];
@@ -638,7 +649,7 @@ namespace CentralConfig
                     level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[PlanetName];
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Moon config Values Applied");
+            CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
             Ready = true;
         }
     }
@@ -652,7 +663,7 @@ namespace CentralConfig
         }
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnDaytimeEnemiesOutside")]
-    public class Balls
+    public class CountTraps
     {
         static void Postfix(RoundManager __instance)
         {
@@ -674,6 +685,10 @@ namespace CentralConfig
     {
         static bool Prefix(RoundManager __instance)
         {
+            if (CentralConfig.SyncConfig.FreeEnemies)
+            {
+                __instance.hourTimeBetweenEnemySpawnBatches = 1;
+            }
             if (!CentralConfig.SyncConfig.DoScrapOverrides)
             {
                 CentralConfig.instance.mls.LogInfo("Scrap Overrides are disabled, not applying multiplier.");
@@ -778,6 +793,75 @@ namespace CentralConfig
             else
             {
                 level.SelectableLevel.currentWeather = LevelWeatherType.None;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
+    public static class ShowIntEnemyCount
+    {
+        public static int IntEnemiesSpawned = 0;
+        static void Postfix(RoundManager __instance)
+        {
+            float fakenum = __instance.currentLevel.enemySpawnChanceThroughoutDay.Evaluate(__instance.timeScript.currentDayTime / __instance.timeScript.totalTime);
+            float fakenum2 = fakenum + (float)Mathf.Abs(TimeOfDay.Instance.daysUntilDeadline - 3) / 1.6f;
+            int fakevalue = Mathf.Clamp(__instance.AnomalyRandom.Next((int)(fakenum2 - __instance.currentLevel.spawnProbabilityRange), (int)(fakenum + __instance.currentLevel.spawnProbabilityRange)), __instance.minEnemiesToSpawn, 20);
+            fakevalue = Mathf.Clamp(fakevalue, 0, __instance.allEnemyVents.Length);
+
+            IntEnemiesSpawned += fakevalue;
+            CentralConfig.instance.mls.LogInfo("There are now " + IntEnemiesSpawned + " interior enemies");
+        }
+    }
+    [HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
+    public static class MoarEnemies1
+    {
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (var inst in instructions)
+            {
+                if (inst.opcode == OpCodes.Ldc_I4_S && (sbyte)inst.operand == 20)
+                {
+                    if (CentralConfig.SyncConfig.FreeEnemies)
+                    {
+                        inst.operand = (sbyte)127;
+                    }
+                }
+                yield return inst;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(RoundManager), "SpawnDaytimeEnemiesOutside")]
+    public static class MoarEnemies2
+    {
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (var inst in instructions)
+            {
+                if (inst.opcode == OpCodes.Ldc_I4_S && (sbyte)inst.operand == 20)
+                {
+                    if (CentralConfig.SyncConfig.FreeEnemies)
+                    {
+                        inst.operand = (sbyte)127;
+                    }
+                }
+                yield return inst;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(RoundManager), "SpawnEnemiesOutside")]
+    public static class MoarEnemies3
+    {
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (var inst in instructions)
+            {
+                if (inst.opcode == OpCodes.Ldc_I4_S && (sbyte)inst.operand == 20)
+                {
+                    if (CentralConfig.SyncConfig.FreeEnemies)
+                    {
+                        inst.operand = (sbyte)127;
+                    }
+                }
+                yield return inst;
             }
         }
     }

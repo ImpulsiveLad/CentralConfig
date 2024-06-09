@@ -78,6 +78,7 @@ namespace CentralConfig
         public static List<ContentTag> GrabFullTagList()
         {
             List<ContentTag> allContentTagsList = new List<ContentTag>();
+            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
 
             foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods.Concat(new List<ExtendedMod>() { PatchedContent.VanillaMod }))
             {
@@ -85,7 +86,7 @@ namespace CentralConfig
                 {
                     foreach (ContentTag contentTag in extendedContent.ContentTags)
                     {
-                        if (!allContentTagsList.Contains(contentTag))
+                        if (allExtendedLevels.Any(level => level.ContentTags.Contains(contentTag)) && !allContentTagsList.Contains(contentTag))
                         {
                             allContentTagsList.Add(contentTag);
                         }
@@ -421,6 +422,31 @@ namespace CentralConfig
             }
             return (returnList);
         }
+        public static List<StringWithRarity> ConvertTagStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
+        {
+            if (string.IsNullOrEmpty(newInputString) || newInputString == "Default Values Were Empty" || newInputString == "Default Values Were Empty:0" || newInputString == ":0")
+            {
+                return new List<StringWithRarity>();
+            }
+            List<StringWithRarity> returnList = new List<StringWithRarity>();
+
+            List<string> stringList = SplitStringsByDaComma(newInputString);
+
+            foreach (string stringString in stringList)
+            {
+                (string, string) splitStringData = SplitStringsByDaColon(stringString);
+                string tagName = splitStringData.Item1;
+                int rarity = 0;
+                if (int.TryParse(splitStringData.Item2, out int value))
+                    rarity = value;
+
+                if (clampRarity != Vector2.zero)
+                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+
+                returnList.Add(new StringWithRarity(tagName, rarity));
+            }
+            return (returnList);
+        }
 
         // This method should make the planet name list have to be the exact name
 
@@ -511,6 +537,61 @@ namespace CentralConfig
             return (returnList);
         }
 
+        // Dungeons
+
+        public static List<ExtendedDungeonFlowWithRarity> ConvertStringToDungeonFlowWithRarityList(string newInputString, Vector2 clampRarity)
+        {
+            if (string.IsNullOrEmpty(newInputString) || newInputString == "Default Values Were Empty" || newInputString == "Default Values Were Empty:0" || newInputString == ":0")
+            {
+                return new List<ExtendedDungeonFlowWithRarity>();
+            }
+            List<StringWithRarity> stringList = ConvertStringToList(newInputString, clampRarity);
+            List<ExtendedDungeonFlowWithRarity> returnList = new List<ExtendedDungeonFlowWithRarity>();
+
+            List<ExtendedDungeonFlow> alldungeonFlows = PatchedContent.ExtendedDungeonFlows;
+
+            foreach (ExtendedDungeonFlow dungeon in alldungeonFlows)
+            {
+                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
+                {
+                    if (CauterizeString(dungeon.DungeonName).Contains(CauterizeString(stringString.Name)) || CauterizeString(stringString.Name).Contains(CauterizeString(dungeon.DungeonName)))
+                    {
+                        ExtendedDungeonFlowWithRarity newDungeon = new ExtendedDungeonFlowWithRarity(dungeon, stringString.Rarity);
+                        newDungeon.extendedDungeonFlow = dungeon;
+                        newDungeon.rarity = stringString.Rarity;
+                        returnList.Add(newDungeon);
+                        stringList.Remove(stringString);
+                    }
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Return List:");
+            foreach (ExtendedDungeonFlowWithRarity dungeon in returnList)
+            {
+                sb.AppendLine($"Item Name: {dungeon.extendedDungeonFlow.DungeonName}, Rarity: {dungeon.rarity}");
+            }
+            // CentralConfig.instance.mls.LogInfo(sb.ToString());
+
+            return returnList;
+        }
+
+        // For updating enemy spawn curves
+        public static AnimationCurve MultiplyYValues(AnimationCurve curve, float multiplier, string LevelName, string TypeOf)
+        {
+            CentralConfig.instance.mls.LogInfo(LevelName + " " +TypeOf + " Y-Values multiplied by: " + multiplier);
+            Keyframe[] keyframes = new Keyframe[curve.length];
+
+            for (int i = 0; i < curve.length; i++)
+            {
+                Keyframe key = curve[i];
+                key.value = key.value * multiplier;
+                keyframes[i] = key;
+            }
+
+            return new AnimationCurve(keyframes);
+        }
+
+
         // Modified cfg cleaner from Kitten :3
 
         public void CleanConfig(ConfigFile cfg)
@@ -519,7 +600,7 @@ namespace CentralConfig
         }
         private IEnumerator CQueen(ConfigFile cfg)
         {
-            while (!ApplyMoonConfig.Ready || !ApplyDungeonConfig.Ready)
+            while (!ApplyMoonConfig.Ready || !ApplyDungeonConfig.Ready || !ApplyTagConfig.Ready)
             {
                 yield return null;
             }
