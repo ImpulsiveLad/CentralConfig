@@ -215,6 +215,10 @@ namespace CentralConfig
 
             return returnList;
         }
+        public static List<SpawnableEnemyWithRarity> RemoveLowerRarityDuplicateEnemies(List<SpawnableEnemyWithRarity> enemies)
+        {
+            return enemies.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
+        }
 
         // Scrap
 
@@ -270,6 +274,10 @@ namespace CentralConfig
             // CentralConfig.instance.mls.LogInfo(sb.ToString());
 
             return returnList;
+        }
+        public static List<SpawnableItemWithRarity> RemoveLowerRarityDuplicateItems(List<SpawnableItemWithRarity> items)
+        {
+            return items.GroupBy(e => e.spawnableItem.itemName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
         }
 
         // Weather + Tags
@@ -578,7 +586,7 @@ namespace CentralConfig
         // For updating enemy spawn curves
         public static AnimationCurve MultiplyYValues(AnimationCurve curve, float multiplier, string LevelName, string TypeOf)
         {
-            CentralConfig.instance.mls.LogInfo(LevelName + " " +TypeOf + " Y-Values multiplied by: " + multiplier);
+            // CentralConfig.instance.mls.LogInfo(LevelName + " " +TypeOf + " Y-Values multiplied by: " + multiplier);
             Keyframe[] keyframes = new Keyframe[curve.length];
 
             for (int i = 0; i < curve.length; i++)
