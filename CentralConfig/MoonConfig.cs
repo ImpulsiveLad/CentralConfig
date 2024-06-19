@@ -865,4 +865,21 @@ namespace CentralConfig
             }
         }
     }
+    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
+    [HarmonyPriority(1000)]
+    public class RenameCelest
+    {
+        static void Prefix()
+        {
+            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+            foreach (ExtendedLevel level in allExtendedLevels)
+            {
+                if (level.NumberlessPlanetName == "Celest" && CentralConfig.SyncConfig.RenameCelest)
+                {
+                    level.SelectableLevel.PlanetName = "68 Celeste";
+                    CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
+                }
+            }
+        }
+    }
 }

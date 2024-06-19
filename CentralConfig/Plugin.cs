@@ -17,7 +17,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.7.1";
+        private const string modVersion = "0.7.5";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -54,6 +54,7 @@ namespace CentralConfig
 
             ConfigFile4 = new CreateTagConfig(base.Config);
 
+            harmony.PatchAll(typeof(RenameCelest));
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
@@ -100,6 +101,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoScrapTagInjections { get; private set; }
         [DataMember] public SyncedEntry<bool> FreeEnemies { get; private set; }
         [DataMember] public SyncedEntry<bool> ScaleEnemySpawnRate { get; private set; }
+        [DataMember] public SyncedEntry<bool> RenameCelest { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -154,6 +156,11 @@ namespace CentralConfig
                 "Enable Misc Overrides?",
                 false,
                 "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, locked/unlocked status, if time exists, the time speed multiplier, and if time should wait until the ship lands to begin moving (Keep this false for Selene's Choice to work).");
+
+            RenameCelest = cfg.BindSyncedEntry("_Moons_",
+                "Rename Celest?",
+                false,
+                "If set to true, Celest will be renamed to Celeste. This fixes any config entry mismatches between her and Celestria.");
 
             BlackListDungeons = cfg.BindSyncedEntry("_DungeonLists_",
                 "Blacklisted Dungeons",
