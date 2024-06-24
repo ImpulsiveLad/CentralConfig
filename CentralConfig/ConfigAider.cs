@@ -219,6 +219,63 @@ namespace CentralConfig
         {
             return enemies.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
         }
+        public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig) // takes in the original enemy list and the config for replacing enemies
+        {
+            if (string.IsNullOrEmpty(ReplaceConfig) || ReplaceConfig == "Default Values Were Empty")
+            {
+                return EnemyList; // if the config is unused just returns the list untouched
+            }
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(); // makes a new list of enemies
+            List<string> replacedEnemies = new List<string>(); // To remember what was replaced
+            var pairs = ReplaceConfig.Split(','); // This is expected to be like EnemyName:EnemyName,EnemyName:EnemyName etc
+
+            foreach (var pair in pairs) // so for each pair of enemy names
+            {
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var originalName = parts[0].Trim(); // first enemy name is the original
+                    var replacementName = parts[1].Trim(); // second enemy name is the replacement
+
+                    foreach (var enemy in EnemyList) // goes through the enemy list
+                    {
+                        if (enemy.enemyType.enemyName.Equals(originalName)) // if the entry matches an original name
+                        {
+                            SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                            newEnemy.enemyType = GetEnemyTypeByName(replacementName); // method to check all enemyTypes and get the one with the name of the replacement, then sets the new enemies' enemyType to the replacements
+                            newEnemy.rarity = enemy.rarity; // uses the same rarity
+                            returnList.Add(newEnemy); // adds this new enemy to the returnlist
+                            replacedEnemies.Add(originalName); // adds the replacement to the string list I made
+                            CentralConfig.instance.mls.LogInfo($"Replaced enemy: {originalName} -> {replacementName}");
+                        }
+                    }
+                }
+            }
+            foreach (var enemy in EnemyList) // goes through the enemy list again
+            {
+                if (!replacedEnemies.Contains(enemy.enemyType.enemyName)) // if it wasn't replaced by another enemy
+                {
+                    SpawnableEnemyWithRarity oldEnemy = new SpawnableEnemyWithRarity();
+                    oldEnemy.enemyType = enemy.enemyType; // add it as is
+                    oldEnemy.rarity = enemy.rarity; // same
+                    returnList.Add(oldEnemy); // yeah its added to the return list untouched
+                    CentralConfig.instance.mls.LogInfo("Added non replaced enemy: " + oldEnemy.enemyType.enemyName);
+                }
+            }
+            return returnList; // and gets the list back
+        }
+        public static EnemyType GetEnemyTypeByName(string enemyName)
+        {
+            List<EnemyType> AllEnemies = GrabFullEnemyList();
+            foreach (var enemyType in AllEnemies)
+            {
+                if (enemyType.enemyName == enemyName)
+                {
+                    return enemyType;
+                }
+            }
+            return null;
+        }
 
         // Scrap
 
@@ -599,7 +656,6 @@ namespace CentralConfig
             return new AnimationCurve(keyframes);
         }
 
-
         // Modified cfg cleaner from Kitten :3
 
         public void CleanConfig(ConfigFile cfg)
@@ -608,7 +664,7 @@ namespace CentralConfig
         }
         private IEnumerator CQueen(ConfigFile cfg)
         {
-            while (!ApplyMoonConfig.Ready || !ApplyDungeonConfig.Ready || !ApplyTagConfig.Ready)
+            while (!ApplyMoonConfig.Ready || !ApplyDungeonConfig.Ready || !ApplyTagConfig.Ready || !ApplyWeatherConfig.Ready)
             {
                 yield return null;
             }

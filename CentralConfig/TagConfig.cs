@@ -21,10 +21,13 @@ namespace CentralConfig
         {
             [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyByTag;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> InteriorEnemies;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyReplacement;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DayTimeEnemyByTag;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> DayEnemies;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> DayEnemyReplacement;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> NightTimeEnemyByTag;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> NightEnemies;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> NightEnemyReplacement;
 
             [DataMember] public static Dictionary<string, SyncedEntry<string>> ScrapByTag;
             [DataMember] public static Dictionary<string, List<SpawnableItemWithRarity>> Scrap;
@@ -33,10 +36,13 @@ namespace CentralConfig
             {
                 InteriorEnemyByTag = new Dictionary<string, SyncedEntry<string>>();
                 InteriorEnemies = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+                InteriorEnemyReplacement = new Dictionary<string, SyncedEntry<string>>();
                 DayTimeEnemyByTag = new Dictionary<string, SyncedEntry<string>>();
                 DayEnemies = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+                DayEnemyReplacement = new Dictionary<string, SyncedEntry<string>>();
                 NightTimeEnemyByTag = new Dictionary<string, SyncedEntry<string>>();
                 NightEnemies = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+                NightEnemyReplacement = new Dictionary<string, SyncedEntry<string>>();
 
                 ScrapByTag = new Dictionary<string, SyncedEntry<string>>();
                 Scrap = new Dictionary<string, List<SpawnableItemWithRarity>>();
@@ -64,15 +70,30 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons with this tag.");
 
+                        InteriorEnemyReplacement[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
+                            TagName + " - Replace Interior Enemies",
+                            "Default Values Were Empty",
+                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons with this tag, brackens will be replaced with hypothetical plantmen, and crawlers with hypothetical maulers.\nThe main use would be biomatic enemies, This runs before the above entry adds new enemies.");
+
                         DayTimeEnemyByTag[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
-                            TagName + " - Add Daytime Enemies",
+                            TagName + " - Add Day Enemies",
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the daytime enemy list on any moons with this tag.");
 
+                        DayEnemyReplacement[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
+                            TagName + " - Replace Day Enemies",
+                            "Default Values Were Empty",
+                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons with this tag, manticoils will be replaced with hypothetical mantisoils, and docile locust bees with hypothetical angry moth wasps.\nThe main use would be biomatic enemies, This runs before the above entry adds new enemies.");
+
                         NightTimeEnemyByTag[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
-                            TagName + " - Add Nighttime Enemies",
+                            TagName + " - Add Night Enemies",
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the nighttime enemy list on any moons with this tag.");
+
+                        NightEnemyReplacement[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
+                            TagName + " - Replace Night Enemies",
+                            "Default Values Were Empty",
+                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons with this tag, mouthdogs will be replaced with hypothetical oceandogs, and forestgiants with hypothetical firegiants.\nThe main use would be biomatic enemies, This runs before the above entry adds new enemies.");
                     }
 
                     if (CentralConfig.SyncConfig.DoScrapTagInjections)
@@ -165,20 +186,20 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                 {
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForTagsToRegister.CreateTagConfig.InteriorEnemyReplacement[TagName]);
                     if (WaitForTagsToRegister.CreateTagConfig.InteriorEnemies[TagName].Count > 0)
                     {
                         LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForTagsToRegister.CreateTagConfig.InteriorEnemies[TagName]).ToList();
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
                     }
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForTagsToRegister.CreateTagConfig.DayEnemyReplacement[TagName]);
                     if (WaitForTagsToRegister.CreateTagConfig.DayEnemies[TagName].Count > 0)
                     {
                         LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForTagsToRegister.CreateTagConfig.DayEnemies[TagName]).ToList();
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
                     }
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForTagsToRegister.CreateTagConfig.NightEnemyReplacement[TagName]);
                     if (WaitForTagsToRegister.CreateTagConfig.NightEnemies[TagName].Count > 0)
                     {
                         LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForTagsToRegister.CreateTagConfig.NightEnemies[TagName]).ToList();
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
                     }
                 }
 
@@ -190,6 +211,12 @@ namespace CentralConfig
                         LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
                     }
                 }
+            }
+            if (CentralConfig.SyncConfig.RemoveDuplicateEnemies)
+            {
+                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
             }
             CentralConfig.instance.mls.LogInfo("Tag Injections Enacted.");
         }

@@ -63,6 +63,8 @@ namespace CentralConfig
 
             [DataMember] public static Dictionary<string, SyncedEntry<float>> FaciltySizeOverride;
 
+            public static Dictionary<string, float> MoonsNewScrapMultiplier = new Dictionary<string, float>();
+
             public CreateMoonConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
                 // Intialize config entries tied to the dictionary
@@ -404,7 +406,7 @@ namespace CentralConfig
 
                     // Weather + Tags
 
-                    if (CentralConfig.SyncConfig.DoWeatherAndTagOverrides)
+                    if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                     {
                         string PossibleWeatherArray = ConfigAider.ConvertWeatherArrayToString(level.SelectableLevel.randomWeathers);
 
@@ -412,7 +414,9 @@ namespace CentralConfig
                             PlanetName + " - Possible Weathers",
                             PossibleWeatherArray,
                             "Sets the possible weathers that can occur on the moon");
-
+                    }
+                    if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+                    {
                         string ContentTags = ConfigAider.ConvertTagsToString(level.ContentTags);
 
                         AddTags[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
@@ -541,7 +545,7 @@ namespace CentralConfig
                         level.SelectableLevel.outsideEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
                     }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
-                    // InteriorEnemyList
+                                                                                                                                                    // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[PlanetName];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
@@ -614,7 +618,7 @@ namespace CentralConfig
 
                 // Weather + Tags
 
-                if (CentralConfig.SyncConfig.DoWeatherAndTagOverrides)
+                if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                 {
                     string WeatherStr = WaitForMoonsToRegister.CreateMoonConfig.WeatherTypeOverride[PlanetName];
                     RandomWeatherWithVariables[] PossibleWeathers = ConfigAider.ConvertStringToWeatherArray(WeatherStr);
@@ -624,7 +628,9 @@ namespace CentralConfig
 
                     Ororo Ororo = new Ororo();
                     Ororo.SetSinglePlanetWeather(level);
-
+                }
+                if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+                {
                     string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[PlanetName];
                     List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
                     if (MoonTags.Count > 0)
@@ -683,25 +689,30 @@ namespace CentralConfig
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ApplyScrapValueMultiplier
     {
-        static bool Prefix(RoundManager __instance)
+        static void Prefix(RoundManager __instance)
         {
             if (CentralConfig.SyncConfig.FreeEnemies)
             {
                 __instance.hourTimeBetweenEnemySpawnBatches = 1;
             }
-            if (!CentralConfig.SyncConfig.DoScrapOverrides)
-            {
-                CentralConfig.instance.mls.LogInfo("Scrap Overrides are disabled, not applying multiplier.");
-                return true;
-            }
 
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-
-            if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
+            if (CentralConfig.SyncConfig.DoScrapOverrides)
             {
-                __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value / 2.5f;
+                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
+                {
+                    if (!WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(currentMoon))
+                    {
+                        float newMultiplier = __instance.scrapValueMultiplier * WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value;
+                        WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[currentMoon] = newMultiplier;
+                        __instance.scrapValueMultiplier = newMultiplier;
+                    }
+                    else
+                    {
+                        __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[currentMoon];
+                    }
+                }
             }
-            return true;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
@@ -877,7 +888,7 @@ namespace CentralConfig
                 if (level.NumberlessPlanetName == "Celest" && CentralConfig.SyncConfig.RenameCelest)
                 {
                     level.SelectableLevel.PlanetName = "68 Celeste";
-                    CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
+                    // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
                 }
             }
         }
