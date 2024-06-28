@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.8.0";
+        private const string modVersion = "0.8.5";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -73,13 +73,17 @@ namespace CentralConfig
             harmony.PatchAll(typeof(ChangeFineAmount));
             harmony.PatchAll(typeof(WaitForWeathersToRegister));
             harmony.PatchAll(typeof(FrApplyWeather));
-            harmony.PatchAll(typeof(ResetWeatherLists));
-            harmony.PatchAll(typeof(EnactWeatherInjections));
             harmony.PatchAll(typeof(ResetMoonsScrapAfterWeather));
             harmony.PatchAll(typeof(ApplyWeatherScrapMultipliers));
             harmony.PatchAll(typeof(WaitForTagsToRegister));
             harmony.PatchAll(typeof(FrApplyTag));
+
+            harmony.PatchAll(typeof(ResetEnemyAndScrapLists));
+            harmony.PatchAll(typeof(FetchEnemyAndScrapLists));
+            harmony.PatchAll(typeof(EnactWeatherInjections));
             harmony.PatchAll(typeof(EnactTagInjections));
+            harmony.PatchAll(typeof(EnactDungeonInjections));
+
             harmony.PatchAll(typeof(MoarEnemies1));
             harmony.PatchAll(typeof(MoarEnemies2));
             harmony.PatchAll(typeof(MoarEnemies3));
@@ -119,6 +123,8 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> IsWeatherWhiteList { get; private set; }
         [DataMember] public SyncedEntry<bool> DoEnemyWeatherInjections { get; private set; }
         [DataMember] public SyncedEntry<bool> DoScrapWeatherInjections { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoEnemyInjectionsByDungeon { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoScrapInjectionsByDungeon { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -190,9 +196,9 @@ namespace CentralConfig
                 "If set to true, only the dungeons listed above will be generated.");
 
             UseNewGen = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Overhauled Dungeon Generation?",
+                "Enable Dungeon Generation Safeguards?",
                 true,
-                "If set to true, this reconfigures the dungeon loading process to avoid loading failure.");
+                "If set to true, this refines the dungeon loading process to retry with various imput sizes.\nInstead of a hard-cap of 20 attempts, the dungeon will go through and attempt to generate with a different size until it succeeds.\nThis can only fail if the dungeon doesn't generate at any positive sizes.");
 
             DoDunSizeOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Size Overrides?",
@@ -203,6 +209,16 @@ namespace CentralConfig
                 "Enable Dungeon Selection Overrides?",
                 false,
                 "If set to true, allows altering of the dungeon selection settings (By moon name, route price range, and mod name.");
+
+            DoEnemyInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
+                "Enable Enemy Injection by Current Dungeon?",
+                false,
+                "If set to true, allows adding/replacing enemies on levels based on the current dungeon (inside, day, and night.");
+
+            DoScrapInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
+                "Enable Scrap Injection by Current Dungeon?",
+                false,
+                "If set to true, allows adding scrap to levels based on matching tags.");
 
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",

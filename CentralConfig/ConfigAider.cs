@@ -1,4 +1,5 @@
 ﻿using BepInEx.Configuration;
+using HarmonyLib;
 using LethalLevelLoader;
 using LethalLib.Modules;
 using System;
@@ -678,5 +679,72 @@ namespace CentralConfig
             cfg.Save();
             CentralConfig.instance.mls.LogInfo("Config Cleaned");
         }
+    }
+
+    // Saving eneny + scrap lists and reverting them.
+
+    [HarmonyPatch(typeof(RoundManager), "GenerateNewFloor")]
+    [HarmonyPriority(777)]
+    public class ResetEnemyAndScrapLists
+    {
+        static void Prefix()
+        {
+            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+
+            if (CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            {
+                if (OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
+                {
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = OriginalEnemyAndScrapLists.OriginalIntLists[PlanetName];
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = OriginalEnemyAndScrapLists.OriginalDayLists[PlanetName];
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = OriginalEnemyAndScrapLists.OriginalNoxLists[PlanetName];
+                    CentralConfig.instance.mls.LogInfo("Reverted Enemy lists for: " + PlanetName);
+                }
+            }
+            if (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            {
+                if (OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
+                {
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = OriginalEnemyAndScrapLists.OriginalItemLists[PlanetName];
+                    CentralConfig.instance.mls.LogInfo("Reverted Scrap list for: " + PlanetName);
+                }
+            }
+        }
+    }
+    [HarmonyPatch(typeof(RoundManager), "GenerateNewFloor")]
+    [HarmonyPriority(676)]
+    public class FetchEnemyAndScrapLists
+    {
+        static void Prefix()
+        {
+            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+
+            if (CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            {
+                if (!OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
+                {
+                    OriginalEnemyAndScrapLists.OriginalIntLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                    OriginalEnemyAndScrapLists.OriginalDayLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                    OriginalEnemyAndScrapLists.OriginalNoxLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                    CentralConfig.instance.mls.LogInfo("Saved Enemy lists for: " + PlanetName);
+                }
+            }
+            if (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            {
+                if (!OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
+                {
+                    OriginalEnemyAndScrapLists.OriginalItemLists[PlanetName] = new List<SpawnableItemWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
+                    CentralConfig.instance.mls.LogInfo("Saved Scrap list for: " + PlanetName);
+                }
+            }
+        }
+    }
+
+    public static class OriginalEnemyAndScrapLists
+    {
+        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalIntLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalDayLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalNoxLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
+        public static Dictionary<string, List<SpawnableItemWithRarity>> OriginalItemLists = new Dictionary<string, List<SpawnableItemWithRarity>>();
     }
 }

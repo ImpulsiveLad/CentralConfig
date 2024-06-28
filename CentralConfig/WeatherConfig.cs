@@ -82,7 +82,7 @@ namespace CentralConfig
                         InteriorEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Interior Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently experiencing this weather, brackens will be replaced with hypothetical plantmen, and crawlers with hypothetical maulers.\nThis runs before the above entry adds new enemies, and before the tags add enemies.");
+                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently experiencing this weather, brackens will be replaced with hypothetical plantmen, and crawlers with hypothetical maulers.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
                         DayTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Day Enemies",
@@ -92,7 +92,7 @@ namespace CentralConfig
                         DayEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Day Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons with this tag, manticoils will be replaced with hypothetical mantisoils, and docile locust bees with hypothetical angry moth wasps.\nThis runs before the above entry adds new enemies, and before the tags add enemies.");
+                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently experiencing this weather, manticoils will be replaced with hypothetical mantisoils, and docile locust bees with hypothetical angry moth wasps.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
                         NightTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Night Enemies",
@@ -102,7 +102,7 @@ namespace CentralConfig
                         NightEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Night Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons with this tag, mouthdogs will be replaced with hypothetical oceandogs, and forestgiants with hypothetical firegiants.\nThis runs before the above entry adds new enemies, and before the tags add enemies.");
+                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently experiencing this weather, mouthdogs will be replaced with hypothetical oceandogs, and forestgiants with hypothetical firegiants.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
                     }
 
                     if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
@@ -165,28 +165,34 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
                 {
-                    string IntEneStr = WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather[weatherName];
-                    Vector2 clampIntRarity = new Vector2(0, 99999);
-                    List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
-                    WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName] = interiorenemyList;
+                    if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather.ContainsKey(weatherName))
+                    {
+                        string IntEneStr = WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather[weatherName];
+                        Vector2 clampIntRarity = new Vector2(0, 99999);
+                        List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
+                        WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName] = interiorenemyList;
 
-                    string DayEneStr = WaitForWeathersToRegister.CreateWeatherConfig.DayTimeEnemyByWeather[weatherName];
-                    Vector2 clampDayRarity = new Vector2(0, 99999);
-                    List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
-                    WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName] = dayenemyList;
+                        string DayEneStr = WaitForWeathersToRegister.CreateWeatherConfig.DayTimeEnemyByWeather[weatherName];
+                        Vector2 clampDayRarity = new Vector2(0, 99999);
+                        List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
+                        WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName] = dayenemyList;
 
-                    string NightEneStr = WaitForWeathersToRegister.CreateWeatherConfig.NightTimeEnemyByWeather[weatherName];
-                    Vector2 clampNightRarity = new Vector2(0, 99999);
-                    List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
-                    WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName] = nightenemyList;
+                        string NightEneStr = WaitForWeathersToRegister.CreateWeatherConfig.NightTimeEnemyByWeather[weatherName];
+                        Vector2 clampNightRarity = new Vector2(0, 99999);
+                        List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
+                        WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName] = nightenemyList;
+                    }
                 }
 
                 if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
                 {
-                    string ScrStr = WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather[weatherName];
-                    Vector2 clampScrRarity = new Vector2(0, 99999);
-                    List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
-                    WaitForWeathersToRegister.CreateWeatherConfig.ScrapW[weatherName] = scraplist;
+                    if (WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather.ContainsKey(weatherName))
+                    {
+                        string ScrStr = WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather[weatherName];
+                        Vector2 clampScrRarity = new Vector2(0, 99999);
+                        List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
+                        WaitForWeathersToRegister.CreateWeatherConfig.ScrapW[weatherName] = scraplist;
+                    }
                 }
             }
             CentralConfig.instance.mls.LogInfo("Weather config Values Applied.");
@@ -200,15 +206,6 @@ namespace CentralConfig
         static void Prefix()
         {
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
-
-            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (!WeatherInjectionData.OriginalIntLists.ContainsKey(PlanetName) || !WeatherInjectionData.OriginalDayLists.ContainsKey(PlanetName) || !WeatherInjectionData.OriginalNoxLists.ContainsKey(PlanetName))
-            {
-                WeatherInjectionData.OriginalIntLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                WeatherInjectionData.OriginalDayLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                WeatherInjectionData.OriginalNoxLists[PlanetName] = new List<SpawnableEnemyWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
-                CentralConfig.instance.mls.LogInfo("Saved Enemy data for: " + PlanetName);
-            }
 
             if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
             {
@@ -243,30 +240,8 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Weather Injections Enacted.");
+            CentralConfig.instance.mls.LogInfo("Weather Enemy/Scrap Injections Enacted.");
         }
-    }
-    [HarmonyPatch(typeof(RoundManager), "GenerateNewFloor")]
-    [HarmonyPriority(777)]
-    public class ResetWeatherLists
-    {
-        static void Prefix()
-        {
-            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (WeatherInjectionData.OriginalIntLists.ContainsKey(PlanetName) && WeatherInjectionData.OriginalDayLists.ContainsKey(PlanetName) && WeatherInjectionData.OriginalNoxLists.ContainsKey(PlanetName))
-            {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = WeatherInjectionData.OriginalIntLists[PlanetName];
-                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = WeatherInjectionData.OriginalDayLists[PlanetName];
-                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = WeatherInjectionData.OriginalNoxLists[PlanetName];
-                CentralConfig.instance.mls.LogInfo("Reverted Enemy data for: " + PlanetName);
-            }
-        }
-    }
-    public static class WeatherInjectionData
-    {
-        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalIntLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
-        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalDayLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
-        public static Dictionary<string, List<SpawnableEnemyWithRarity>> OriginalNoxLists = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ApplyWeatherScrapMultipliers
@@ -276,7 +251,8 @@ namespace CentralConfig
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
 
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName) || !WeatherScrapData.OriginalItemLists.ContainsKey(PlanetName))
+
+            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName))
             {
                 WeatherScrapData.OriginalMinScrap[PlanetName] = LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap;
                 WeatherScrapData.OriginalMaxScrap[PlanetName] = LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap;
@@ -295,8 +271,7 @@ namespace CentralConfig
                 {
                     WeatherScrapData.OriginalScrapValues[PlanetName] = 0.4f;
                 }
-                WeatherScrapData.OriginalItemLists[PlanetName] = new List<SpawnableItemWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
-                CentralConfig.instance.mls.LogInfo("Saved Scrap data for: " + PlanetName);
+                CentralConfig.instance.mls.LogInfo("Saved Scrap count/value for: " + PlanetName);
             }
 
             if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
@@ -318,7 +293,6 @@ namespace CentralConfig
         public static Dictionary<string, int> OriginalMinScrap = new Dictionary<string, int>();
         public static Dictionary<string, int> OriginalMaxScrap = new Dictionary<string, int>();
         public static Dictionary<string, float> OriginalScrapValues = new Dictionary<string, float>();
-        public static Dictionary<string, List<SpawnableItemWithRarity>> OriginalItemLists = new Dictionary<string, List<SpawnableItemWithRarity>>();
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ResetMoonsScrapAfterWeather
@@ -326,13 +300,12 @@ namespace CentralConfig
         static void Prefix()
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName) && WeatherScrapData.OriginalItemLists.ContainsKey(PlanetName))
+            if (WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName))
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = WeatherScrapData.OriginalMinScrap[PlanetName];
                 LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = WeatherScrapData.OriginalMaxScrap[PlanetName];
                 WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[PlanetName] = WeatherScrapData.OriginalScrapValues[PlanetName];
-                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = WeatherScrapData.OriginalItemLists[PlanetName];
-                CentralConfig.instance.mls.LogInfo("Reverted Scrap data for: " + PlanetName);
+                CentralConfig.instance.mls.LogInfo("Reverted Scrap count/value for: " + PlanetName);
             }
         }
     }
