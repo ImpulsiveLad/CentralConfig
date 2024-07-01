@@ -12,6 +12,7 @@ using System;
 using Unity.Netcode;
 using System.Collections;
 using System.Reflection.Emit;
+using System.Data;
 
 namespace CentralConfig
 {
@@ -684,6 +685,9 @@ namespace CentralConfig
             var spikes = UnityEngine.Object.FindObjectsOfType<SpikeRoofTrap>();
 
             CentralConfig.instance.mls.LogInfo("Number of spike traps in the level: " + spikes.Length);
+
+            MoldSpreadManager moldManager = UnityEngine.Object.FindObjectOfType<MoldSpreadManager>();
+            CentralConfig.instance.mls.LogInfo("Generated Mold Count: " + moldManager.generatedMold.Count);
         }
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]

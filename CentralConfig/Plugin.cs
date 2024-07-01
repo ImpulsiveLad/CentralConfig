@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.8.6";
+        private const string modVersion = "0.8.8";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -125,6 +125,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoScrapWeatherInjections { get; private set; }
         [DataMember] public SyncedEntry<bool> DoEnemyInjectionsByDungeon { get; private set; }
         [DataMember] public SyncedEntry<bool> DoScrapInjectionsByDungeon { get; private set; }
+        [DataMember] public SyncedEntry<int> UnShrankDungenTries { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -199,6 +200,11 @@ namespace CentralConfig
                 "Enable Dungeon Generation Safeguards?",
                 true,
                 "If set to true, this refines the dungeon loading process to retry with various imput sizes.\nInstead of a hard-cap of 20 attempts, the dungeon will go through and attempt to generate with a different size until it succeeds.\nThis can only fail if the dungeon doesn't generate at any positive sizes.");
+
+            UnShrankDungenTries = cfg.BindSyncedEntry("_Dungeons_",
+                "Retries before Changing Size",
+                20,
+                "The number of attempts made by the dungeon to generate using its original input size multiplier before it begins to adjust the multiplier either upwards or downwards.\nPreviously, the size adjustment used to happen after just one failed attempt.");
 
             DoDunSizeOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Size Overrides?",
