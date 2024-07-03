@@ -163,7 +163,7 @@ namespace CentralConfig
                         DayTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Day Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons currently featuring this dungeon.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the day enemy list on any moons currently featuring this dungeon.");
 
                         DayEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Day Enemies",
@@ -173,7 +173,7 @@ namespace CentralConfig
                         NightTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Night Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons currently featuring this dungeon.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the night enemy list on any moons currently featuring this dungeon.");
 
                         NightEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Night Enemies",
@@ -355,7 +355,8 @@ namespace CentralConfig
             string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
             CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
 
-            __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = true;
+            __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
+            __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
             float NewMultiplier = __instance.currentLevel.factorySizeMultiplier / __instance.dungeonFlowTypes[DungeonID].MapTileSize * __instance.mapSizeMultiplier;
 
             if (CentralConfig.SyncConfig.DoDunSizeOverrides)
@@ -385,9 +386,9 @@ namespace CentralConfig
             NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
-            if (!CentralConfig.SyncConfig.UseNewGen)
+            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow")
             {
-                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
+                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, (or you are on the bunker), generating without them:");
                 __instance.dungeonGenerator.Generate();
                 return false;
             }
@@ -441,8 +442,8 @@ namespace CentralConfig
             {
                 return true;
             }
-            RoundManager.Instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - RetryCounter * 5;
-            // CentralConfig.instance.mls.LogInfo("Trying seed: " + RoundManager.Instance.dungeonGenerator.Generator.Seed);
+            // int Spunge = StartOfRound.Instance.randomMapSeed + 420 - RetryCounter * 5;
+            // CentralConfig.instance.mls.LogInfo("Trying seed: " + Spunge);
             if (RetryCounter >= CentralConfig.SyncConfig.UnShrankDungenTries)
             {
                 if (__instance.LengthMultiplier > 1)

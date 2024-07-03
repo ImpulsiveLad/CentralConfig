@@ -86,7 +86,7 @@ namespace CentralConfig
                         DayTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Day Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons currently experiencing this weather.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the day enemy list on any moons currently experiencing this weather.");
 
                         DayEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Day Enemies",
@@ -96,7 +96,7 @@ namespace CentralConfig
                         NightTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Night Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons currently experiencing this weather.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the night enemy list on any moons currently experiencing this weather.");
 
                         NightEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Night Enemies",

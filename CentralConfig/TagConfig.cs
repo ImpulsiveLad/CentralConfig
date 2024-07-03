@@ -78,7 +78,7 @@ namespace CentralConfig
                         DayTimeEnemyByTag[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
                             TagName + " - Add Day Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the daytime enemy list on any moons with this tag.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the day enemy list on any moons with this tag.");
 
                         DayEnemyReplacement[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
                             TagName + " - Replace Day Enemies",
@@ -88,7 +88,7 @@ namespace CentralConfig
                         NightTimeEnemyByTag[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
                             TagName + " - Add Night Enemies",
                             "Default Values Were Empty",
-                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the nighttime enemy list on any moons with this tag.");
+                            "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the night enemy list on any moons with this tag.");
 
                         NightEnemyReplacement[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
                             TagName + " - Replace Night Enemies",

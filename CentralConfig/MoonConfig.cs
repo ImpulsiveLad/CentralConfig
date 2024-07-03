@@ -13,6 +13,7 @@ using Unity.Netcode;
 using System.Collections;
 using System.Reflection.Emit;
 using System.Data;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CentralConfig
 {
@@ -433,17 +434,20 @@ namespace CentralConfig
                         VisibleOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Should The Moon Be Hidden?",
                             level.IsRouteHidden,
-                            "Set to true to hide the moon in the terminal.");
+                        "Set to true to hide the moon in the terminal.");
 
-                        LockedOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
-                            PlanetName + " - Should The Moon Be Locked?",
-                            level.IsRouteLocked,
-                            "Set to true to prevent visiting the moon.");
+                        if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
+                        {
+                            LockedOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                                PlanetName + " - Should The Moon Be Locked?",
+                                level.IsRouteLocked,
+                                "Set to true to prevent visiting the moon.");
+                        }
 
                         TimeOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
-                            PlanetName + " - Should The Moon Have Time?",
-                            level.SelectableLevel.planetHasTime,
-                            "Set to true to enable time progression. Set to false for no time progression.");
+                        PlanetName + " - Should The Moon Have Time?",
+                        level.SelectableLevel.planetHasTime,
+                        "Set to true to enable time progression. Set to false for no time progression.");
 
                         TimeMultiplierOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Day Speed Multiplier",
@@ -645,7 +649,10 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoDangerBools)
                 {
                     level.IsRouteHidden = WaitForMoonsToRegister.CreateMoonConfig.VisibleOverride[PlanetName];
-                    level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[PlanetName];
+                    if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
+                    {
+                        level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[PlanetName];
+                    }
                     level.SelectableLevel.planetHasTime = WaitForMoonsToRegister.CreateMoonConfig.TimeOverride[PlanetName];
                 }
 
