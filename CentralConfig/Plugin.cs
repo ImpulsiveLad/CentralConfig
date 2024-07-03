@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.8.9";
+        private const string modVersion = "0.9.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -71,6 +71,9 @@ namespace CentralConfig
             harmony.PatchAll(typeof(InnerGenerateWithRetries));
             harmony.PatchAll(typeof(MiscConfig));
             harmony.PatchAll(typeof(ChangeFineAmount));
+            harmony.PatchAll(typeof(IncreaseNodeDistanceOnShipAndMain));
+            harmony.PatchAll(typeof(IncreaseNodeDistanceOnFE));
+            harmony.PatchAll(typeof(ExtendScan));
             harmony.PatchAll(typeof(WaitForWeathersToRegister));
             harmony.PatchAll(typeof(FrApplyWeather));
             harmony.PatchAll(typeof(ResetMoonsScrapAfterWeather));
@@ -126,6 +129,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoEnemyInjectionsByDungeon { get; private set; }
         [DataMember] public SyncedEntry<bool> DoScrapInjectionsByDungeon { get; private set; }
         [DataMember] public SyncedEntry<int> UnShrankDungenTries { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoScanNodeOverrides { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -230,6 +234,11 @@ namespace CentralConfig
                 "Enable Fine Overrides?",
                 false,
                 "If set to true, allows you to set the fine for dead/missing players and the reduction on the fine for having brought the body back to the ship.");
+
+            DoScanNodeOverrides = cfg.BindSyncedEntry("~Misc~",
+                "Enable Scan Node Extensions?",
+                false,
+                "If set to true, allows you to set the min/max ranges for the scan nodes on the ship, main entrance, and fire exits (if you have ScannableFireExit installed).");
 
             BlacklistTags = cfg.BindSyncedEntry("_TagLists_",
                 "Blacklisted Tags",
