@@ -386,7 +386,7 @@ namespace CentralConfig
             NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow")
+            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation")
             {
                 CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, (or you are on the bunker), generating without them:");
                 __instance.dungeonGenerator.Generate();
@@ -412,20 +412,21 @@ namespace CentralConfig
                         __instance.dungeonGenerator.Generator.LengthMultiplier = 1f;
                     }
                     CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
+                    InnerGenerateWithRetries.Defaulted = true;
+                    __instance.dungeonGenerator.Generator.Cancel();
                     __instance.dungeonGenerator.Generate();
                     CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config using a safeguard dungeon.");
-                    InnerGenerateWithRetries.RetryCounter = 0;
-                    InnerGenerateWithRetries.TryBig = false;
-                    InnerGenerateWithRetries.GenFailed = false;
                 }
             }
-            if (!InnerGenerateWithRetries.GenFailed)
+            if (!InnerGenerateWithRetries.Defaulted)
             {
                 CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x");
-                InnerGenerateWithRetries.RetryCounter = 0;
-                InnerGenerateWithRetries.TryBig = false;
-                InnerGenerateWithRetries.GenFailed = false;
             }
+            InnerGenerateWithRetries.RetryCounter = 0;
+            InnerGenerateWithRetries.TryBig = false;
+            InnerGenerateWithRetries.GenFailed = false;
+            InnerGenerateWithRetries.Defaulted = false;
+
             return false;
         }
     }
@@ -436,9 +437,10 @@ namespace CentralConfig
         public static bool TryBig = false;
         public static bool GenFailed = false;
         public static float LengthMultiplier;
+        public static bool Defaulted = false;
         static bool Prefix(DungeonGenerator __instance, ref bool isRetry)
         {
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow")
+            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation" || Defaulted)
             {
                 return true;
             }
@@ -459,7 +461,7 @@ namespace CentralConfig
             }
             else
             {
-                CentralConfig.instance.mls.LogInfo("Retrying before reduction on attempt #" + (RetryCounter+1));
+                CentralConfig.instance.mls.LogInfo("Retrying before reduction on attempt #" + (RetryCounter + 1));
             }
             RetryCounter++;
 

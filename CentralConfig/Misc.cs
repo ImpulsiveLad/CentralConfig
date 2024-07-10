@@ -41,7 +41,7 @@ namespace CentralConfig
                         "This is the percentage of current credits that will be deducted for each fallen player.");
 
                     InsuranceReduction = cfg.BindSyncedEntry("~Misc~",
-                        "Penalty reduction for player revival",
+                        "Penalty reduction for player retrievalretrieval",
                         40f,
                         "This value determines the reduction in penalty if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
 
@@ -51,7 +51,7 @@ namespace CentralConfig
                         "This is the percentage of current credits that will be deducted for each fallen player on Gordion.");
 
                     CompanyInsuranceReduction = cfg.BindSyncedEntry("~Misc~",
-                        "Penalty reduction for player revival (on Gordion)",
+                        "Penalty reduction for player retrieval (on Gordion)",
                         0f,
                         "This value determines the reduction in penalty on Gordion if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
 
@@ -194,7 +194,7 @@ namespace CentralConfig
             if (IsDone || !CentralConfig.SyncConfig.DoScanNodeOverrides)
             {
                 return;
-            } 
+            }
 
             List<EntranceTeleport> entranceTeleports = Object.FindObjectsOfType<EntranceTeleport>().ToList();
             int numFireExits = (entranceTeleports.Count / 2) - 1;
@@ -249,21 +249,35 @@ namespace CentralConfig
 
             IncreaseNodeDistanceOnFE.fireExitScanProperties.Clear();
             IncreaseNodeDistanceOnFE.IsDone = false;
-            GameObject EntranceScanNode = GameObject.Find("Environment/ScanNodes/ScanNode");
-            ScanNodeProperties EntranceScanProperties = EntranceScanNode.GetComponent<ScanNodeProperties>();
-            EntranceScanProperties.minRange = MiscConfig.CreateMiscConfig.MEMinScan;
-            EntranceScanProperties.maxRange = MiscConfig.CreateMiscConfig.MEMaxScan;
-            EntranceScanProperties.requiresLineOfSight = false;
-            if (EntranceScanProperties.subText == "")
-            {
-                EntranceScanProperties.subText = "Start looting";
-            }
 
-            GameObject ShipScanNode = GameObject.Find("Environment/ScanNodes/ScanNode (1)");
-            ScanNodeProperties ShipScanProperties = ShipScanNode.GetComponent<ScanNodeProperties>();
-            ShipScanProperties.minRange = MiscConfig.CreateMiscConfig.ShipMinScan;
-            ShipScanProperties.maxRange = MiscConfig.CreateMiscConfig.ShipMaxScan;
-            ShipScanProperties.requiresLineOfSight = false;
+            List<string> subTexts = new List<string> { "Remember the quota…", "ALERT", "Go away…", "Dare to enter?", "Get that scrap!", "???", "Face the fear", "No one has left alive…", "Turn back…", "Why?", "Take heed…", "Watch your back…", "You should be afraid…"};
+            System.Random rand = new System.Random(StartOfRound.Instance.randomMapSeed + 42);
+            string randomSubText = subTexts[rand.Next(subTexts.Count)];
+
+            ScanNodeProperties[] allScanNodes = GameObject.FindObjectsOfType<ScanNodeProperties>();
+            foreach (ScanNodeProperties scanNode in allScanNodes)
+            {
+                if (scanNode.headerText.ToLower() == "main entrance" || scanNode.headerText.ToLower() == "mainentrance")
+                {
+                    scanNode.minRange = MiscConfig.CreateMiscConfig.MEMinScan;
+                    scanNode.maxRange = MiscConfig.CreateMiscConfig.MEMaxScan;
+                    scanNode.requiresLineOfSight = false;
+                    if (scanNode.subText == "")
+                    {
+                        scanNode.subText = randomSubText;
+                    }
+                }
+                else if (scanNode.headerText.ToLower() == "ship")
+                {
+                    scanNode.minRange = MiscConfig.CreateMiscConfig.ShipMinScan;
+                    scanNode.maxRange = MiscConfig.CreateMiscConfig.ShipMaxScan;
+                    scanNode.requiresLineOfSight = false;
+                    if (scanNode.subText == "")
+                    {
+                        scanNode.subText = "Home base";
+                    }
+                }
+            }
         }
     }
     [HarmonyPatch(typeof(HUDManager))]
