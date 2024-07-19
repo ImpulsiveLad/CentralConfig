@@ -8,6 +8,7 @@ using LethalLevelLoader;
 using System.Linq;
 using CSync.Extensions;
 using UnityEngine;
+using System.Threading;
 
 namespace CentralConfig
 {
@@ -19,6 +20,8 @@ namespace CentralConfig
         [DataContract]
         public class CreateTagConfig : ConfigTemplate
         {
+            public static ConfigFile _cfg;
+
             [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyByTag;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> InteriorEnemies;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyReplacement;
@@ -32,8 +35,12 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<string>> ScrapByTag;
             [DataMember] public static Dictionary<string, List<SpawnableItemWithRarity>> Scrap;
 
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> MatchingMoons;
+
             public CreateTagConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
+                _cfg = cfg;
+
                 InteriorEnemyByTag = new Dictionary<string, SyncedEntry<string>>();
                 InteriorEnemies = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
                 InteriorEnemyReplacement = new Dictionary<string, SyncedEntry<string>>();
@@ -46,6 +53,8 @@ namespace CentralConfig
 
                 ScrapByTag = new Dictionary<string, SyncedEntry<string>>();
                 Scrap = new Dictionary<string, List<SpawnableItemWithRarity>>();
+
+                MatchingMoons = new Dictionary<string, SyncedEntry<string>>();
 
                 List<ContentTag> AllContentTags;
                 List<ContentTag> allcontenttagslist = ConfigAider.GrabFullTagList();
@@ -103,6 +112,16 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "Scrap listed here in the ScrapName:rarity,ScrapName,rarity format will be added to the scrap list on any moons with this tag.");
                     }
+
+                    if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+                    {
+                        string MoonsWithTag = ConfigAider.GetMoonsWithTag(tag);
+
+                        MatchingMoons[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
+                            TagName + " - Moons With This Tag",
+                            MoonsWithTag,
+                            "The current default value of this represents which moons have this tag. CHANGING THIS SETTING DOESN'T CHANGE ANYTHING!");
+                    }
                 }
                 CentralConfig.instance.mls.LogInfo("Tag config has been registered.");
             }
@@ -118,8 +137,8 @@ namespace CentralConfig
     {
         static void Postfix()
         {
-            ApplyTagConfig applyConfig = new ApplyTagConfig();
-            applyConfig.UpdateTagData();
+            //ApplyTagConfig applyConfig = new ApplyTagConfig();
+            //applyConfig.UpdateTagData();
         }
     }
     public class ApplyTagConfig
@@ -167,6 +186,16 @@ namespace CentralConfig
                     Vector2 clampScrRarity = new Vector2(0, 99999);
                     List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                     WaitForTagsToRegister.CreateTagConfig.Scrap[TagName] = scraplist;
+                }
+
+                if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+                {
+                    string MoonsWithTag = ConfigAider.GetMoonsWithTag(tag);
+
+                    WaitForTagsToRegister.CreateTagConfig.MatchingMoons[TagName] = WaitForTagsToRegister.CreateTagConfig._cfg.BindSyncedEntry("Tag: " + TagName,
+                        TagName + " - Moons With This Tag",
+                        MoonsWithTag,
+                        "The current default value of this represents which moons have this tag. CHANGING THIS SETTING DOESN'T CHANGE ANYTHING!");
                 }
             }
             CentralConfig.instance.mls.LogInfo("Tag config Values Applied.");

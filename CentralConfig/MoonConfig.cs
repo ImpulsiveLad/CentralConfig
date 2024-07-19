@@ -13,7 +13,6 @@ using Unity.Netcode;
 using System.Collections;
 using System.Reflection.Emit;
 using System.Data;
-using static System.Collections.Specialized.BitVector32;
 
 namespace CentralConfig
 {
@@ -542,15 +541,24 @@ namespace CentralConfig
                 {
                     if (CentralConfig.SyncConfig.ScaleEnemySpawnRate)
                     {
-                        float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxEnemyPowerCount;
-                        level.SelectableLevel.enemySpawnChanceThroughoutDay = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
-                        float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
-                        level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
-                        float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxOutsideEnemyPowerCount;
-                        level.SelectableLevel.outsideEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
+                        if (level.SelectableLevel.maxEnemyPowerCount != 0)
+                        {
+                            float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxEnemyPowerCount;
+                            level.SelectableLevel.enemySpawnChanceThroughoutDay = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
+                        }
+                        if (level.SelectableLevel.maxDaytimeEnemyPowerCount != 0)
+                        {
+                            float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
+                            level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
+                        }
+                        if (level.SelectableLevel.maxOutsideEnemyPowerCount != 0)
+                        {
+                            float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxOutsideEnemyPowerCount;
+                            level.SelectableLevel.outsideEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
+                        }
                     }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
-                                                                                                                                                    // InteriorEnemyList
+                    // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[PlanetName];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
@@ -621,7 +629,7 @@ namespace CentralConfig
                     }
                 }
 
-                // Weather + Tags
+                // Weather
 
                 if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                 {
@@ -634,6 +642,9 @@ namespace CentralConfig
                     Ororo Ororo = new Ororo();
                     Ororo.SetSinglePlanetWeather(level);
                 }
+
+                // Tags
+
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
                 {
                     string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[PlanetName];
@@ -665,6 +676,8 @@ namespace CentralConfig
             }
             CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
             Ready = true;
+            //ApplyTagConfig applyConfig = new ApplyTagConfig();
+            //applyConfig.UpdateTagData();
         }
     }
     [HarmonyPatch(typeof(HangarShipDoor), "Start")]
@@ -737,14 +750,17 @@ namespace CentralConfig
             }
             StartOfRound startOfRound = StartOfRound.Instance;
             string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves.ContainsKey(currentMoon))
             {
-                if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
+                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
                 {
-                    return false;
+                    if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
+                    {
+                        return false;
+                    }
                 }
+                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
             }
-            __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
 
             float num = __instance.globalTime;
             __instance.globalTime = Mathf.Clamp(__instance.globalTime + Time.deltaTime * __instance.globalTimeSpeedMultiplier, 0f, __instance.globalTimeAtEndOfDay);

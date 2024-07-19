@@ -55,7 +55,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\LethalLevelLoader.dll</HintPath>
     </Reference>
-    <Reference Include="LethalLib">
+    <Reference Include="LethalLib, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\LethalLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />

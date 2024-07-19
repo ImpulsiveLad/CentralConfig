@@ -338,7 +338,7 @@ namespace CentralConfig
             return items.GroupBy(e => e.spawnableItem.itemName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
         }
 
-        // Weather + Tags
+        // Weather
 
         public static string ConvertWeatherArrayToString(RandomWeatherWithVariables[] randomWeatherArray)
         {
@@ -394,6 +394,8 @@ namespace CentralConfig
             return returnArray;
         }
 
+        // Tags
+
         public static string ConvertTagsToString(List<ContentTag> contentTags)
         {
             string returnString = string.Empty;
@@ -439,6 +441,35 @@ namespace CentralConfig
             }
             // CentralConfig.instance.mls.LogInfo(sb.ToString());
             return returnList;
+        }
+
+        public static string GetMoonsWithTag(ContentTag contentTag)
+        {
+            string returnString = string.Empty;
+
+            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+
+            foreach (ExtendedLevel level in allExtendedLevels)
+            {
+                string TagsOnMoon = ConvertTagsToString(level.ContentTags);
+
+                foreach (ContentTag tag in level.ContentTags)
+                {
+                    CentralConfig.instance.mls.LogInfo($"Level: {level.NumberlessPlanetName}, Tags: {tag.contentTagName.Trim()}");
+                }
+
+                if (TagsOnMoon.Contains(contentTag.contentTagName.Trim()))
+                {
+                    returnString += level.NumberlessPlanetName + DaComma;
+                }
+            }
+            if (returnString.EndsWith(","))
+                returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
+
+            if (string.IsNullOrEmpty(returnString))
+                returnString = "Default Values Were Empty";
+
+            return returnString;
         }
 
         // Misc String
