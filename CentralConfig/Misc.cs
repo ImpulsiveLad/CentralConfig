@@ -1,9 +1,11 @@
 ﻿using BepInEx.Configuration;
 using CSync.Extensions;
 using CSync.Lib;
+using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader;
 using LethalLevelLoader.Tools;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -250,7 +252,7 @@ namespace CentralConfig
             IncreaseNodeDistanceOnFE.fireExitScanProperties.Clear();
             IncreaseNodeDistanceOnFE.IsDone = false;
 
-            List<string> subTexts = new List<string> { "Remember the quota…", "ALERT", "Go away…", "Dare to enter?", "Get that scrap!", "???", "Face the fear", "No one has left alive…", "Turn back…", "Why?", "Take heed…", "Watch your back…", "You should be afraid…"};
+            List<string> subTexts = new List<string> { "Remember the quota…", "ALERT", "Go away…", "Dare to enter?", "Get that scrap!", "???", "Face the fear", "No one has left alive…", "Turn back…", "Why?", "Take heed…", "Watch your back…", "You should be afraid…" };
             System.Random rand = new System.Random(StartOfRound.Instance.randomMapSeed + 42);
             string randomSubText = subTexts[rand.Next(subTexts.Count)];
 
@@ -280,8 +282,7 @@ namespace CentralConfig
             }
         }
     }
-    [HarmonyPatch(typeof(HUDManager))]
-    [HarmonyPatch("AssignNewNodes")]
+    [HarmonyPatch(typeof(HUDManager), "AssignNewNodes")]
     public static class ExtendScan
     {
         public static float UltimateMax;
@@ -306,6 +307,97 @@ namespace CentralConfig
                     yield return instruction;
                 }
             }
+        }
+    }
+    [HarmonyPatch(typeof(EntranceTeleport), "TeleportPlayerServerRpc")]
+    public static class UpdateScanNodes
+    {
+        public static string WhereAreThey;
+        public static int EntranceScanMax;
+        public static int ShipScanMax;
+        public static int FEScanMax;
+        static void Postfix(EntranceTeleport __instance, int playerObj)
+        {
+            if (__instance.IsHost == false)
+            {
+                return;
+            }
+
+            __instance.StartCoroutine(PerformActionsWithDelay(__instance, playerObj));
+        }
+        static IEnumerator PerformActionsWithDelay(EntranceTeleport __instance, int playerObj)
+        {
+            yield return new WaitForSeconds(1);
+
+            StartOfRound startOfRound = Object.FindObjectOfType<StartOfRound>();
+            PlayerControllerB player = startOfRound.allPlayerScripts[playerObj];
+
+            PlayerScanNodeProperties scanNodeProperties = PlayerScanNodeProperties.playerScanNodeProperties[player];
+
+            ScanNodeProperties[] allScanNodes = GameObject.FindObjectsOfType<ScanNodeProperties>();
+
+            if (player.isInsideFactory)
+            {
+                WhereAreThey = "Inside";
+            }
+            else
+            {
+                WhereAreThey = "Outside";
+            }
+
+            foreach (ScanNodeProperties scanNode in allScanNodes)
+            {
+                if (scanNode.headerText.ToLower() == "main entrance" || scanNode.headerText.ToLower() == "mainentrance" || scanNode.headerText.ToLower().Contains("entrance"))
+                {
+                    scanNode.maxRange = player.isInsideFactory ? scanNodeProperties.MEMinScan : scanNodeProperties.MEMaxScan;
+                    EntranceScanMax = scanNode.maxRange;
+                }
+                else if (scanNode.headerText.ToLower() == "ship" || scanNode.headerText.ToLower().Contains("ship"))
+                {
+                    scanNode.maxRange = player.isInsideFactory ? scanNodeProperties.ShipMinScan : scanNodeProperties.ShipMaxScan;
+                    ShipScanMax = scanNode.maxRange;
+                }
+                else if (scanNode.headerText.ToLower() == "fire exit" || scanNode.headerText.ToLower().Contains("fire exit"))
+                {
+                    scanNode.maxRange = player.isInsideFactory ? scanNodeProperties.FEMinScan : scanNodeProperties.FEMaxScan;
+                    FEScanMax = scanNode.maxRange;
+                }
+            }
+            CentralConfig.instance.mls.LogInfo("Player: " + player.playerUsername + " is now " + WhereAreThey + ". Max Scan Ranges set to: " + EntranceScanMax + ", " + ShipScanMax + " and " + FEScanMax);
+        }
+        public class PlayerScanNodeProperties
+        {
+            public int MEMinScan = MiscConfig.CreateMiscConfig.MEMinScan;
+            public int MEMaxScan = MiscConfig.CreateMiscConfig.MEMaxScan;
+            public int ShipMinScan = MiscConfig.CreateMiscConfig.ShipMinScan;
+            public int ShipMaxScan = MiscConfig.CreateMiscConfig.ShipMaxScan;
+            public int FEMinScan = MiscConfig.CreateMiscConfig.FEMinScan;
+            public int FEMaxScan = MiscConfig.CreateMiscConfig.FEMaxScan;
+
+            public static Dictionary<PlayerControllerB, PlayerScanNodeProperties> playerScanNodeProperties = new Dictionary<PlayerControllerB, PlayerScanNodeProperties>();
+        }
+    }
+    [HarmonyPatch(typeof(PlayerControllerB), "Start")]
+    public static class AddPlayerToDict
+    {
+        static void Postfix(PlayerControllerB __instance)
+        {
+            if (!CentralConfig.SyncConfig.DoScanNodeOverrides)
+            {
+                return;
+            }
+            UpdateScanNodes.PlayerScanNodeProperties scanNodeProperties = new UpdateScanNodes.PlayerScanNodeProperties
+            {
+                MEMinScan = MiscConfig.CreateMiscConfig.MEMinScan,
+                MEMaxScan = MiscConfig.CreateMiscConfig.MEMaxScan,
+                ShipMinScan = MiscConfig.CreateMiscConfig.ShipMinScan,
+                ShipMaxScan = MiscConfig.CreateMiscConfig.ShipMaxScan,
+                FEMinScan = MiscConfig.CreateMiscConfig.FEMinScan,
+                FEMaxScan = MiscConfig.CreateMiscConfig.FEMaxScan
+                
+            };
+
+            UpdateScanNodes.PlayerScanNodeProperties.playerScanNodeProperties[__instance] = scanNodeProperties;
         }
     }
 }

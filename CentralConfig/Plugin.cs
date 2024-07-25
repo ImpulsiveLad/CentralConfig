@@ -74,6 +74,8 @@ namespace CentralConfig
             harmony.PatchAll(typeof(IncreaseNodeDistanceOnShipAndMain));
             harmony.PatchAll(typeof(IncreaseNodeDistanceOnFE));
             harmony.PatchAll(typeof(ExtendScan));
+            harmony.PatchAll(typeof(UpdateScanNodes));
+            harmony.PatchAll(typeof(AddPlayerToDict));
             harmony.PatchAll(typeof(WaitForWeathersToRegister));
             harmony.PatchAll(typeof(FrApplyWeather));
             harmony.PatchAll(typeof(ResetMoonsScrapAfterWeather));
@@ -130,6 +132,9 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoScrapInjectionsByDungeon { get; private set; }
         [DataMember] public SyncedEntry<int> UnShrankDungenTries { get; private set; }
         [DataMember] public SyncedEntry<bool> DoScanNodeOverrides { get; private set; }
+        [DataMember] public SyncedEntry<bool> KeepSmallerDupes { get; private set; }
+        [DataMember] public SyncedEntry<bool> AlwaysKeepZeros { get; private set; }
+        [DataMember] public SyncedEntry<bool> BigEnemyList {  get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -160,12 +165,17 @@ namespace CentralConfig
                 false,
                 "If set to true, allows altering of the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).");
 
-            FreeEnemies = cfg.BindSyncedEntry("_Moons_",
+            BigEnemyList = cfg.BindSyncedEntry("_Moons_",
+                "Big Enemy Lists?",
+                false,
+                "If set to true, you will be able to set the enemy lists for every moon with just three strings. This is helpful if you want to copy-paste from a spreadsheet.\nIf you set enemy lists per moon with the setting above, they will contribute to the default value but be overridden by the big lists given the specific moon is found in the big list string.");
+
+            FreeEnemies = cfg.BindSyncedEntry("_Enemies_",
                 "Free Them?",
                 false,
                 "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be hourly instead of every other hour.");
 
-            ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Moons_",
+            ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Enemies_",
                 "Scale Enemy Spawn Rate?",
                 false,
                 "When enabled, this setting adjusts the enemy spawn rate to match the new enemy powers. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default max power of 4 for interior enemies. If you set this to 6, interior enemies will spawn ~1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
@@ -242,12 +252,12 @@ namespace CentralConfig
 
             BlacklistTags = cfg.BindSyncedEntry("_TagLists_",
                 "Blacklisted Tags",
-                "",
+                "vanilla,custom,free,paid,argon,canyon,company,forest,marsh,military,ocean,rocky,tundra,valley,wasteland,volcanic,rosiedev,sfdesat,starlancermoons,tolian",
                 "Excludes the listed tags from the config. If they are already created, they will be removed on config regeneration.");
 
             IsTagWhiteList = cfg.BindSyncedEntry("_TagLists_",
                 "Is Tag Blacklist a Whitelist?",
-                false,
+                true,
                 "If set to true, only the tags listed above will be generated.");
 
             DoEnemyTagInjections = cfg.BindSyncedEntry("_Tags_",
@@ -264,6 +274,16 @@ namespace CentralConfig
                 "Remove Duplicate Enemies?",
                 false,
                 "If set to true, after enemy spawn lists are updated by various means, any time there are 2 or more of the same enemy, only the entry for the enemy with the highest rarity will be kept.\nThis means that if 4 sources add the bracken at various rarities, only the highest value is kept. (In \"Flowerman:5,Flowerman:75,Flowerman:66,Flowerman:73\" The bracken will only be added once with a rarity of 75.)");
+
+            KeepSmallerDupes = cfg.BindSyncedEntry("_Enemies_",
+                "Keep Smallest Rarity?",
+                false,
+                "If this and Remove Duplicates is set to true, the lowest rarity of a given enemy with be kept instead of its highest rarity.");
+
+            AlwaysKeepZeros = cfg.BindSyncedEntry("_Enemies_",
+                "Always Keep Zeros?",
+                false,
+                "If this and Remove Duplicates is set to true, any enemies with that have an entry of 0 rarity will be kept regardless. This allows you to blacklist enemies from specific weathers/tags/dungeons by putting EnemyName:0 under the setting.");
 
             BlacklistWeathers = cfg.BindSyncedEntry("_WeatherLists_",
                 "Blacklisted Weathers",

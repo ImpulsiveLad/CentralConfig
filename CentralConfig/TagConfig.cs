@@ -8,7 +8,6 @@ using LethalLevelLoader;
 using System.Linq;
 using CSync.Extensions;
 using UnityEngine;
-using System.Threading;
 
 namespace CentralConfig
 {
@@ -62,15 +61,15 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.IsTagWhiteList)
                 {
-                    AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => tag.contentTagName.Equals(b))).ToList();
+                    AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
                 }
                 else
                 {
-                    AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => tag.contentTagName.Equals(b))).ToList();
+                    AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
                 }
                 foreach (ContentTag tag in AllContentTags)
                 {
-                    string TagName = tag.contentTagName.Trim();
+                    string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
                     if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                     {
@@ -112,16 +111,6 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "Scrap listed here in the ScrapName:rarity,ScrapName,rarity format will be added to the scrap list on any moons with this tag.");
                     }
-
-                    if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
-                    {
-                        string MoonsWithTag = ConfigAider.GetMoonsWithTag(tag);
-
-                        MatchingMoons[TagName] = cfg.BindSyncedEntry("Tag: " + TagName,
-                            TagName + " - Moons With This Tag",
-                            MoonsWithTag,
-                            "The current default value of this represents which moons have this tag. CHANGING THIS SETTING DOESN'T CHANGE ANYTHING!");
-                    }
                 }
                 CentralConfig.instance.mls.LogInfo("Tag config has been registered.");
             }
@@ -137,8 +126,8 @@ namespace CentralConfig
     {
         static void Postfix()
         {
-            //ApplyTagConfig applyConfig = new ApplyTagConfig();
-            //applyConfig.UpdateTagData();
+            ApplyTagConfig applyConfig = new ApplyTagConfig();
+            applyConfig.UpdateTagData();
         }
     }
     public class ApplyTagConfig
@@ -152,15 +141,15 @@ namespace CentralConfig
 
             if (CentralConfig.SyncConfig.IsTagWhiteList)
             {
-                AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => tag.contentTagName.Equals(b))).ToList();
+                AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
             }
             else
             {
-                AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => tag.contentTagName.Equals(b))).ToList();
+                AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
             }
             foreach (ContentTag tag in AllContentTags)
             {
-                string TagName = tag.contentTagName.Trim();
+                string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                 {
@@ -211,7 +200,7 @@ namespace CentralConfig
             List<ContentTag> ThisLevelTags = LevelManager.CurrentExtendedLevel.ContentTags;
             foreach (ContentTag tag in ThisLevelTags)
             {
-                string TagName = tag.contentTagName.Trim();
+                string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                 {
@@ -251,5 +240,3 @@ namespace CentralConfig
         }
     }
 }
-
-

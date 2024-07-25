@@ -236,6 +236,11 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoDungeonSelectionOverrides)
                 {
+                    dungeon.LevelMatchingProperties.planetNames.Clear();
+                    dungeon.LevelMatchingProperties.levelTags.Clear();
+                    dungeon.LevelMatchingProperties.modNames.Clear();
+                    dungeon.LevelMatchingProperties.currentRoutePrice.Clear();
+
                     // PlanetName
                     string PlanetNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonPlanetNameList[DungeonName];
                     Vector2 planetNameRarity = new Vector2(0, 99999);
@@ -386,7 +391,7 @@ namespace CentralConfig
             NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation")
+            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation")
             {
                 CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, (or you are on the bunker), generating without them:");
                 __instance.dungeonGenerator.Generate();
@@ -440,7 +445,7 @@ namespace CentralConfig
         public static bool Defaulted = false;
         static bool Prefix(DungeonGenerator __instance, ref bool isRetry)
         {
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation" || Defaulted)
+            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation" || Defaulted)
             {
                 return true;
             }
@@ -548,9 +553,9 @@ namespace CentralConfig
             CentralConfig.instance.mls.LogInfo("Dungeon Enemy/Scrap Injections Enacted.");
             if (CentralConfig.SyncConfig.RemoveDuplicateEnemies)
             {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveLowerRarityDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
                 CentralConfig.instance.mls.LogInfo("Duplicate Enemies Removed.");
             }
         }

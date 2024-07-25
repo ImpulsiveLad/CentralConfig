@@ -165,6 +165,8 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
+            spawnableEnemiesList.Sort((x, y) => string.Compare(x.enemyType.enemyName, y.enemyType.enemyName));
+
             foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in spawnableEnemiesList)
             {
                 if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
@@ -216,9 +218,34 @@ namespace CentralConfig
 
             return returnList;
         }
-        public static List<SpawnableEnemyWithRarity> RemoveLowerRarityDuplicateEnemies(List<SpawnableEnemyWithRarity> enemies)
+        public static List<SpawnableEnemyWithRarity> RemoveDuplicateEnemies(List<SpawnableEnemyWithRarity> enemies)
         {
-            return enemies.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
+            var result = new List<SpawnableEnemyWithRarity>();
+
+            if (CentralConfig.SyncConfig.AlwaysKeepZeros)
+            {
+                var groupedEnemies = enemies.GroupBy(e => e.enemyType.enemyName);
+                foreach (var group in groupedEnemies)
+                {
+                    if (group.Any(e => e.rarity == 0))
+                    {
+                        result.Add(group.First(e => e.rarity == 0));
+                    }
+                    else
+                    {
+                        result.AddRange(group);
+                    }
+                }
+            }
+
+            if (!CentralConfig.SyncConfig.KeepSmallerDupes)
+            {
+                return result.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
+            }
+            else
+            {
+                return result.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).Last()).ToList();
+            }
         }
         public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig) // takes in the original enemy list and the config for replacing enemies
         {
@@ -277,12 +304,114 @@ namespace CentralConfig
             }
             return null;
         }
+        public static string GetBigList(int Type)
+        {
+            string returnString = string.Empty;
+
+            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+
+            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
+
+            foreach (ExtendedLevel level in allExtendedLevels)
+            {
+                if (level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation")
+                {
+                    if (Type == 0)
+                    {
+                        string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.Enemies);
+
+                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                    }
+                    else if (Type == 1)
+                    {
+                        string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.DaytimeEnemies);
+
+                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                    }
+                    else if (Type == 2)
+                    {
+                        string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.OutsideEnemies);
+
+                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                    }
+                }
+            }
+            if (returnString.Contains("~") && returnString.LastIndexOf("~") == (returnString.Length - 1))
+                returnString = returnString.Remove(returnString.LastIndexOf("~"), 1);
+
+            if (returnString == string.Empty)
+                returnString = "Default Values Were Empty";
+
+            return returnString;
+        }
+        public static void SetBigList(int Type, string BigString)
+        {
+            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+
+            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
+
+            foreach (ExtendedLevel level in allExtendedLevels)
+            {
+                if (level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation")
+                {
+                    string levelName = level.NumberlessPlanetName + "-";
+                    int startIndex = BigString.IndexOf(levelName);
+
+                    if (startIndex != -1)
+                    {
+                        int endIndex = BigString.IndexOf("~", startIndex);
+                        if (endIndex == -1)
+                        {
+                            endIndex = BigString.Length;
+                        }
+
+                        string ClippedString = BigString.Substring(startIndex + levelName.Length, endIndex - startIndex - levelName.Length);
+
+                        // CentralConfig.instance.mls.LogInfo(level.NumberlessPlanetName + " returns a type " + Type + " list of: " + ClippedString);
+
+                        if (Type == 0 && ClippedString != "Default Values Were Empty" && ClippedString != "")
+                        {
+                            Vector2 clamprarity = new Vector2(0, 99999);
+                            List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
+                            if (EnemyList.Count > 0)
+                            {
+                                level.SelectableLevel.DaytimeEnemies = EnemyList;
+                            }
+                        }
+                        else if (Type == 1 && ClippedString != "Default Values Were Empty" && ClippedString != "")
+                        {
+                            Vector2 clamprarity = new Vector2(0, 99999);
+                            List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
+                            if (EnemyList.Count > 0)
+                            {
+                                level.SelectableLevel.DaytimeEnemies = EnemyList;
+                            }
+                        }
+                        else if (Type == 2 && ClippedString != "Default Values Were Empty" && ClippedString != "")
+                        {
+                            Vector2 clamprarity = new Vector2(0, 99999);
+                            List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
+                            if (EnemyList.Count > 0)
+                            {
+                                level.SelectableLevel.DaytimeEnemies = EnemyList;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
+                    }
+                }
+            }
+        }
 
         // Scrap
 
         public static string ConvertItemListToString(List<SpawnableItemWithRarity> spawnableItemsList)
         {
             string returnString = string.Empty;
+
+            spawnableItemsList.Sort((x, y) => string.Compare(x.spawnableItem.itemName, y.spawnableItem.itemName));
 
             foreach (SpawnableItemWithRarity spawnableItemWithRarity in spawnableItemsList)
             {
@@ -400,8 +529,10 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
+            contentTags.Sort((x, y) => string.Compare(x.contentTagName, y.contentTagName));
+
             foreach (ContentTag contentTag in contentTags)
-                returnString += contentTag.contentTagName + DaComma;
+                returnString += CauterizeString(contentTag.contentTagName) + DaComma;
 
             if (returnString.EndsWith(","))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
@@ -445,22 +576,21 @@ namespace CentralConfig
 
         public static string GetMoonsWithTag(ContentTag contentTag)
         {
+            int TagNumber = 0;
             string returnString = string.Empty;
 
             List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+
+            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
 
             foreach (ExtendedLevel level in allExtendedLevels)
             {
                 string TagsOnMoon = ConvertTagsToString(level.ContentTags);
 
-                foreach (ContentTag tag in level.ContentTags)
-                {
-                    CentralConfig.instance.mls.LogInfo($"Level: {level.NumberlessPlanetName}, Tags: {tag.contentTagName.Trim()}");
-                }
-
-                if (TagsOnMoon.Contains(contentTag.contentTagName.Trim()))
+                if (TagsOnMoon.Contains(CauterizeString(contentTag.contentTagName)))
                 {
                     returnString += level.NumberlessPlanetName + DaComma;
+                    TagNumber++;
                 }
             }
             if (returnString.EndsWith(","))
@@ -468,6 +598,8 @@ namespace CentralConfig
 
             if (string.IsNullOrEmpty(returnString))
                 returnString = "Default Values Were Empty";
+
+            // CentralConfig.instance.mls.LogInfo("Tag:" + CauterizeString(contentTag.contentTagName) + " has " + TagNumber + " moons associated with it.");
 
             return returnString;
         }
@@ -477,6 +609,8 @@ namespace CentralConfig
         public static string ConvertStringWithRarityToString(List<StringWithRarity> names)
         {
             string returnString = string.Empty;
+
+            names.Sort((x, y) => string.Compare(x.Name, y.Name));
 
             foreach (StringWithRarity name in names)
             {

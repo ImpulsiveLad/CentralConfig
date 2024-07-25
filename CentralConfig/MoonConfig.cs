@@ -29,6 +29,7 @@ namespace CentralConfig
         [DataContract]
         public class CreateMoonConfig : ConfigTemplate
         {
+            public static ConfigFile _cfg;
             // Declare config entries tied to the dictionary
 
             [DataMember] public static Dictionary<string, SyncedEntry<int>> RoutePriceOverride;
@@ -66,8 +67,13 @@ namespace CentralConfig
 
             public static Dictionary<string, float> MoonsNewScrapMultiplier = new Dictionary<string, float>();
 
+            [DataMember] public static SyncedEntry<string> BigInteriorList { get; set; }
+            [DataMember] public static SyncedEntry<string> BigDayTimeList { get; set; }
+            [DataMember] public static SyncedEntry<string> BigNightTimeList { get; set; }
+
             public CreateMoonConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
+                _cfg = cfg;
                 // Intialize config entries tied to the dictionary
 
                 RoutePriceOverride = new Dictionary<string, SyncedEntry<int>>();
@@ -405,7 +411,7 @@ namespace CentralConfig
                         }
                     }
 
-                    // Weather + Tags
+                    // Weather
 
                     if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                     {
@@ -416,6 +422,9 @@ namespace CentralConfig
                             PossibleWeatherArray,
                             "Sets the possible weathers that can occur on the moon");
                     }
+
+                    // Tags
+
                     if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
                     {
                         string ContentTags = ConfigAider.ConvertTagsToString(level.ContentTags);
@@ -450,8 +459,8 @@ namespace CentralConfig
 
                         TimeMultiplierOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Day Speed Multiplier",
-                            level.SelectableLevel.DaySpeedMultiplier,
-                            "Adjusts the speed of day progression. For example, 2 means 2x faster.");
+                            1.4f,
+                            "Adjusts the speed of day progression. For example, 2.8 will be twice as fast as vanilla.");
 
                         WatiForShipToLandBeforeTimeMoves[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Should Time Wait on the Ship?",
@@ -674,10 +683,33 @@ namespace CentralConfig
                     level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[PlanetName];
                 }
             }
+            if (CentralConfig.SyncConfig.BigEnemyList)
+            {
+                string BigInteriorList = ConfigAider.GetBigList(0);
+                string BigDayTimeList = ConfigAider.GetBigList(1);
+                string BigNightTimeList = ConfigAider.GetBigList(2);
+
+                WaitForMoonsToRegister.CreateMoonConfig.BigInteriorList = WaitForMoonsToRegister.CreateMoonConfig._cfg.BindSyncedEntry("~Big Lists~",
+                    "Big Interior List",
+                    BigInteriorList,
+                    "Sets the Interior Enemy Lists for every moon.");
+
+                WaitForMoonsToRegister.CreateMoonConfig.BigDayTimeList = WaitForMoonsToRegister.CreateMoonConfig._cfg.BindSyncedEntry("~Big Lists~",
+                    "Big Day List",
+                    BigDayTimeList,
+                    "Sets the Day Enemy Lists for every moon.");
+
+                WaitForMoonsToRegister.CreateMoonConfig.BigNightTimeList = WaitForMoonsToRegister.CreateMoonConfig._cfg.BindSyncedEntry("~Big Lists~",
+                    "Big Night List",
+                    BigNightTimeList,
+                    "Sets the Night Enemy Lists for every moon.");
+
+                ConfigAider.SetBigList(0, WaitForMoonsToRegister.CreateMoonConfig.BigInteriorList);
+                ConfigAider.SetBigList(1, WaitForMoonsToRegister.CreateMoonConfig.BigDayTimeList);
+                ConfigAider.SetBigList(2, WaitForMoonsToRegister.CreateMoonConfig.BigNightTimeList);
+            }
             CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
             Ready = true;
-            //ApplyTagConfig applyConfig = new ApplyTagConfig();
-            //applyConfig.UpdateTagData();
         }
     }
     [HarmonyPatch(typeof(HangarShipDoor), "Start")]
