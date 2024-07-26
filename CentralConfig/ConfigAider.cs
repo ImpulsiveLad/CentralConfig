@@ -367,7 +367,7 @@ namespace CentralConfig
 
                         string ClippedString = BigString.Substring(startIndex + levelName.Length, endIndex - startIndex - levelName.Length);
 
-                        // CentralConfig.instance.mls.LogInfo(level.NumberlessPlanetName + " returns a type " + Type + " list of: " + ClippedString);
+                         CentralConfig.instance.mls.LogInfo(level.NumberlessPlanetName + " returns a type " + Type + " list of: " + ClippedString);
 
                         if (Type == 0 && ClippedString != "Default Values Were Empty" && ClippedString != "")
                         {
@@ -375,7 +375,7 @@ namespace CentralConfig
                             List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
                             if (EnemyList.Count > 0)
                             {
-                                level.SelectableLevel.DaytimeEnemies = EnemyList;
+                                level.SelectableLevel.Enemies = EnemyList;
                             }
                         }
                         else if (Type == 1 && ClippedString != "Default Values Were Empty" && ClippedString != "")
@@ -393,13 +393,13 @@ namespace CentralConfig
                             List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
                             if (EnemyList.Count > 0)
                             {
-                                level.SelectableLevel.DaytimeEnemies = EnemyList;
+                                level.SelectableLevel.OutsideEnemies = EnemyList;
                             }
                         }
                     }
                     else
                     {
-                        // CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
+                         CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
                     }
                 }
             }

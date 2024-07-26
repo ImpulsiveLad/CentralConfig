@@ -318,7 +318,7 @@ namespace CentralConfig
         public static int FEScanMax;
         static void Postfix(EntranceTeleport __instance, int playerObj)
         {
-            if (__instance.IsHost == false)
+            if (!__instance.IsHost || !CentralConfig.SyncConfig.DoScanNodeOverrides)
             {
                 return;
             }
