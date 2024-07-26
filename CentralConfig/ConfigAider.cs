@@ -237,6 +237,14 @@ namespace CentralConfig
                     }
                 }
             }
+            else
+            {
+                var groupedEnemies = enemies.GroupBy(e => e.enemyType.enemyName);
+                foreach (var group in groupedEnemies)
+                {
+                    result.AddRange(group);
+                }
+            }
 
             if (!CentralConfig.SyncConfig.KeepSmallerDupes)
             {
@@ -367,7 +375,7 @@ namespace CentralConfig
 
                         string ClippedString = BigString.Substring(startIndex + levelName.Length, endIndex - startIndex - levelName.Length);
 
-                         CentralConfig.instance.mls.LogInfo(level.NumberlessPlanetName + " returns a type " + Type + " list of: " + ClippedString);
+                        // CentralConfig.instance.mls.LogInfo(level.NumberlessPlanetName + " returns a type " + Type + " list of: " + ClippedString);
 
                         if (Type == 0 && ClippedString != "Default Values Were Empty" && ClippedString != "")
                         {
@@ -399,7 +407,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                         CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
+                        // CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
                     }
                 }
             }
