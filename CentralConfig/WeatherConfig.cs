@@ -57,6 +57,7 @@ namespace CentralConfig
                 List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList();
                 AllWeatherTypes.Add("Windy");
                 AllWeatherTypes.Add("Meteor Shower");
+                AllWeatherTypes.Add("Heatwave");
                 string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
 
                 if (CentralConfig.SyncConfig.IsWeatherWhiteList)
@@ -148,6 +149,7 @@ namespace CentralConfig
             List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList();
             AllWeatherTypes.Add("Windy");
             AllWeatherTypes.Add("Meteor Shower");
+            AllWeatherTypes.Add("Heatwave");
             string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
 
             if (CentralConfig.SyncConfig.IsWeatherWhiteList)

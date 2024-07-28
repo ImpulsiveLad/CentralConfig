@@ -165,9 +165,9 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
-            spawnableEnemiesList.Sort((x, y) => string.Compare(x.enemyType.enemyName, y.enemyType.enemyName));
+            var sortedEnemiesList = spawnableEnemiesList.OrderBy(spawnableEnemyWithRarity => spawnableEnemyWithRarity.enemyType.enemyName).ToList();
 
-            foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in spawnableEnemiesList)
+            foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in sortedEnemiesList)
             {
                 if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
                 {
@@ -318,9 +318,9 @@ namespace CentralConfig
 
             List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
 
-            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
+            var sortedExtendedLevels = allExtendedLevels.OrderBy(level => level.NumberlessPlanetName).ToList();
 
-            foreach (ExtendedLevel level in allExtendedLevels)
+            foreach (ExtendedLevel level in sortedExtendedLevels)
             {
                 if (level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation")
                 {
@@ -356,9 +356,9 @@ namespace CentralConfig
         {
             List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
 
-            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
+            var sortedExtendedLevels = allExtendedLevels.OrderBy(level => level.NumberlessPlanetName).ToList();
 
-            foreach (ExtendedLevel level in allExtendedLevels)
+            foreach (ExtendedLevel level in sortedExtendedLevels)
             {
                 if (level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation")
                 {
@@ -410,6 +410,7 @@ namespace CentralConfig
                         // CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
                     }
                 }
+                CentralConfig.instance.mls.LogInfo(level.SelectableLevel.levelID + " is linked to " + level.NumberlessPlanetName);
             }
         }
 
@@ -419,9 +420,9 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
-            spawnableItemsList.Sort((x, y) => string.Compare(x.spawnableItem.itemName, y.spawnableItem.itemName));
+            var sortedItemsList = spawnableItemsList.OrderBy(spawnableItemWithRarity => spawnableItemWithRarity.spawnableItem.itemName).ToList();
 
-            foreach (SpawnableItemWithRarity spawnableItemWithRarity in spawnableItemsList)
+            foreach (SpawnableItemWithRarity spawnableItemWithRarity in sortedItemsList)
             {
                 if (spawnableItemWithRarity.rarity > 0)
                 {
@@ -537,9 +538,9 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
-            contentTags.Sort((x, y) => string.Compare(x.contentTagName, y.contentTagName));
+            var sortedTagList = contentTags.OrderBy(contentTag => contentTag.contentTagName).ToList();
 
-            foreach (ContentTag contentTag in contentTags)
+            foreach (ContentTag contentTag in sortedTagList)
                 returnString += CauterizeString(contentTag.contentTagName) + DaComma;
 
             if (returnString.EndsWith(","))
@@ -589,9 +590,9 @@ namespace CentralConfig
 
             List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
 
-            allExtendedLevels.Sort((x, y) => string.Compare(x.NumberlessPlanetName, y.NumberlessPlanetName));
+            var sortedExtendedLevels = allExtendedLevels.OrderBy(level => level.NumberlessPlanetName).ToList();
 
-            foreach (ExtendedLevel level in allExtendedLevels)
+            foreach (ExtendedLevel level in sortedExtendedLevels)
             {
                 string TagsOnMoon = ConvertTagsToString(level.ContentTags);
 
@@ -618,9 +619,9 @@ namespace CentralConfig
         {
             string returnString = string.Empty;
 
-            names.Sort((x, y) => string.Compare(x.Name, y.Name));
+            var sortednames = names.OrderBy(name => name.Name).ToList();
 
-            foreach (StringWithRarity name in names)
+            foreach (StringWithRarity name in sortednames)
             {
                 if (name.Rarity > 0)
                 {
