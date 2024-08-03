@@ -486,7 +486,14 @@ namespace CentralConfig
         {
             if (StartOfRound.Instance.randomMapSeed == 0 && NetworkManager.Singleton.IsHost)
             {
-                StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
+                if (CentralConfig.SyncConfig.RandomSeed == 0)
+                {
+                    StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
+                }
+                else
+                {
+                    StartOfRound.Instance.randomMapSeed = CentralConfig.SyncConfig.RandomSeed;
+                }
                 CentralConfig.instance.mls.LogInfo("Starting Seed " + StartOfRound.Instance.randomMapSeed);
             }
             CentralConfig.ConfigFile = new CreateMoonConfig(CentralConfig.instance.Config); // Moon config is created when you join a lobby (So every other config is already applied)
@@ -553,17 +560,38 @@ namespace CentralConfig
                         if (level.SelectableLevel.maxEnemyPowerCount != 0)
                         {
                             float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxEnemyPowerCount;
-                            level.SelectableLevel.enemySpawnChanceThroughoutDay = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
+                            if (Intmultiplier != 1)
+                            {
+                                AnimationCurve IntCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
+                                if (IntCurve != null)
+                                {
+                                    level.SelectableLevel.enemySpawnChanceThroughoutDay = IntCurve;
+                                }
+                            }
                         }
                         if (level.SelectableLevel.maxDaytimeEnemyPowerCount != 0)
                         {
                             float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
-                            level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
+                            if (Daymultiplier != 1)
+                            {
+                                AnimationCurve DayCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
+                                if (DayCurve != null)
+                                {
+                                    level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = DayCurve;
+                                }
+                            }
                         }
                         if (level.SelectableLevel.maxOutsideEnemyPowerCount != 0)
                         {
                             float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxOutsideEnemyPowerCount;
-                            level.SelectableLevel.outsideEnemySpawnChanceThroughDay = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
+                            if (Noxmultiplier != 1)
+                            {
+                                AnimationCurve NoxCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
+                                if (NoxCurve != null)
+                                {
+                                    level.SelectableLevel.outsideEnemySpawnChanceThroughDay = NoxCurve;
+                                }
+                            }
                         }
                     }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))

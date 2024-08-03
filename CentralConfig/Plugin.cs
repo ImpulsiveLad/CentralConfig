@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.9.8";
+        private const string modVersion = "0.10.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -134,7 +134,9 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoScanNodeOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> KeepSmallerDupes { get; private set; }
         [DataMember] public SyncedEntry<bool> AlwaysKeepZeros { get; private set; }
-        [DataMember] public SyncedEntry<bool> BigEnemyList {  get; private set; }
+        [DataMember] public SyncedEntry<bool> BigEnemyList { get; private set; }
+        [DataMember] public SyncedEntry<int> RandomSeed { get; private set; }
+        [DataMember] public SyncedEntry<bool> KeepOrphans { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -239,6 +241,16 @@ namespace CentralConfig
                 "Enable Scrap Injection by Current Dungeon?",
                 false,
                 "If set to true, allows adding scrap to levels based on matching tags.");
+
+            KeepOrphans = cfg.BindSyncedEntry("~Misc~",
+                "Keep Orphaned Entries?",
+                false,
+                "If set to true, the config will not 'clean' itself after processing, this will result in a more crowded/messy config but will prevent unloaded entries from being removed.");
+
+            RandomSeed = cfg.BindSyncedEntry("~Misc~",
+                "Starting Random Seed",
+                0,
+                "Leave at 0 to have it be random. The seed will be updated daily regardless of this setting.");
 
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",

@@ -26,6 +26,7 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<float>> MinDungeonSize;
             [DataMember] public static Dictionary<string, SyncedEntry<float>> MaxDungeonSize;
             [DataMember] public static Dictionary<string, SyncedEntry<float>> DungeonSizeScaler;
+            [DataMember] public static Dictionary<string, SyncedEntry<float>> MapTileSize;
 
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonPlanetNameList;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonTagList;
@@ -52,6 +53,7 @@ namespace CentralConfig
                 MinDungeonSize = new Dictionary<string, SyncedEntry<float>>();
                 MaxDungeonSize = new Dictionary<string, SyncedEntry<float>>();
                 DungeonSizeScaler = new Dictionary<string, SyncedEntry<float>>();
+                MapTileSize = new Dictionary<string, SyncedEntry<float>>();
 
                 DungeonPlanetNameList = new Dictionary<string, SyncedEntry<string>>();
                 DungeonTagList = new Dictionary<string, SyncedEntry<string>>();
@@ -89,7 +91,7 @@ namespace CentralConfig
                     string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
 
                     // CentralConfig.instance.mls.LogInfo(dungeon.DungeonName);
-                    if (dungeon.DungeonName == "Facility")
+                    if (DungeonName == "Facility (1)")
                     {
                         DefaultFacility = dungeon;
                         CentralConfig.instance.mls.LogInfo("Saved Default dungeon" + DefaultFacility.DungeonName);
@@ -99,20 +101,51 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoDunSizeOverrides)
                     {
+                        float MinSize;
+                        float MaxSize;
+
+                        if (dungeon.DynamicDungeonSizeMinMax.x <= 0)
+                        {
+                            MinSize = 1;
+                        }
+                        else
+                        {
+                            MinSize = dungeon.DynamicDungeonSizeMinMax.x;
+                        }
+                        if (dungeon.DynamicDungeonSizeMinMax.y <= 0)
+                        {
+                            MaxSize = 2;
+                        }
+                        else
+                        {
+                            MaxSize = dungeon.DynamicDungeonSizeMinMax.y;
+                        }
+                        if (DungeonName == "Haunted Mansion (2)")
+                        {
+                            dungeon.MapTileSize = 1.5f;
+                        }
+
                         MinDungeonSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName, // Assigns the config with the dictionary so that it is unique to the level/moon/planet
                             DungeonName + " - Minimum Size Multiplier",
-                            dungeon.DynamicDungeonSizeMinMax.x,
+                            MinSize,
                             "Sets the min size multiplier this dungeon can have.");
 
                         MaxDungeonSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Maximum Size Multiplier",
-                            dungeon.DynamicDungeonSizeMinMax.y,
+                            MaxSize,
                             "Sets the max size multiplier this dungeon can have.");
 
                         DungeonSizeScaler[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Dungeon Size Scaler",
-                            dungeon.DynamicDungeonSizeLerpRate * 100,
+                            100 - (dungeon.DynamicDungeonSizeLerpRate * 100),
                             "This setting controls the strictness of the clamp. At 0%, the clamp is inactive. At 100%, the clamp is fully enforced, pulling any out-of-bounds values back to the nearest boundary. For percentages in between, out-of-bounds values are partially pulled back towards the nearest boundary. For example given a value of 50%, a value exceeding the max would be adjusted halfway back to the max.");
+
+                        // CentralConfig.instance.mls.LogInfo(DungeonName + " has a maptilesize of " + dungeon.MapTileSize);
+
+                        MapTileSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Map Tile Size",
+                            dungeon.MapTileSize,
+                            "The size multiplier from the moon is divided by this value before clamps are applied. It ensures that interiors with different '1x' tile counts and room sizes are comparable in total size.\nThe Facility is 1x and the Mansion is 1.5x in Vanilla.");
                     }
 
                     // Injection
@@ -361,13 +394,17 @@ namespace CentralConfig
             CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
 
             __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
-            __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
-            float NewMultiplier = __instance.currentLevel.factorySizeMultiplier / __instance.dungeonFlowTypes[DungeonID].MapTileSize * __instance.mapSizeMultiplier;
+            __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
 
+            float NewMultiplier = __instance.currentLevel.factorySizeMultiplier;
             if (CentralConfig.SyncConfig.DoDunSizeOverrides)
             {
-                if (WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler.ContainsKey(DungeonName))
+                if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonName))
                 {
+                    NewMultiplier /= WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize[DungeonName];
+                    NewMultiplier *= __instance.mapSizeMultiplier;
+                    NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+
                     PreClampValue = NewMultiplier;
                     if (NewMultiplier < WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName])
                     {
@@ -377,24 +414,67 @@ namespace CentralConfig
                     {
                         NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
                     }
-                    CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                    NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+                    if (PreClampValue != NewMultiplier)
+                    {
+                        CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                    }
+                    else
+                    {
+                        CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                    }
                 }
                 else
                 {
-                    CentralConfig.instance.mls.LogInfo("Either the current dungeon is blacklisted. No clamping will be applied.");
+                    NewMultiplier /= DungeonManager.CurrentExtendedDungeonFlow.MapTileSize;
+                    NewMultiplier *= __instance.mapSizeMultiplier;
+                    NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+
+                    CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
                 }
             }
             else
             {
-                CentralConfig.instance.mls.LogInfo("Clamp overrides are false. No clamping will be applied.");
+                NewMultiplier /= DungeonManager.CurrentExtendedDungeonFlow.MapTileSize;
+                NewMultiplier *= __instance.mapSizeMultiplier;
+                NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+
+                CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
             }
-            NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation")
+            if (!CentralConfig.SyncConfig.UseNewGen)
             {
-                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, (or you are on the bunker), generating without them:");
+                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
                 __instance.dungeonGenerator.Generate();
+                /*for (int i = 0; i < 100; i++)
+                  {
+                      CentralConfig.instance.mls.LogInfo("Size Multiplier: " + NewMultiplier);
+                      __instance.dungeonGenerator.Generate();
+                      TileCounter.CountTiles();
+                      __instance.dungeonGenerator.Generator.Cancel();
+                      __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
+                      __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
+                      CentralConfig.instance.mls.LogInfo("Attempt # " + TileCounter.CallNumber);
+                  }
+                  int countsum = TileCounter.TileCounts.Sum();
+                  float averagecount = (float)countsum / TileCounter.TileCounts.Count;
+                  averagecount = (float)((double)Mathf.Round(averagecount * 100f) / 100.0);
+
+                  float lengthsum = TileCounter.TileLengths.Sum();
+                  float averagelength = lengthsum / TileCounter.TileCounts.Count;
+                  float widthsum = TileCounter.TileWidths.Sum();
+                  float averagewidth = widthsum / TileCounter.TileWidths.Count;
+                  float heightsum = TileCounter.TileHeights.Sum();
+                  float averageheight = heightsum / TileCounter.TileHeights.Count;
+
+                  int min = TileCounter.TileCounts.Min();
+                  int max = TileCounter.TileCounts.Max();
+
+                  CentralConfig.instance.mls.LogInfo(TileCounter.BigLog);
+                  float FloorArea = averagelength * averagewidth;
+                  FloorArea = (float)((double)Mathf.Round(FloorArea * 100f) / 100.0);
+                  CentralConfig.instance.mls.LogInfo("Tests: " + TileCounter.TileCounts.Count + " sum: " + countsum + " average: " + averagecount + " min: " + min + " max: " + max + " Average Length: " + averagelength + " Average Height: " + averageheight + " Average Width: " + averagewidth + " Floor Area: " + FloorArea);*/
                 return false;
             }
 
@@ -445,12 +525,14 @@ namespace CentralConfig
         public static bool Defaulted = false;
         static bool Prefix(DungeonGenerator __instance, ref bool isRetry)
         {
-            if (!CentralConfig.SyncConfig.UseNewGen || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Black Mesa" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "BunkerFlow" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "Tomb" || DungeonManager.CurrentExtendedDungeonFlow.DungeonName == "SCP Foundation" || Defaulted)
+            if (!CentralConfig.SyncConfig.UseNewGen || Defaulted)
             {
+                RetryCounter++;
                 return true;
             }
-            // int Spunge = StartOfRound.Instance.randomMapSeed + 420 - RetryCounter * 5;
-            // CentralConfig.instance.mls.LogInfo("Trying seed: " + Spunge);
+            __instance.Seed = StartOfRound.Instance.randomMapSeed + 420 - RetryCounter * 5;
+            // CentralConfig.instance.mls.LogInfo("Seed: " + __instance.Seed);
+
             if (RetryCounter >= CentralConfig.SyncConfig.UnShrankDungenTries)
             {
                 if (__instance.LengthMultiplier > 1)
@@ -502,6 +584,49 @@ namespace CentralConfig
         {
             float finalMultiplier = __instance.LengthMultiplier;
             CentralConfig.instance.mls.LogInfo("Final Length Multiplier " + finalMultiplier);
+        }
+    }
+    public static class TileCounter
+    {
+        public static string BigLog;
+        public static List<int> TileCounts = new List<int>();
+        public static List<float> TileLengths = new List<float>();
+        public static List<float> TileWidths = new List<float>();
+        public static List<float> TileHeights = new List<float>();
+        public static Tile[] tiles;
+        public static int CallNumber;
+        public static void CountTiles()
+        {
+            tiles = new Tile[0];
+            tiles = UnityEngine.Object.FindObjectsOfType<Tile>();
+            TileCounts.Add(tiles.Length);
+            BigLog += "\nThere are: " + tiles.Length + " tiles.";
+            CallNumber++;
+            float averageLength = GetAverageTileLength();
+            TileLengths.Add(averageLength);
+            float averageWidth = GetAverageTileWidth();
+            TileWidths.Add(averageWidth);
+            float averageHeight = GetAverageTileHeight();
+            TileHeights.Add(averageHeight);
+        }
+        public static float GetAverageTileLength()
+        {
+            float totalLength = tiles.Sum(tile => tile.TileBoundsOverride.size.x);
+            float averageLength = totalLength / tiles.Length;
+            return averageLength;
+        }
+
+        public static float GetAverageTileWidth()
+        {
+            float totalWidth = tiles.Sum(tile => tile.TileBoundsOverride.size.z);
+            float averageWidth = totalWidth / tiles.Length;
+            return averageWidth;
+        }
+        public static float GetAverageTileHeight()
+        {
+            float totalHeight = tiles.Sum(tile => tile.TileBoundsOverride.size.y);
+            float averageHeight = totalHeight / tiles.Length;
+            return averageHeight;
         }
     }
     [HarmonyPatch(typeof(RoundManager), "GenerateNewFloor")]

@@ -816,19 +816,56 @@ namespace CentralConfig
         }
 
         // For updating enemy spawn curves
-        public static AnimationCurve MultiplyYValues(AnimationCurve curve, float multiplier, string LevelName, string TypeOf)
+
+        public static AnimationCurve MultiplyYValues(AnimationCurve curve, float multiplier, string LevelName, string TypeOf, int minKeyframes = 10)
         {
-            // CentralConfig.instance.mls.LogInfo(LevelName + " " +TypeOf + " Y-Values multiplied by: " + multiplier);
+            // CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} - Started processing curve");
+            if (curve == null || curve.length == 0)
+            {
+                // CentralConfig.instance.mls.LogWarning($"{LevelName} {TypeOf} - Curve does not exist or has no keyframes. Skipping.");
+                return null;
+            }
+            curve = AddKeyframes(curve, minKeyframes);
+
             Keyframe[] keyframes = new Keyframe[curve.length];
 
             for (int i = 0; i < curve.length; i++)
             {
                 Keyframe key = curve[i];
+                float originalValue = key.value;
                 key.value = key.value * multiplier;
                 keyframes[i] = key;
+
+                // CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} Keyframe {i}: Original Y-Value = {originalValue}, New Y-Value = {key.value}");
             }
 
+            // CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} - Finished processing curve");
+
             return new AnimationCurve(keyframes);
+        }
+        public static AnimationCurve AddKeyframes(AnimationCurve curve, int minKeyframes)
+        {
+            List<Keyframe> keyframes = new List<Keyframe>(curve.keys);
+
+            while (keyframes.Count < minKeyframes)
+            {
+                for (int i = 0; i < keyframes.Count - 1; i++)
+                {
+                    if (keyframes.Count >= minKeyframes)
+                        break;
+
+                    Keyframe k1 = keyframes[i];
+                    Keyframe k2 = keyframes[i + 1];
+
+                    float newTime = (k1.time + k2.time) / 2;
+                    float newValue = (k1.value + k2.value) / 2;
+
+                    Keyframe newKeyframe = new Keyframe(newTime, newValue);
+                    keyframes.Insert(i + 1, newKeyframe);
+                }
+            }
+
+            return new AnimationCurve(keyframes.ToArray());
         }
 
         // Modified cfg cleaner from Kitten :3
@@ -847,11 +884,18 @@ namespace CentralConfig
         }
         private void ConfigCleaner(ConfigFile cfg)
         {
-            PropertyInfo orphanedEntriesProp = cfg.GetType().GetProperty("OrphanedEntries", BindingFlags.NonPublic | BindingFlags.Instance);
-            var orphanedEntries = (Dictionary<ConfigDefinition, string>)orphanedEntriesProp.GetValue(cfg, null);
-            orphanedEntries.Clear();
-            cfg.Save();
-            CentralConfig.instance.mls.LogInfo("Config Cleaned");
+            if (!CentralConfig.SyncConfig.KeepOrphans)
+            {
+                PropertyInfo orphanedEntriesProp = cfg.GetType().GetProperty("OrphanedEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+                var orphanedEntries = (Dictionary<ConfigDefinition, string>)orphanedEntriesProp.GetValue(cfg, null);
+                orphanedEntries.Clear();
+                cfg.Save();
+                CentralConfig.instance.mls.LogInfo("Config Cleaned");
+            }
+            else
+            {
+                CentralConfig.instance.mls.LogInfo("Orphaned Entries were kept.");
+            }
         }
     }
 
