@@ -45,7 +45,7 @@ namespace CentralConfig
                     InsuranceReduction = cfg.BindSyncedEntry("~Misc~",
                         "Penalty reduction for player retrievalretrieval",
                         40f,
-                        "This value determines the reduction in penalty if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
+                        "This value determines the reduction in penalty if a fallen player's body is retrived. For instance, setting this to 0 means no penalty will be applied for having successfully retrived players, 50 means half the penalty is applied upon retrival, and 100 means the penalty remains the same regardless of retrival. It can be any value between 0 and 100.");
 
                     CompanyFineAmount = cfg.BindSyncedEntry("~Misc~",
                         "Penalty for each fallen player (on Gordion)",
@@ -55,7 +55,7 @@ namespace CentralConfig
                     CompanyInsuranceReduction = cfg.BindSyncedEntry("~Misc~",
                         "Penalty reduction for player retrieval (on Gordion)",
                         0f,
-                        "This value determines the reduction in penalty on Gordion if a fallen player's body is revived. For instance, setting this to 0 means no penalty for revived players, 50 means half the penalty is applied upon revival, and 100 means the penalty remains the same regardless of revival. It can be any value between 0 and 100.");
+                        "This value determines the reduction in penalty on Gordion if a fallen player's body is retrived. For instance, setting this to 0 means no penalty will be applied for having successfully retrived players, 50 means half the penalty is applied upon retrival, and 100 means the penalty remains the same regardless of retrival. It can be any value between 0 and 100.");
 
                     ProportionalFine = cfg.BindSyncedEntry("~Misc~",
                         "Proportional Fine",

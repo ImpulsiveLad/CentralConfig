@@ -451,11 +451,13 @@ namespace CentralConfig
                                 level.IsRouteLocked,
                                 "Set to true to prevent visiting the moon.");
                         }
-
+                    }
+                    if (CentralConfig.SyncConfig.TimeSettings)
+                    {
                         TimeOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
-                        PlanetName + " - Should The Moon Have Time?",
-                        level.SelectableLevel.planetHasTime,
-                        "Set to true to enable time progression. Set to false for no time progression.");
+                            PlanetName + " - Should The Moon Have Time?",
+                            level.SelectableLevel.planetHasTime,
+                            "Set to true to enable time progression. Set to false for no time progression.");
 
                         TimeMultiplierOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Day Speed Multiplier",
@@ -701,6 +703,9 @@ namespace CentralConfig
                     {
                         level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[PlanetName];
                     }
+                }
+                if (CentralConfig.SyncConfig.TimeSettings)
+                {
                     level.SelectableLevel.planetHasTime = WaitForMoonsToRegister.CreateMoonConfig.TimeOverride[PlanetName];
                 }
 
@@ -804,7 +809,7 @@ namespace CentralConfig
     {
         static bool Prefix(TimeOfDay __instance)
         {
-            if (!CentralConfig.SyncConfig.DoDangerBools)
+            if (!CentralConfig.SyncConfig.TimeSettings)
             {
                 return true;
             }
@@ -832,12 +837,37 @@ namespace CentralConfig
             return false;
         }
     }
+    [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
+    public static class UpdateTimeFaster
+    {
+        static void Postfix()
+        {
+            if (!CentralConfig.SyncConfig.UpdateTimeFaster)
+            {
+                return;
+            }
+            float ToD = TimeOfDay.Instance.currentDayTime / TimeOfDay.Instance.totalTime;
+            HUDManager.Instance.SetClock(ToD, TimeOfDay.Instance.numberOfHours);
+        }
+    }
+
+    [HarmonyPatch(typeof(System.Random), "Next", new[] { typeof(int), typeof(int) })]
+    public static class RandomNextPatch
+    {
+        static void Prefix(ref int minValue, ref int maxValue)
+        {
+            if (minValue > maxValue)
+            {
+                minValue = maxValue;
+            }
+        }
+    }
     [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
     public static class DayTimePassFix
     {
         static bool Prefix(StartOfRound __instance, int connectedPlayersOnServer = 0)
         {
-            if (!CentralConfig.SyncConfig.DoDangerBools)
+            if (!CentralConfig.SyncConfig.TimeSettings)
             {
                 return true;
             }
@@ -873,6 +903,24 @@ namespace CentralConfig
         {
             yield return new WaitForSeconds(3f);
             StartOfRound.Instance.speakerAudioSource.PlayOneShot(StartOfRound.Instance.zeroDaysLeftAlertSFX);
+        }
+    }
+    [HarmonyPatch(typeof(StartOfRound), "SetMapScreenInfoToCurrentLevel")]
+    public static class UpdateLengthOfDay
+    {
+        static void Prefix()
+        {
+            if (!CentralConfig.SyncConfig.TimeSettings)
+            {
+                return;
+            }
+            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+            TimeOfDay timeOfDay = UnityEngine.Object.FindObjectOfType<TimeOfDay>();
+            if (WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride.ContainsKey(currentMoon))
+            {
+                timeOfDay.lengthOfHours = 100f / WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+            }
+            // CentralConfig.instance.mls.LogInfo("Updated lengthOfHours.");
         }
     }
     public class Ororo

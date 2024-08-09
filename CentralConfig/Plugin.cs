@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.10.0";
+        private const string modVersion = "0.10.5";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -65,6 +65,9 @@ namespace CentralConfig
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
             harmony.PatchAll(typeof(TimeFix));
             harmony.PatchAll(typeof(DayTimePassFix));
+            harmony.PatchAll(typeof(UpdateLengthOfDay));
+            harmony.PatchAll(typeof(RandomNextPatch));
+            harmony.PatchAll(typeof(UpdateTimeFaster));
             harmony.PatchAll(typeof(WaitForDungeonsToRegister));
             harmony.PatchAll(typeof(FrApplyDungeon));
             harmony.PatchAll(typeof(NewDungeonGenerator));
@@ -137,6 +140,8 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> BigEnemyList { get; private set; }
         [DataMember] public SyncedEntry<int> RandomSeed { get; private set; }
         [DataMember] public SyncedEntry<bool> KeepOrphans { get; private set; }
+        [DataMember] public SyncedEntry<bool> TimeSettings { get; private set; }
+        [DataMember] public SyncedEntry<bool> UpdateTimeFaster { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -192,10 +197,20 @@ namespace CentralConfig
                 false,
                 "If set to true, allows altering of the possible weathers to each moon.\nBeware that adding new weathers to moons that didn't have them before will likely cause funky buggies.\nDO NOT USE WITH WEATHER REGISTRY!!");
 
+            UpdateTimeFaster = cfg.BindSyncedEntry("~Misc~",
+                "Accurate Clock?",
+                true,
+                "If set to true, the in-game clock will be updated when time moves instead of every 3 seconds.");
+
+            TimeSettings = cfg.BindSyncedEntry("_Moons_",
+                "Enable Time Settings?",
+                false,
+                "If set to true, allows setting if time exists, the time speed multiplier, and if time should wait until the ship lands to begin moving (All per moon).");
+
             DoDangerBools = cfg.BindSyncedEntry("_Moons_",
                 "Enable Misc Overrides?",
                 false,
-                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, locked/unlocked status, if time exists, the time speed multiplier, and if time should wait until the ship lands to begin moving (Keep this false for Selene's Choice to work).");
+                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, and locked/unlocked status (Keep this false for Selene's Choice to work).");
 
             RenameCelest = cfg.BindSyncedEntry("_Moons_",
                 "Rename Celest?",
