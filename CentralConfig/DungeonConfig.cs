@@ -362,23 +362,31 @@ namespace CentralConfig
         static float PreClampValue;
         static bool Prefix(RoundManager __instance)
         {
-            List<int> list = new List<int>();
-            for (int i = 0; i < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; i++)
+            if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes != null && LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length != 0)
             {
-                list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity);
-            }
+                List<int> list = new List<int>();
+                for (int i = 0; i < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; i++)
+                {
+                    list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity);
+                    // CentralConfig.instance.mls.LogInfo($"DungeonFlowType {i}: ID = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].id}, Rarity = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity}");
+                }
 
-            System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
-            int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
-            __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[DungeonID].dungeonFlow;
+                System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
+                int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
+                // CentralConfig.instance.mls.LogInfo($"Selected DungeonID: {DungeonID}");
 
-            if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience != null)
-            {
-                SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience;
-            }
-            else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
-            {
-                SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
+                __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id].dungeonFlow;
+                __instance.currentDungeonType = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id;
+                // CentralConfig.instance.mls.LogInfo($"Assigned DungeonFlow: {__instance.dungeonGenerator.Generator.DungeonFlow}, CurrentDungeonType: {__instance.currentDungeonType}");
+
+                if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience != null)
+                {
+                    SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience;
+                }
+                else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
+                {
+                    SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
+                }
             }
 
             ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;

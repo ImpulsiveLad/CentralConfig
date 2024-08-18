@@ -1026,6 +1026,14 @@ namespace CentralConfig
                     // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
                 }
             }
+            List<ExtendedDungeonFlow> allExtendedDungeonFlows = PatchedContent.ExtendedDungeonFlows;
+            foreach (ExtendedDungeonFlow flow in allExtendedDungeonFlows)
+            {
+                if (flow.DungeonName == "Level3Flow")
+                {
+                    flow.DungeonName = "Mineshaft";
+                }
+            }
         }
     }
 }
