@@ -363,30 +363,24 @@ namespace CentralConfig
         static bool Prefix(RoundManager __instance)
         {
             List<int> list = new List<int>();
-            for (int i = 0; i < __instance.currentLevel.dungeonFlowTypes.Length; i++)
+            for (int i = 0; i < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; i++)
             {
-                list.Add(__instance.currentLevel.dungeonFlowTypes[i].rarity);
+                list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity);
             }
 
             System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
-            int DungeonID = __instance.currentLevel.dungeonFlowTypes[__instance.GetRandomWeightedIndex(list.ToArray(), seededRandom)].id;
+            int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
             __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[DungeonID].dungeonFlow;
 
-            if (DungeonID < __instance.firstTimeDungeonAudios.Length && __instance.firstTimeDungeonAudios[DungeonID] != null)
+            if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience != null)
             {
-                EntranceTeleport[] array = UnityEngine.Object.FindObjectsOfType<EntranceTeleport>();
-                if (array != null && array.Length != 0)
-                {
-                    for (int j = 0; j < array.Length; j++)
-                    {
-                        if (array[j].isEntranceToBuilding)
-                        {
-                            array[j].firstTimeAudio = __instance.firstTimeDungeonAudios[DungeonID];
-                            array[j].dungeonFlowId = DungeonID;
-                        }
-                    }
-                }
+                SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience;
             }
+            else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
+            {
+                SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
+            }
+
             ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
             string Dun = dungeon.DungeonName + " (" + dungeon.name + ")";
             Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
@@ -396,7 +390,7 @@ namespace CentralConfig
             __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
             __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
 
-            float NewMultiplier = __instance.currentLevel.factorySizeMultiplier;
+            float NewMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
             if (CentralConfig.SyncConfig.DoDunSizeOverrides)
             {
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonName))
