@@ -95,6 +95,7 @@
     <Compile Include="Misc.cs" />
     <Compile Include="MoonConfig.cs" />
     <Compile Include="ConfigAider.cs" />
+    <Compile Include="Networking.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TagConfig.cs" />

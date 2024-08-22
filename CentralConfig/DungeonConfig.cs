@@ -10,6 +10,9 @@ using LethalLevelLoader.Tools;
 using UnityEngine;
 using System;
 using DunGen;
+using Unity.Netcode;
+using LethalLib.Modules;
+using System.Collections;
 
 namespace CentralConfig
 {
@@ -18,6 +21,7 @@ namespace CentralConfig
     {
         public static CreateDungeonConfig Config;
         public static ExtendedDungeonFlow DefaultFacility;
+
         [DataContract]
         public class CreateDungeonConfig : ConfigTemplate
         {
@@ -362,68 +366,83 @@ namespace CentralConfig
         static float PreClampValue;
         static bool Prefix(RoundManager __instance)
         {
-            if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes != null && LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length != 0)
+            if (NetworkManager.Singleton.IsHost)
             {
-                List<int> list = new List<int>();
-                for (int i = 0; i < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; i++)
+                if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes != null && LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length != 0)
                 {
-                    list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity);
-                    // CentralConfig.instance.mls.LogInfo($"DungeonFlowType {i}: ID = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].id}, Rarity = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity}");
-                }
-
-                System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
-                int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
-                // CentralConfig.instance.mls.LogInfo($"Selected DungeonID: {DungeonID}");
-
-                __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id].dungeonFlow;
-                __instance.currentDungeonType = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id;
-                // CentralConfig.instance.mls.LogInfo($"Assigned DungeonFlow: {__instance.dungeonGenerator.Generator.DungeonFlow}, CurrentDungeonType: {__instance.currentDungeonType}");
-
-                if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience != null)
-                {
-                    SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience;
-                }
-                else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
-                {
-                    SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
-                }
-            }
-
-            ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
-            string Dun = dungeon.DungeonName + " (" + dungeon.name + ")";
-            Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
-            string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
-            CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
-
-            __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
-            __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
-
-            float NewMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
-            if (CentralConfig.SyncConfig.DoDunSizeOverrides)
-            {
-                if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonName))
-                {
-                    NewMultiplier /= WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize[DungeonName];
-                    NewMultiplier *= __instance.mapSizeMultiplier;
-                    NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
-
-                    PreClampValue = NewMultiplier;
-                    if (NewMultiplier < WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName])
+                    List<int> list = new List<int>();
+                    for (int i = 0; i < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; i++)
                     {
-                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity);
+                        // CentralConfig.instance.mls.LogInfo($"DungeonFlowType {i}: ID = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].id}, Rarity = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity}");
                     }
-                    else if (NewMultiplier > WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName])
+
+                    System.Random seededRandom = new System.Random(StartOfRound.Instance.randomMapSeed - 69);
+                    int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
+                    // CentralConfig.instance.mls.LogInfo($"Selected DungeonID: {DungeonID}");
+
+                    __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id].dungeonFlow;
+                    CentralConfig.SelectedDungeon = __instance.dungeonGenerator.Generator.DungeonFlow;
+                    __instance.currentDungeonType = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id;
+                    CentralConfig.DungeonType = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id;
+                    // CentralConfig.instance.mls.LogInfo($"Assigned DungeonFlow: {__instance.dungeonGenerator.Generator.DungeonFlow}, CurrentDungeonType: {__instance.currentDungeonType}");
+
+                    if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience != null)
                     {
-                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].overrideLevelAmbience;
                     }
-                    NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
-                    if (PreClampValue != NewMultiplier)
+                    else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
                     {
-                        CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                        SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
+                    }
+                    CentralConfig.LevelAmbience = SoundManager.Instance.currentLevelAmbience;
+                }
+
+                ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
+                string Dun = dungeon.DungeonName + " (" + dungeon.name + ")";
+                Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
+                string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
+                CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
+
+                __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
+                __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
+                CentralConfig.DunGenSeed = __instance.dungeonGenerator.Generator.Seed;
+
+                float NewMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
+                if (CentralConfig.SyncConfig.DoDunSizeOverrides)
+                {
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonName))
+                    {
+                        NewMultiplier /= WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize[DungeonName];
+                        NewMultiplier *= __instance.mapSizeMultiplier;
+                        NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+
+                        PreClampValue = NewMultiplier;
+                        if (NewMultiplier < WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName])
+                        {
+                            NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        }
+                        else if (NewMultiplier > WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName])
+                        {
+                            NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        }
+                        NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+                        if (PreClampValue != NewMultiplier)
+                        {
+                            CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                        }
+                        else
+                        {
+                            CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                        }
                     }
                     else
                     {
-                        CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                        NewMultiplier /= DungeonManager.CurrentExtendedDungeonFlow.MapTileSize;
+                        NewMultiplier *= __instance.mapSizeMultiplier;
+                        NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
+
+                        CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
                     }
                 }
                 else
@@ -432,89 +451,125 @@ namespace CentralConfig
                     NewMultiplier *= __instance.mapSizeMultiplier;
                     NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
 
-                    CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
+                    CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
                 }
+                __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
+                CentralConfig.DungeonSize = __instance.dungeonGenerator.Generator.LengthMultiplier;
+
+                if (!CentralConfig.SyncConfig.UseNewGen)
+                {
+                    CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
+                    __instance.dungeonGenerator.Generate();
+                    /*for (int i = 0; i < 100; i++)
+                      {
+                          CentralConfig.instance.mls.LogInfo("Size Multiplier: " + NewMultiplier);
+                          __instance.dungeonGenerator.Generate();
+                          TileCounter.CountTiles();
+                          __instance.dungeonGenerator.Generator.Cancel();
+                          __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
+                          __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
+                          CentralConfig.instance.mls.LogInfo("Attempt # " + TileCounter.CallNumber);
+                      }
+                      int countsum = TileCounter.TileCounts.Sum();
+                      float averagecount = (float)countsum / TileCounter.TileCounts.Count;
+                      averagecount = (float)((double)Mathf.Round(averagecount * 100f) / 100.0);
+
+                      float lengthsum = TileCounter.TileLengths.Sum();
+                      float averagelength = lengthsum / TileCounter.TileCounts.Count;
+                      float widthsum = TileCounter.TileWidths.Sum();
+                      float averagewidth = widthsum / TileCounter.TileWidths.Count;
+                      float heightsum = TileCounter.TileHeights.Sum();
+                      float averageheight = heightsum / TileCounter.TileHeights.Count;
+
+                      int min = TileCounter.TileCounts.Min();
+                      int max = TileCounter.TileCounts.Max();
+
+                      CentralConfig.instance.mls.LogInfo(TileCounter.BigLog);
+                      float FloorArea = averagelength * averagewidth;
+                      FloorArea = (float)((double)Mathf.Round(FloorArea * 100f) / 100.0);
+                      CentralConfig.instance.mls.LogInfo("Tests: " + TileCounter.TileCounts.Count + " sum: " + countsum + " average: " + averagecount + " min: " + min + " max: " + max + " Average Length: " + averagelength + " Average Height: " + averageheight + " Average Width: " + averagewidth + " Floor Area: " + FloorArea);*/
+                    return false;
+                }
+
+                try
+                {
+                    __instance.dungeonGenerator.Generate();
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message == "Dungeon Generation failed.")
+                    {
+                        CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed. Defaulting interior");
+                        __instance.dungeonGenerator.Generator.DungeonFlow = WaitForDungeonsToRegister.DefaultFacility.DungeonFlow;
+                        CentralConfig.SelectedDungeon = __instance.dungeonGenerator.Generator.DungeonFlow;
+                        if (LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier >= 1)
+                        {
+                            __instance.dungeonGenerator.Generator.LengthMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
+                        }
+                        else
+                        {
+                            __instance.dungeonGenerator.Generator.LengthMultiplier = 1f;
+                        }
+                        CentralConfig.DungeonSize = __instance.dungeonGenerator.Generator.LengthMultiplier;
+                        __instance.currentDungeonType = 0;
+                        SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[0].overrideLevelAmbience;
+                        CentralConfig.LevelAmbience = SoundManager.Instance.currentLevelAmbience;
+                        CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
+                        InnerGenerateWithRetries.Defaulted = true;
+                        __instance.dungeonGenerator.Generator.Cancel();
+                        __instance.dungeonGenerator.Generate();
+                        CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config using a safeguard dungeon.");
+                    }
+                }
+                if (!InnerGenerateWithRetries.Defaulted)
+                {
+                    CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x");
+                }
+                InnerGenerateWithRetries.RetryCounter = 0;
+                InnerGenerateWithRetries.TryBig = false;
+                InnerGenerateWithRetries.GenFailed = false;
+                InnerGenerateWithRetries.Defaulted = false;
             }
             else
             {
-                NewMultiplier /= DungeonManager.CurrentExtendedDungeonFlow.MapTileSize;
-                NewMultiplier *= __instance.mapSizeMultiplier;
-                NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
-
-                CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
+                WaitAndProcessData();
             }
-            __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
-
-            if (!CentralConfig.SyncConfig.UseNewGen)
+            return false;
+        }
+        static IEnumerator WaitAndProcessData()
+        {
+            while (true)
             {
-                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
-                __instance.dungeonGenerator.Generate();
-                /*for (int i = 0; i < 100; i++)
-                  {
-                      CentralConfig.instance.mls.LogInfo("Size Multiplier: " + NewMultiplier);
-                      __instance.dungeonGenerator.Generate();
-                      TileCounter.CountTiles();
-                      __instance.dungeonGenerator.Generator.Cancel();
-                      __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
-                      __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
-                      CentralConfig.instance.mls.LogInfo("Attempt # " + TileCounter.CallNumber);
-                  }
-                  int countsum = TileCounter.TileCounts.Sum();
-                  float averagecount = (float)countsum / TileCounter.TileCounts.Count;
-                  averagecount = (float)((double)Mathf.Round(averagecount * 100f) / 100.0);
+                yield return new WaitForSeconds(10);
+                ShareDunGenData.Instance.RequestData();
+                yield return new WaitUntil(() => ShareDunGenData.Instance.dataReceivedEvent.WaitOne(0));
 
-                  float lengthsum = TileCounter.TileLengths.Sum();
-                  float averagelength = lengthsum / TileCounter.TileCounts.Count;
-                  float widthsum = TileCounter.TileWidths.Sum();
-                  float averagewidth = widthsum / TileCounter.TileWidths.Count;
-                  float heightsum = TileCounter.TileHeights.Sum();
-                  float averageheight = heightsum / TileCounter.TileHeights.Count;
-
-                  int min = TileCounter.TileCounts.Min();
-                  int max = TileCounter.TileCounts.Max();
-
-                  CentralConfig.instance.mls.LogInfo(TileCounter.BigLog);
-                  float FloorArea = averagelength * averagewidth;
-                  FloorArea = (float)((double)Mathf.Round(FloorArea * 100f) / 100.0);
-                  CentralConfig.instance.mls.LogInfo("Tests: " + TileCounter.TileCounts.Count + " sum: " + countsum + " average: " + averagecount + " min: " + min + " max: " + max + " Average Length: " + averagelength + " Average Height: " + averageheight + " Average Width: " + averagewidth + " Floor Area: " + FloorArea);*/
-                return false;
-            }
-
-            try
-            {
-                __instance.dungeonGenerator.Generate();
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "Dungeon Generation failed.")
+                if (ShareDunGenData.Instance.dataVersion > CentralConfig.dataVersion)
                 {
-                    CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed. Defaulting interior");
-                    __instance.dungeonGenerator.Generator.DungeonFlow = WaitForDungeonsToRegister.DefaultFacility.DungeonFlow;
-                    if (LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier >= 1)
+                    CentralConfig.dataVersion = ShareDunGenData.Instance.dataVersion;
+
+                    if (RoundManager.Instance != null && RoundManager.Instance.dungeonGenerator != null)
                     {
-                        __instance.dungeonGenerator.Generator.LengthMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
+                        RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow = CentralConfig.SelectedDungeon;
+                        SoundManager.Instance.currentLevelAmbience = CentralConfig.LevelAmbience;
+                        RoundManager.Instance.currentDungeonType = CentralConfig.DungeonType;
+                        RoundManager.Instance.dungeonGenerator.Generator.Seed = CentralConfig.DunGenSeed;
+                        RoundManager.Instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
+                        RoundManager.Instance.dungeonGenerator.Generator.LengthMultiplier = CentralConfig.DungeonSize;
+                        RoundManager.Instance.dungeonGenerator.Generate();
+                        break;
                     }
                     else
                     {
-                        __instance.dungeonGenerator.Generator.LengthMultiplier = 1f;
+                        Debug.LogError("RoundManager or dungeonGenerator is null");
                     }
-                    CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
-                    InnerGenerateWithRetries.Defaulted = true;
-                    __instance.dungeonGenerator.Generator.Cancel();
-                    __instance.dungeonGenerator.Generate();
-                    CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config using a safeguard dungeon.");
+                }
+                else
+                {
+                    ShareDunGenData.Instance.RequestData();
+                    yield return new WaitForSeconds(5);
                 }
             }
-            if (!InnerGenerateWithRetries.Defaulted)
-            {
-                CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x");
-            }
-            InnerGenerateWithRetries.RetryCounter = 0;
-            InnerGenerateWithRetries.TryBig = false;
-            InnerGenerateWithRetries.GenFailed = false;
-            InnerGenerateWithRetries.Defaulted = false;
-
-            return false;
         }
     }
     [HarmonyPatch(typeof(DungeonGenerator), "InnerGenerate")]
@@ -527,12 +582,13 @@ namespace CentralConfig
         public static bool Defaulted = false;
         static bool Prefix(DungeonGenerator __instance, ref bool isRetry)
         {
-            if (!CentralConfig.SyncConfig.UseNewGen || Defaulted)
+            if (!CentralConfig.SyncConfig.UseNewGen || Defaulted || !NetworkManager.Singleton.IsHost)
             {
                 RetryCounter++;
                 return true;
             }
             __instance.Seed = StartOfRound.Instance.randomMapSeed + 420 - RetryCounter * 5;
+            CentralConfig.DunGenSeed = __instance.Seed;
             // CentralConfig.instance.mls.LogInfo("Seed: " + __instance.Seed);
 
             if (RetryCounter >= CentralConfig.SyncConfig.UnShrankDungenTries)
@@ -546,6 +602,7 @@ namespace CentralConfig
                     __instance.LengthMultiplier -= 0.05f;
                 }
                 __instance.LengthMultiplier = (float)Math.Round(__instance.LengthMultiplier, 2);
+                CentralConfig.DungeonSize = __instance.LengthMultiplier;
                 CentralConfig.instance.mls.LogInfo("Dungeon Length Multiplier reduced to: " + __instance.LengthMultiplier);
             }
             else
@@ -571,6 +628,7 @@ namespace CentralConfig
                 {
                     __instance.LengthMultiplier = 1f;
                 }
+                CentralConfig.DungeonSize = __instance.LengthMultiplier;
                 TryBig = true;
                 CentralConfig.instance.mls.LogInfo("Trying to increase dungeon size in case it was too small.");
             }

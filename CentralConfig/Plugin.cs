@@ -10,6 +10,7 @@ using static CentralConfig.WaitForDungeonsToRegister;
 using static CentralConfig.MiscConfig;
 using static CentralConfig.WaitForTagsToRegister;
 using static CentralConfig.WaitForWeathersToRegister;
+using DunGen.Graph;
 
 namespace CentralConfig
 {
@@ -41,6 +42,13 @@ namespace CentralConfig
 
         public static GeneralConfig SyncConfig;
 
+        public static int dataVersion;
+        public static DungeonFlow SelectedDungeon;
+        public static LevelAmbienceLibrary LevelAmbience;
+        public static int DungeonType = 0;
+        public static int DunGenSeed = 0;
+        public static float DungeonSize = 0f;
+
         void Awake()
         {
             instance = this;
@@ -59,6 +67,7 @@ namespace CentralConfig
 
             ConfigFile5 = new CreateWeatherConfig(base.Config);
 
+            harmony.PatchAll(typeof(AnchorTheShare));
             harmony.PatchAll(typeof(RenameCelest));
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
@@ -264,8 +273,8 @@ namespace CentralConfig
 
             RandomSeed = cfg.BindSyncedEntry("~Misc~",
                 "Starting Random Seed",
-                0,
-                "Leave at 0 to have it be random. The seed will be updated daily regardless of this setting.");
+                -1,
+                "Leave at -1 to have it be random. The seed will be updated daily regardless of this setting.");
 
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",

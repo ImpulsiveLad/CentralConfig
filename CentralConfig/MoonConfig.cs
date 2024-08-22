@@ -488,7 +488,7 @@ namespace CentralConfig
         {
             if (StartOfRound.Instance.randomMapSeed == 0 && NetworkManager.Singleton.IsHost)
             {
-                if (CentralConfig.SyncConfig.RandomSeed == 0)
+                if (CentralConfig.SyncConfig.RandomSeed < 0)
                 {
                     StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
                 }
