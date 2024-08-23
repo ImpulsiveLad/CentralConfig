@@ -488,7 +488,7 @@ namespace CentralConfig
         {
             if (StartOfRound.Instance.randomMapSeed == 0 && NetworkManager.Singleton.IsHost)
             {
-                if (CentralConfig.SyncConfig.RandomSeed == 0)
+                if (CentralConfig.SyncConfig.RandomSeed < 0)
                 {
                     StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
                 }
@@ -1026,14 +1026,14 @@ namespace CentralConfig
                     // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
                 }
             }
-            List<ExtendedDungeonFlow> allExtendedDungeonFlows = PatchedContent.ExtendedDungeonFlows;
+            /*List<ExtendedDungeonFlow> allExtendedDungeonFlows = PatchedContent.ExtendedDungeonFlows;
             foreach (ExtendedDungeonFlow flow in allExtendedDungeonFlows)
             {
                 if (flow.DungeonName == "Level3Flow")
                 {
                     flow.DungeonName = "Mineshaft";
                 }
-            }
+            }*/
         }
     }
 }

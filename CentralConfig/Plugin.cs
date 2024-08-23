@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.10.7";
+        private const string modVersion = "0.10.8";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -142,6 +142,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> KeepOrphans { get; private set; }
         [DataMember] public SyncedEntry<bool> TimeSettings { get; private set; }
         [DataMember] public SyncedEntry<bool> UpdateTimeFaster { get; private set; }
+        [DataMember] public SyncedEntry<int> BracketTries { get; private set; }
 
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
@@ -237,6 +238,11 @@ namespace CentralConfig
                 20,
                 "The number of attempts made by the dungeon to generate using its original input size multiplier before it begins to adjust the multiplier either upwards or downwards.\nPreviously, the size adjustment used to happen after just one failed attempt.");
 
+            BracketTries = cfg.BindSyncedEntry("_Dungeons_",
+                "Tries per Dungeon Size Bracket",
+                25,
+                "The number of generation attempts spent on each size bracket (The brackets are: 20x-10x, 10x-5x, 5x-3x, 3x-2x, and 2x-1x for reference).\nIncreasing this value gives an exponentially higher chance of generation success but takes more time.");
+
             DoDunSizeOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Size Overrides?",
                 false,
@@ -264,8 +270,8 @@ namespace CentralConfig
 
             RandomSeed = cfg.BindSyncedEntry("~Misc~",
                 "Starting Random Seed",
-                0,
-                "Leave at 0 to have it be random. The seed will be updated daily regardless of this setting.");
+                -1,
+                "Leave at -1 to have it be random. The seed will be updated daily regardless of this setting.");
 
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",

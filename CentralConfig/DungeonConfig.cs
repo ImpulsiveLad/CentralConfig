@@ -443,6 +443,12 @@ namespace CentralConfig
 
                 CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
             }
+
+            if (NewMultiplier < 0)
+            {
+                NewMultiplier = 1f;
+                CentralConfig.instance.mls.LogInfo("Dungeon size is in the negatives, go fix your size settings. It is now 1x");
+            }
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
             if (!CentralConfig.SyncConfig.UseNewGen)
@@ -490,15 +496,32 @@ namespace CentralConfig
                 {
                     CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed. Defaulting interior");
                     __instance.dungeonGenerator.Generator.DungeonFlow = WaitForDungeonsToRegister.DefaultFacility.DungeonFlow;
+                    __instance.currentDungeonType = 0;
+
+                    float factorySizeMultiplier;
                     if (LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier >= 1)
                     {
-                        __instance.dungeonGenerator.Generator.LengthMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
+                        factorySizeMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
                     }
                     else
                     {
-                        __instance.dungeonGenerator.Generator.LengthMultiplier = 1f;
+                        factorySizeMultiplier = 1f;
                     }
+                    __instance.dungeonGenerator.Generator.LengthMultiplier = Mathf.Clamp(factorySizeMultiplier, 1f, 2.2f);
+
+                    if (LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[0].overrideLevelAmbience != null)
+                    {
+                        SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[0].overrideLevelAmbience;
+                    }
+                    else if (LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips != null)
+                    {
+                        SoundManager.Instance.currentLevelAmbience = LevelManager.CurrentExtendedLevel.SelectableLevel.levelAmbienceClips;
+                    }
+
+                    __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
+                    __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed - 420;
                     CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
+
                     InnerGenerateWithRetries.Defaulted = true;
                     __instance.dungeonGenerator.Generator.Cancel();
                     __instance.dungeonGenerator.Generate();
@@ -507,12 +530,19 @@ namespace CentralConfig
             }
             if (!InnerGenerateWithRetries.Defaulted)
             {
-                CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x");
+                CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x after " + InnerGenerateWithRetries.RetryCounter + " attempts.");
             }
             InnerGenerateWithRetries.RetryCounter = 0;
             InnerGenerateWithRetries.TryBig = false;
             InnerGenerateWithRetries.GenFailed = false;
             InnerGenerateWithRetries.Defaulted = false;
+
+            InnerGenerateWithRetries.Catch20 = false;
+            InnerGenerateWithRetries.Catch10 = false;
+            InnerGenerateWithRetries.Catch5 = false;
+            InnerGenerateWithRetries.Catch3 = false;
+            InnerGenerateWithRetries.Catch2 = false;
+            InnerGenerateWithRetries.Catch1 = false;
 
             return false;
         }
@@ -523,8 +553,15 @@ namespace CentralConfig
         public static int RetryCounter = 0;
         public static bool TryBig = false;
         public static bool GenFailed = false;
-        public static float LengthMultiplier;
         public static bool Defaulted = false;
+        public static float LengthMultiplier;
+
+        public static bool Catch20 = false;
+        public static bool Catch10 = false;
+        public static bool Catch5 = false;
+        public static bool Catch3 = false;
+        public static bool Catch2 = false;
+        public static bool Catch1 = false;
         static bool Prefix(DungeonGenerator __instance, ref bool isRetry)
         {
             if (!CentralConfig.SyncConfig.UseNewGen || Defaulted)
@@ -537,13 +574,81 @@ namespace CentralConfig
 
             if (RetryCounter >= CentralConfig.SyncConfig.UnShrankDungenTries)
             {
-                if (__instance.LengthMultiplier > 1)
+                if (__instance.LengthMultiplier > 20f)
                 {
                     __instance.LengthMultiplier -= __instance.LengthMultiplier * 0.1f;
                 }
+                else if (__instance.LengthMultiplier > 10f)
+                {
+                    if (!Catch20)
+                    {
+                        __instance.LengthMultiplier = 20f;
+                        Catch20 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 10f/CentralConfig.SyncConfig.BracketTries;
+                    }
+                }
+                else if (__instance.LengthMultiplier > 5f)
+                {
+                    if (!Catch10)
+                    {
+                        __instance.LengthMultiplier = 10f;
+                        Catch10 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 5f/CentralConfig.SyncConfig.BracketTries;
+                    }
+                }
+                else if (__instance.LengthMultiplier > 3f)
+                {
+                    if (!Catch5)
+                    {
+                        __instance.LengthMultiplier = 5f;
+                        Catch5 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 3f/CentralConfig.SyncConfig.BracketTries;
+                    }
+                }
+                else if (__instance.LengthMultiplier > 2f)
+                {
+                    if (!Catch3)
+                    {
+                        __instance.LengthMultiplier = 3f;
+                        Catch3 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 2f/CentralConfig.SyncConfig.BracketTries;
+                    }
+                }
+                else if (__instance.LengthMultiplier > 1f)
+                {
+                    if (!Catch2)
+                    {
+                        __instance.LengthMultiplier = 2f;
+                        Catch2 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 1f/CentralConfig.SyncConfig.BracketTries;
+                    }
+                }
                 else
                 {
-                    __instance.LengthMultiplier -= 0.05f;
+                    if (!Catch1)
+                    {
+                        __instance.LengthMultiplier = 1f;
+                        Catch1 = true;
+                    }
+                    else
+                    {
+                        __instance.LengthMultiplier -= 0.02f;
+                    }
                 }
                 __instance.LengthMultiplier = (float)Math.Round(__instance.LengthMultiplier, 2);
                 CentralConfig.instance.mls.LogInfo("Dungeon Length Multiplier reduced to: " + __instance.LengthMultiplier);
