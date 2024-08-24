@@ -32,7 +32,7 @@ Allows altering the min/max count for each trap on each moon. (I have to add sup
 **Enable Weather Overrides?** -
 Allows altering possible weathers for moons. **DO NOT USE WITH WEATHER REGISTRY INSTALLED !!!**
 
-** Enable Time Settings?** - 
+**Enable Time Settings?** - 
 Allows altering time settings such as time existence, time speed multiplier, and if time should wait until the ship lands to begin moving.
 
 **Enable Misc Overrides?** -
