@@ -263,31 +263,91 @@ namespace CentralConfig
             }
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(); // makes a new list of enemies
             List<string> replacedEnemies = new List<string>(); // To remember what was replaced
-            var pairs = ReplaceConfig.Split(','); // This is expected to be like EnemyName:EnemyName,EnemyName:EnemyName etc
+            List<SpawnableEnemyWithRarity> backupList = EnemyList; // for readding enemies that aren't replaced while being able to empty the EnemyList
+            var random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
-            foreach (var pair in pairs) // so for each pair of enemy names
+            var pairs = ReplaceConfig.Split(','); // breaks the string by comma to get each argument of x enemy replacing y
+
+            foreach (var pair in pairs) // foreach part between the commas
             {
+                string originalName;
+                string replacementName;
+                int rarityReplacement = -1;
+                int chanceToReplace = 100;
+                string SuccessReplacementLogMessage;
+
                 var parts = pair.Split(':');
                 if (parts.Length == 2)
                 {
-                    var originalName = parts[0].Trim(); // first enemy name is the original
-                    var replacementName = parts[1].Trim(); // second enemy name is the replacement
+                    var original = parts[0].Trim(); // first enemy name is the original
+                    var replacement = parts[1].Trim(); // second enemy name is the replacement
 
-                    foreach (var enemy in EnemyList) // goes through the enemy list
+                    var OptRarity = original.Split('-'); // breaks the first bit into the name and rarity 
+                    if (OptRarity.Length == 2)
                     {
+                        originalName = OptRarity[0].Trim();
+                        int.TryParse(OptRarity[1].Trim(), out rarityReplacement);
+                    }
+                    else
+                    {
+                        originalName = original; // just leaves the name as the original if it doesn't have a rarity attached
+                    }
+
+                    var ReplaceChance = replacement.Split('~'); // breaks the second bit into the replacement name and replacement chance
+                    if (ReplaceChance.Length == 2)
+                    {
+                        replacementName = ReplaceChance[0].Trim();
+                        int.TryParse(ReplaceChance[1].Trim(), out chanceToReplace);
+                    }
+                    else
+                    {
+                        replacementName = replacement; // just leaes the replacement name as the replacement if it doesn't have a chance attached
+                    }
+
+                    EnemyList = EnemyList.OrderBy(e => e.enemyType.enemyName).ToList();
+                    for (int i = 0; i < EnemyList.Count; i++)
+                    {
+                        var enemy = EnemyList[i];
                         if (enemy.enemyType.enemyName.Equals(originalName)) // if the entry matches an original name
                         {
-                            SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
-                            newEnemy.enemyType = GetEnemyTypeByName(replacementName); // method to check all enemyTypes and get the one with the name of the replacement, then sets the new enemies' enemyType to the replacements
-                            newEnemy.rarity = enemy.rarity; // uses the same rarity
-                            returnList.Add(newEnemy); // adds this new enemy to the returnlist
-                            replacedEnemies.Add(originalName); // adds the replacement to the string list I made
-                            CentralConfig.instance.mls.LogInfo($"Replaced enemy: {originalName} -> {replacementName}");
+                            if (random.Next(100) < chanceToReplace) // the enemy is only replaced if the chance to replace is greater than the random synced(?) value from 0 to 99
+                            {
+                                SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                                newEnemy.enemyType = GetEnemyTypeByName(replacementName); // method to check all enemyTypes and get the one with the name of the replacement, then sets the new enemies' enemyType to the replacements
+
+                                SuccessReplacementLogMessage = $"Replaced enemy: {originalName} with {replacementName}";
+
+                                if (rarityReplacement != -1)
+                                {
+                                    newEnemy.rarity = rarityReplacement; // if the rarityreplacement is set, it will use that
+                                    SuccessReplacementLogMessage += $", using rarity override of {rarityReplacement}.";
+                                }
+                                else
+                                {
+                                    newEnemy.rarity = enemy.rarity; // uses the same rarity
+                                    SuccessReplacementLogMessage += $", using the original enemy rarity of {enemy.rarity}.";
+                                }
+
+                                returnList.Add(newEnemy); // adds this new enemy to the returnlist
+                                replacedEnemies.Add(originalName); // adds the replacement to the string list I made
+                                SuccessReplacementLogMessage += $"\nChance to replace was: {chanceToReplace}%";
+                                CentralConfig.instance.mls.LogInfo(SuccessReplacementLogMessage);
+                            }
+                            else
+                            {
+                                CentralConfig.instance.mls.LogInfo($"Didn't replace enemy: {originalName} with {replacementName}, chance was only {chanceToReplace}%");
+                            }
+                            EnemyList.Remove(enemy);
+                        }
+                        else
+                        {
+                            // CentralConfig.instance.mls.LogInfo($"Enemy: {originalName} was not found in the enemy list.");
                         }
                     }
                 }
             }
-            foreach (var enemy in EnemyList) // goes through the enemy list again
+            backupList = backupList.OrderBy(e => e.enemyType.enemyName).ToList();
+            foreach (var enemy in backupList) // goes through the enemy list again
             {
                 if (!replacedEnemies.Contains(enemy.enemyType.enemyName)) // if it wasn't replaced by another enemy
                 {
@@ -295,7 +355,7 @@ namespace CentralConfig
                     oldEnemy.enemyType = enemy.enemyType; // add it as is
                     oldEnemy.rarity = enemy.rarity; // same
                     returnList.Add(oldEnemy); // yeah its added to the return list untouched
-                    CentralConfig.instance.mls.LogInfo("Added non replaced enemy: " + oldEnemy.enemyType.enemyName);
+                    // CentralConfig.instance.mls.LogInfo("Added non replaced enemy: " + oldEnemy.enemyType.enemyName);
                 }
             }
             return returnList; // and gets the list back

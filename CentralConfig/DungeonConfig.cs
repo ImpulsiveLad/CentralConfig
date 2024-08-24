@@ -10,6 +10,7 @@ using LethalLevelLoader.Tools;
 using UnityEngine;
 using System;
 using DunGen;
+using System.Collections;
 
 namespace CentralConfig
 {
@@ -191,7 +192,7 @@ namespace CentralConfig
                         InteriorEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Interior Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently featuring this dungeon, brackens will be replaced with hypothetical plantmen, and crawlers with hypothetical maulers.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
+                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently featuring this dungeon, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
                         DayTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Day Enemies",
@@ -201,7 +202,7 @@ namespace CentralConfig
                         DayEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Day Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently featuring this dungeon, manticoils will be replaced with hypothetical mantisoils, and docile locust bees with hypothetical angry moth wasps.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
+                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently featuring this dungeon, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
                         NightTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Night Enemies",
@@ -211,7 +212,7 @@ namespace CentralConfig
                         NightEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Night Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently featuring this dungeon, mouthdogs will be replaced with hypothetical oceandogs, and forestgiants with hypothetical firegiants.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
+                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently featuring this dungeon, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
                     }
                     if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
                     {
@@ -587,7 +588,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                        __instance.LengthMultiplier -= 10f/CentralConfig.SyncConfig.BracketTries;
+                        __instance.LengthMultiplier -= 10f / CentralConfig.SyncConfig.BracketTries;
                     }
                 }
                 else if (__instance.LengthMultiplier > 5f)
@@ -599,7 +600,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                        __instance.LengthMultiplier -= 5f/CentralConfig.SyncConfig.BracketTries;
+                        __instance.LengthMultiplier -= 5f / CentralConfig.SyncConfig.BracketTries;
                     }
                 }
                 else if (__instance.LengthMultiplier > 3f)
@@ -611,7 +612,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                        __instance.LengthMultiplier -= 3f/CentralConfig.SyncConfig.BracketTries;
+                        __instance.LengthMultiplier -= 3f / CentralConfig.SyncConfig.BracketTries;
                     }
                 }
                 else if (__instance.LengthMultiplier > 2f)
@@ -623,7 +624,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                        __instance.LengthMultiplier -= 2f/CentralConfig.SyncConfig.BracketTries;
+                        __instance.LengthMultiplier -= 2f / CentralConfig.SyncConfig.BracketTries;
                     }
                 }
                 else if (__instance.LengthMultiplier > 1f)
@@ -635,7 +636,7 @@ namespace CentralConfig
                     }
                     else
                     {
-                        __instance.LengthMultiplier -= 1f/CentralConfig.SyncConfig.BracketTries;
+                        __instance.LengthMultiplier -= 1f / CentralConfig.SyncConfig.BracketTries;
                     }
                 }
                 else
@@ -740,6 +741,7 @@ namespace CentralConfig
     [HarmonyPriority(69)]
     public class EnactDungeonInjections
     {
+        public static string EnemyTables;
         static void Postfix()
         {
             ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
@@ -790,6 +792,37 @@ namespace CentralConfig
                 LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
                 CentralConfig.instance.mls.LogInfo("Duplicate Enemies Removed.");
             }
+            if (CentralConfig.SyncConfig.LogEnemies)
+            {
+                ConfigAider.Instance.StartCoroutine(LogEnemyTables());
+            }
+        }
+        static IEnumerator LogEnemyTables()
+        {
+            yield return new WaitForSeconds(10);
+
+            List<SpawnableEnemyWithRarity> InteriorEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies;
+            EnemyTables += "\nInterior Enemy List for current game:";
+            foreach (SpawnableEnemyWithRarity enemy in InteriorEnemies)
+            {
+                EnemyTables += $"\n{enemy.enemyType.enemyName},{enemy.rarity}";
+            }
+
+            List<SpawnableEnemyWithRarity> DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies;
+            EnemyTables += "\n\nDaytime Enemy List for current game:";
+            foreach (SpawnableEnemyWithRarity enemy in DaytimeEnemies)
+            {
+                EnemyTables += $"\n{enemy.enemyType.enemyName},{enemy.rarity}";
+            }
+
+            List<SpawnableEnemyWithRarity> NightEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies;
+            EnemyTables += "\n\nNighttime Enemy List for current game:";
+            foreach (SpawnableEnemyWithRarity enemy in NightEnemies)
+            {
+                EnemyTables += $"\n{enemy.enemyType.enemyName},{enemy.rarity}";
+            }
+
+            CentralConfig.instance.mls.LogInfo(EnemyTables);
         }
     }
 }

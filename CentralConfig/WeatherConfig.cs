@@ -82,7 +82,7 @@ namespace CentralConfig
                         InteriorEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Interior Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently experiencing this weather, brackens will be replaced with hypothetical plantmen, and crawlers with hypothetical maulers.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
+                            "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently experiencing this weather, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
                         DayTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Day Enemies",
@@ -92,7 +92,7 @@ namespace CentralConfig
                         DayEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Day Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently experiencing this weather, manticoils will be replaced with hypothetical mantisoils, and docile locust bees with hypothetical angry moth wasps.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
+                            "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently experiencing this weather, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
                         NightTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Night Enemies",
@@ -102,7 +102,7 @@ namespace CentralConfig
                         NightEnemyReplacementW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Replace Night Enemies",
                             "Default Values Were Empty",
-                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently experiencing this weather, mouthdogs will be replaced with hypothetical oceandogs, and forestgiants with hypothetical firegiants.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
+                            "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently experiencing this weather, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
                     }
 
                     if (CentralConfig.SyncConfig.DoScrapWeatherInjections)

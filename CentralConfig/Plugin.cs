@@ -18,7 +18,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.10.8";
+        private const string modVersion = "0.10.9";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -143,7 +143,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> TimeSettings { get; private set; }
         [DataMember] public SyncedEntry<bool> UpdateTimeFaster { get; private set; }
         [DataMember] public SyncedEntry<int> BracketTries { get; private set; }
-
+        [DataMember] public SyncedEntry<bool> LogEnemies { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -337,6 +337,11 @@ namespace CentralConfig
                 "Enable Scrap Injection by Current Weather?",
                 false,
                 "If set to true, allows adding scrap to levels based on the current weather as well as multipliers to the scrap amount and individiual scrap values.");
+
+            LogEnemies = cfg.BindSyncedEntry("_Enemies_",
+                "Log Current Enemy Tables?",
+                false,
+                "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools 10 seconds after loading into the level.");
         }
     }
 }
