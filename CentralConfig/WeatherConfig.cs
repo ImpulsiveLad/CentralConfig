@@ -54,10 +54,11 @@ namespace CentralConfig
                 WeatherScrapAmountMultiplier = new Dictionary<string, SyncedEntry<float>>();
                 WeatherScrapValueMultiplier = new Dictionary<string, SyncedEntry<float>>();
 
-                List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList();
-                AllWeatherTypes.Add("Windy");
-                AllWeatherTypes.Add("Meteor Shower");
-                AllWeatherTypes.Add("Heatwave");
+                List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList(); ;
+                if (WRCompatibility.enabled)
+                {
+                    AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
+                }
                 string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
 
                 if (CentralConfig.SyncConfig.IsWeatherWhiteList)
@@ -70,7 +71,7 @@ namespace CentralConfig
                 }
                 foreach (string weatherType in AllWeatherTypes)
                 {
-                    string weatherName = weatherType.ToString();
+                    string weatherName = weatherType;
 
                     if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
                     {
@@ -146,10 +147,11 @@ namespace CentralConfig
         public static bool Ready = false;
         public void UpdateWeatherData()
         {
-            List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList();
-            AllWeatherTypes.Add("Windy");
-            AllWeatherTypes.Add("Meteor Shower");
-            AllWeatherTypes.Add("Heatwave");
+            List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList(); ;
+            if (WRCompatibility.enabled)
+            {
+                AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
+            }
             string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
 
             if (CentralConfig.SyncConfig.IsWeatherWhiteList)
@@ -162,7 +164,7 @@ namespace CentralConfig
             }
             foreach (string weatherType in AllWeatherTypes)
             {
-                string weatherName = weatherType.ToString();
+                string weatherName = weatherType;
 
                 if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
                 {
@@ -207,6 +209,7 @@ namespace CentralConfig
         static void Prefix()
         {
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
+            CentralConfig.instance.mls.LogInfo($"{weatherName}");
 
             if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
             {
@@ -279,7 +282,14 @@ namespace CentralConfig
             {
                 if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
                 {
-                    __instance.scrapValueMultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value;
+                    if (WRCompatibility.enabled)
+                    {
+                        __instance.scrapValueMultiplier = WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value * 0.4f;
+                    }
+                    else
+                    {
+                        __instance.scrapValueMultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value;
+                    }
                 }
                 if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier.ContainsKey(weatherName))
                 {

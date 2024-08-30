@@ -55,7 +55,7 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<int>> MinSpikeTrapOverride;
             [DataMember] public static Dictionary<string, SyncedEntry<int>> MaxSpikeTrapOverride;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> WeatherTypeOverride;
+            // [DataMember] public static Dictionary<string, SyncedEntry<string>> WeatherTypeOverride;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> AddTags;
             [DataMember] public static Dictionary<string, SyncedEntry<bool>> VisibleOverride;
             [DataMember] public static Dictionary<string, SyncedEntry<bool>> LockedOverride;
@@ -99,7 +99,7 @@ namespace CentralConfig
                 MinSpikeTrapOverride = new Dictionary<string, SyncedEntry<int>>();
                 MaxSpikeTrapOverride = new Dictionary<string, SyncedEntry<int>>();
 
-                WeatherTypeOverride = new Dictionary<string, SyncedEntry<string>>();
+                // WeatherTypeOverride = new Dictionary<string, SyncedEntry<string>>();
                 AddTags = new Dictionary<string, SyncedEntry<string>>();
 
                 VisibleOverride = new Dictionary<string, SyncedEntry<bool>>();
@@ -413,7 +413,7 @@ namespace CentralConfig
 
                     // Weather
 
-                    if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
+                    /*if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                     {
                         string PossibleWeatherArray = ConfigAider.ConvertWeatherArrayToString(level.SelectableLevel.randomWeathers);
 
@@ -421,7 +421,7 @@ namespace CentralConfig
                             PlanetName + " - Possible Weathers",
                             PossibleWeatherArray,
                             "Sets the possible weathers that can occur on the moon");
-                    }
+                    }*/
 
                     // Tags
 
@@ -486,18 +486,23 @@ namespace CentralConfig
         }
         static void Prefix()
         {
-            if (StartOfRound.Instance.randomMapSeed == 0 && NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton.IsHost)
             {
+                int seed;
                 if (CentralConfig.SyncConfig.RandomSeed < 0)
                 {
-                    StartOfRound.Instance.randomMapSeed = UnityEngine.Random.Range(1, 100000000);
+                    seed = UnityEngine.Random.Range(1, 100000000);
                 }
                 else
                 {
-                    StartOfRound.Instance.randomMapSeed = CentralConfig.SyncConfig.RandomSeed;
+                    seed = CentralConfig.SyncConfig.RandomSeed;
                 }
-                CentralConfig.instance.mls.LogInfo("Starting Seed " + StartOfRound.Instance.randomMapSeed);
+                if (StartOfRound.Instance.randomMapSeed <= 0)
+                {
+                    StartOfRound.Instance.randomMapSeed = seed;
+                }
             }
+            CentralConfig.instance.mls.LogInfo("Starting Seed " + StartOfRound.Instance.randomMapSeed);
             CentralConfig.ConfigFile = new CreateMoonConfig(CentralConfig.instance.Config); // Moon config is created when you join a lobby (So every other config is already applied)
         }
     }
@@ -601,7 +606,7 @@ namespace CentralConfig
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[PlanetName];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
-                    if (IntEnemies.Count > 0)
+                    if (IntEnemies != level.SelectableLevel.Enemies)
                     {
                         level.SelectableLevel.Enemies = IntEnemies;
                     }
@@ -611,7 +616,7 @@ namespace CentralConfig
                     string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyOverride[PlanetName];
                     Vector2 clampDayRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> DayEnemies = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
-                    if (DayEnemies.Count > 0)
+                    if (DayEnemies != level.SelectableLevel.DaytimeEnemies)
                     {
                         level.SelectableLevel.DaytimeEnemies = DayEnemies;
                     }
@@ -621,7 +626,7 @@ namespace CentralConfig
                     string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyOverride[PlanetName];
                     Vector2 clampNightRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> NightEnemies = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
-                    if (NightEnemies.Count > 0)
+                    if (NightEnemies != level.SelectableLevel.OutsideEnemies)
                     {
                         level.SelectableLevel.OutsideEnemies = NightEnemies;
                     }
@@ -670,7 +675,7 @@ namespace CentralConfig
 
                 // Weather
 
-                if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
+                /*if (CentralConfig.SyncConfig.DoMoonWeatherOverrides)
                 {
                     string WeatherStr = WaitForMoonsToRegister.CreateMoonConfig.WeatherTypeOverride[PlanetName];
                     RandomWeatherWithVariables[] PossibleWeathers = ConfigAider.ConvertStringToWeatherArray(WeatherStr);
@@ -680,7 +685,7 @@ namespace CentralConfig
 
                     Ororo Ororo = new Ororo();
                     Ororo.SetSinglePlanetWeather(level);
-                }
+                }*/
 
                 // Tags
 
@@ -923,7 +928,7 @@ namespace CentralConfig
             // CentralConfig.instance.mls.LogInfo("Updated lengthOfHours.");
         }
     }
-    public class Ororo
+    /*public class Ororo
     {
         public void SetSinglePlanetWeather(ExtendedLevel level)
         {
@@ -941,7 +946,7 @@ namespace CentralConfig
                 level.SelectableLevel.currentWeather = LevelWeatherType.None;
             }
         }
-    }
+    }*/
     [HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
     public static class ShowIntEnemyCount
     {

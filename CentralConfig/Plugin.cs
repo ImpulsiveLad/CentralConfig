@@ -10,15 +10,19 @@ using static CentralConfig.WaitForDungeonsToRegister;
 using static CentralConfig.MiscConfig;
 using static CentralConfig.WaitForTagsToRegister;
 using static CentralConfig.WaitForWeathersToRegister;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CentralConfig
 {
     [BepInPlugin(modGUID, modName, modVersion)]
+    [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.10.9";
+        private const string modVersion = "0.10.10";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -111,7 +115,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> DoScrapOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoEnemyOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoTrapOverrides { get; private set; }
-        [DataMember] public SyncedEntry<bool> DoMoonWeatherOverrides { get; private set; }
+        // [DataMember] public SyncedEntry<bool> DoMoonWeatherOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoDangerBools { get; private set; }
         [DataMember] public SyncedEntry<string> BlackListDungeons { get; private set; }
         [DataMember] public SyncedEntry<bool> IsDunWhiteList { get; private set; }
@@ -193,10 +197,10 @@ namespace CentralConfig
                 false,
                 "If set to true, allows altering of the min/max count for each trap on each moon.");
 
-            DoMoonWeatherOverrides = cfg.BindSyncedEntry("_Moons_",
+            /*DoMoonWeatherOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Weather Overrides?",
                 false,
-                "If set to true, allows altering of the possible weathers to each moon.\nBeware that adding new weathers to moons that didn't have them before will likely cause funky buggies.\nDO NOT USE WITH WEATHER REGISTRY!!");
+                "If set to true, allows altering of the possible weathers to each moon.\nBeware that adding new weathers to moons that didn't have them before will likely cause funky buggies.\nDO NOT USE WITH WEATHER REGISTRY!!");*/
 
             UpdateTimeFaster = cfg.BindSyncedEntry("~Misc~",
                 "Accurate Clock?",
@@ -231,7 +235,7 @@ namespace CentralConfig
             UseNewGen = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Generation Safeguards?",
                 true,
-                "If set to true, this refines the dungeon loading process to retry with various imput sizes.\nInstead of a hard-cap of 20 attempts, the dungeon will go through and attempt to generate with a different size until it succeeds.\nThis can only fail if the dungeon doesn't generate at any positive sizes.");
+                "If set to true, this refines the dungeon loading process to retry with various imput sizes.\nInstead of a hard-cap of 20 attempts, the dungeon will go through and attempt to generate with a different size until it succeeds.\nThis *should* only fail if the dungeon has its own generation issues or its size multiplier is reduced below an acceptable size to begin with.");
 
             UnShrankDungenTries = cfg.BindSyncedEntry("_Dungeons_",
                 "Retries before Changing Size",
@@ -246,12 +250,12 @@ namespace CentralConfig
             DoDunSizeOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Size Overrides?",
                 false,
-                "If set to true, allows altering of the min/max dungeon size multipliers, and the size scaler.\nThis also allows you to set the dungeon size multiplier applied by the individual moons.");
+                "If set to true, allows altering various dungeon size related numbers. This includes the moon-tied size multipliers, the Dungeon's Map Tile Size (which is divided from the moon's size), a Dungeon specific min/max size clamp applied after the MTS is factored in, the scaler to determine how strict the size clamp should be, and a Dungeon specific min/max random size multiplier applied after the clamping.");
 
             DoDungeonSelectionOverrides = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Dungeon Selection Overrides?",
                 false,
-                "If set to true, allows altering of the dungeon selection settings (By moon name, route price range, and mod name.");
+                "If set to true, allows altering the dungeon selection pool tied to the dungeon by moon name, level tags, route price range, and mod name.");
 
             DoEnemyInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Enemy Injection by Current Dungeon?",
@@ -342,6 +346,33 @@ namespace CentralConfig
                 "Log Current Enemy Tables?",
                 false,
                 "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools 10 seconds after loading into the level.");
+        }
+    }
+    public static class WRCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("mrov.WeatherRegistry");
+                }
+                return (bool)_enabled;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static List<string> GetAllWeathersWithWR()
+        {
+            List<string> weatherlist = WeatherRegistry.WeatherManager.RegisteredWeathers.Cast<WeatherRegistry.Weather>().Select(w => w.ToString()).ToList();
+            for (int i = 0; i < weatherlist.Count; i++)
+            {
+                weatherlist[i] = weatherlist[i].Replace(" (WeatherRegistry.Weather)", "");
+            }
+            return weatherlist;
         }
     }
 }

@@ -28,6 +28,8 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<float>> MaxDungeonSize;
             [DataMember] public static Dictionary<string, SyncedEntry<float>> DungeonSizeScaler;
             [DataMember] public static Dictionary<string, SyncedEntry<float>> MapTileSize;
+            [DataMember] public static Dictionary<string, SyncedEntry<int>> RandomSizeMin;
+            [DataMember] public static Dictionary<string, SyncedEntry<int>> RandomSizeMax;
 
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonPlanetNameList;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonTagList;
@@ -55,6 +57,8 @@ namespace CentralConfig
                 MaxDungeonSize = new Dictionary<string, SyncedEntry<float>>();
                 DungeonSizeScaler = new Dictionary<string, SyncedEntry<float>>();
                 MapTileSize = new Dictionary<string, SyncedEntry<float>>();
+                RandomSizeMin = new Dictionary<string, SyncedEntry<int>>();
+                RandomSizeMax = new Dictionary<string, SyncedEntry<int>>();
 
                 DungeonPlanetNameList = new Dictionary<string, SyncedEntry<string>>();
                 DungeonTagList = new Dictionary<string, SyncedEntry<string>>();
@@ -147,6 +151,16 @@ namespace CentralConfig
                             DungeonName + " - Map Tile Size",
                             dungeon.MapTileSize,
                             "The size multiplier from the moon is divided by this value before clamps are applied. It ensures that interiors with different '1x' tile counts and room sizes are comparable in total size.\nThe Facility is 1x and the Mansion is 1.5x in Vanilla.");
+
+                        RandomSizeMin[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Random Size Multiplier Min",
+                            dungeon.DungeonFlow.Length.Min,
+                            "The minimum random size multiplier applied to this dungeon's overall size AFTER all previous settings (inclusive).");
+
+                        RandomSizeMax[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Random Size Multiplier Max",
+                            dungeon.DungeonFlow.Length.Max,
+                            "The maximum random size multiplier applied to this dungeon's overall size AFTER all previous settings (inclusive).");
                     }
 
                     // Injection
@@ -264,6 +278,9 @@ namespace CentralConfig
                     dungeon.DynamicDungeonSizeMinMax = newSize;
 
                     dungeon.DynamicDungeonSizeLerpRate = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName];
+
+                    dungeon.DungeonFlow.Length.Min = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMin[DungeonName];
+                    dungeon.DungeonFlow.Length.Max = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMax[DungeonName];
                 }
 
                 // Injection
@@ -457,33 +474,45 @@ namespace CentralConfig
                 CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
                 __instance.dungeonGenerator.Generate();
                 /*for (int i = 0; i < 100; i++)
-                  {
-                      CentralConfig.instance.mls.LogInfo("Size Multiplier: " + NewMultiplier);
-                      __instance.dungeonGenerator.Generate();
-                      TileCounter.CountTiles();
-                      __instance.dungeonGenerator.Generator.Cancel();
-                      __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
-                      __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
-                      CentralConfig.instance.mls.LogInfo("Attempt # " + TileCounter.CallNumber);
-                  }
-                  int countsum = TileCounter.TileCounts.Sum();
-                  float averagecount = (float)countsum / TileCounter.TileCounts.Count;
-                  averagecount = (float)((double)Mathf.Round(averagecount * 100f) / 100.0);
+                {
+                    List<int> list = new List<int>();
+                    for (int f = 0; f < LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.Length; f++)
+                    {
+                        list.Add(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[f].rarity);
+                        // CentralConfig.instance.mls.LogInfo($"DungeonFlowType {i}: ID = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].id}, Rarity = {LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[i].rarity}");
+                    }
 
-                  float lengthsum = TileCounter.TileLengths.Sum();
-                  float averagelength = lengthsum / TileCounter.TileCounts.Count;
-                  float widthsum = TileCounter.TileWidths.Sum();
-                  float averagewidth = widthsum / TileCounter.TileWidths.Count;
-                  float heightsum = TileCounter.TileHeights.Sum();
-                  float averageheight = heightsum / TileCounter.TileHeights.Count;
+                    System.Random seededRandom = new System.Random();
+                    int DungeonID = __instance.GetRandomWeightedIndex(list.ToArray(), seededRandom);
+                    // CentralConfig.instance.mls.LogInfo($"Selected DungeonID: {DungeonID}");
 
-                  int min = TileCounter.TileCounts.Min();
-                  int max = TileCounter.TileCounts.Max();
+                    __instance.dungeonGenerator.Generator.DungeonFlow = __instance.dungeonFlowTypes[LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes[DungeonID].id].dungeonFlow;
+                    CentralConfig.instance.mls.LogInfo("Size Multiplier: " + NewMultiplier);
+                    __instance.dungeonGenerator.Generate();
+                    TileCounter.CountTiles();
+                    __instance.dungeonGenerator.Generator.Cancel();
+                    __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420 - InnerGenerateWithRetries.RetryCounter * 5;
+                    __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
+                    CentralConfig.instance.mls.LogInfo("Attempt # " + TileCounter.CallNumber);
+                }
+                int countsum = TileCounter.TileCounts.Sum();
+                float averagecount = (float)countsum / TileCounter.TileCounts.Count;
+                averagecount = (float)((double)Mathf.Round(averagecount * 100f) / 100.0);
 
-                  CentralConfig.instance.mls.LogInfo(TileCounter.BigLog);
-                  float FloorArea = averagelength * averagewidth;
-                  FloorArea = (float)((double)Mathf.Round(FloorArea * 100f) / 100.0);
-                  CentralConfig.instance.mls.LogInfo("Tests: " + TileCounter.TileCounts.Count + " sum: " + countsum + " average: " + averagecount + " min: " + min + " max: " + max + " Average Length: " + averagelength + " Average Height: " + averageheight + " Average Width: " + averagewidth + " Floor Area: " + FloorArea);*/
+                float lengthsum = TileCounter.TileLengths.Sum();
+                float averagelength = lengthsum / TileCounter.TileCounts.Count;
+                float widthsum = TileCounter.TileWidths.Sum();
+                float averagewidth = widthsum / TileCounter.TileWidths.Count;
+                float heightsum = TileCounter.TileHeights.Sum();
+                float averageheight = heightsum / TileCounter.TileHeights.Count;
+
+                int min = TileCounter.TileCounts.Min();
+                int max = TileCounter.TileCounts.Max();
+
+                CentralConfig.instance.mls.LogInfo(TileCounter.BigLog);
+                float FloorArea = averagelength * averagewidth;
+                FloorArea = (float)((double)Mathf.Round(FloorArea * 100f) / 100.0);
+                CentralConfig.instance.mls.LogInfo("Tests: " + TileCounter.TileCounts.Count + " sum: " + countsum + " average: " + averagecount + " min: " + min + " max: " + max + " Average Length: " + averagelength + " Average Height: " + averageheight + " Average Width: " + averagewidth + " Floor Area: " + FloorArea);*/
                 return false;
             }
 
@@ -690,8 +719,17 @@ namespace CentralConfig
     {
         static void Postfix(DungeonGenerator __instance)
         {
-            float finalMultiplier = __instance.LengthMultiplier;
-            CentralConfig.instance.mls.LogInfo("Final Length Multiplier " + finalMultiplier);
+            int randomValue = __instance.DungeonFlow.Length.GetRandom(__instance.RandomStream);
+            CentralConfig.instance.mls.LogInfo("Selected random value from IntRange: " + randomValue);
+
+            float multipliedValue = (float)randomValue * __instance.LengthMultiplier;
+            CentralConfig.instance.mls.LogInfo("Multiplied value: " + multipliedValue);
+
+            int roundedValue = Mathf.RoundToInt(multipliedValue);
+            CentralConfig.instance.mls.LogInfo("Rounded value: " + roundedValue);
+
+            int finalTargetLength = Mathf.Max(roundedValue, 2);
+            CentralConfig.instance.mls.LogInfo("Final target length: " + finalTargetLength);
         }
     }
     public static class TileCounter
@@ -742,6 +780,8 @@ namespace CentralConfig
     public class EnactDungeonInjections
     {
         public static string EnemyTables;
+        public static string AllEnemiesTable = "All Enemies Registered:";
+        public static string AllItemsTable = "All Items Registered:";
         static void Postfix()
         {
             ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
@@ -823,6 +863,22 @@ namespace CentralConfig
             }
 
             CentralConfig.instance.mls.LogInfo(EnemyTables);
+
+            /*List<EnemyType> AllEnemies = ConfigAider.GrabFullEnemyList();
+            var sortedEnemiesList = AllEnemies.OrderBy(type => type.enemyName).ToList();
+            foreach (EnemyType type in sortedEnemiesList)
+            {
+                AllEnemiesTable += $"\n{type.enemyName}";
+            }
+            CentralConfig.instance.mls.LogInfo(AllEnemiesTable);
+
+            List<Item> AllItems = ConfigAider.GrabFullItemList();
+            var sortedAllItemsList = AllItems.OrderBy(item => item.itemName).ToList();
+            foreach (Item item in sortedAllItemsList)
+            {
+                AllItemsTable += $"\n{item.itemName}";
+            }
+            CentralConfig.instance.mls.LogInfo(AllItemsTable);*/
         }
     }
 }
