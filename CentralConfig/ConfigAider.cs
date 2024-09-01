@@ -94,6 +94,12 @@ namespace CentralConfig
                     }
                 }
             }
+            List<string> newTags = SplitStringsByDaComma(CentralConfig.SyncConfig.NewTags);
+            foreach (string tag in newTags)
+            {
+                ContentTag newTag = ContentTag.Create(tag);
+                allContentTagsList.Add(newTag);
+            }
             return allContentTagsList;
         }
 
@@ -137,7 +143,7 @@ namespace CentralConfig
             }
         }
 
-        public static List<StringWithRarity> ConvertStringToList(string newInputString, Vector2 clampRarity)
+        public static List<StringWithRarity> ConvertStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
         {
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
@@ -189,7 +195,7 @@ namespace CentralConfig
             {
                 return new List<SpawnableEnemyWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToList(newInputString, clampRarity);
+            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
 
             List<EnemyType> AllEnemies = GrabFullEnemyList();
@@ -331,11 +337,11 @@ namespace CentralConfig
                                 returnList.Add(newEnemy); // adds this new enemy to the returnlist
                                 replacedEnemies.Add(originalName); // adds the replacement to the string list I made
                                 SuccessReplacementLogMessage += $"\nChance to replace was: {chanceToReplace}%";
-                                CentralConfig.instance.mls.LogInfo(SuccessReplacementLogMessage);
+                                // CentralConfig.instance.mls.LogInfo(SuccessReplacementLogMessage);
                             }
                             else
                             {
-                                CentralConfig.instance.mls.LogInfo($"Didn't replace enemy: {originalName} with {replacementName}, chance was only {chanceToReplace}%");
+                                // CentralConfig.instance.mls.LogInfo($"Didn't replace enemy: {originalName} with {replacementName}, chance was only {chanceToReplace}%");
                             }
                             EnemyList.Remove(enemy);
                         }
@@ -502,7 +508,7 @@ namespace CentralConfig
             {
                 return new List<SpawnableItemWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToList(newInputString, clampRarity);
+            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
 
             List<Item> allItems = GrabFullItemList();
@@ -597,11 +603,17 @@ namespace CentralConfig
         public static string ConvertTagsToString(List<ContentTag> contentTags)
         {
             string returnString = string.Empty;
-
             var sortedTagList = contentTags.OrderBy(contentTag => contentTag.contentTagName).ToList();
+            HashSet<string> uniqueTags = new HashSet<string>();
 
             foreach (ContentTag contentTag in sortedTagList)
-                returnString += CauterizeString(contentTag.contentTagName) + DaComma;
+            {
+                string tagName = CauterizeString(contentTag.contentTagName);
+                if (uniqueTags.Add(tagName))
+                {
+                    returnString += tagName + DaComma;
+                }
+            }
 
             if (returnString.EndsWith(","))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
@@ -845,7 +857,7 @@ namespace CentralConfig
             {
                 return new List<ExtendedDungeonFlowWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToList(newInputString, clampRarity);
+            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<ExtendedDungeonFlowWithRarity> returnList = new List<ExtendedDungeonFlowWithRarity>();
 
             List<ExtendedDungeonFlow> alldungeonFlows = PatchedContent.ExtendedDungeonFlows;

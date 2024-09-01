@@ -26,89 +26,103 @@ namespace CentralConfig
         public static SpawnableMapObject landmineObjectReference = null;
         public static SpawnableMapObject spikeRoofTrapHazardObjectReference = null;
 
+        public static List<SpawnableEnemyWithRarity> IEnemies = new List<SpawnableEnemyWithRarity>();
+        public static List<SpawnableEnemyWithRarity> DEnemies = new List<SpawnableEnemyWithRarity>();
+        public static List<SpawnableEnemyWithRarity> NEnemies = new List<SpawnableEnemyWithRarity>();
+        public static List<SpawnableItemWithRarity> Scrap = new List<SpawnableItemWithRarity>();
+
         [DataContract]
         public class CreateMoonConfig : ConfigTemplate
         {
             public static ConfigFile _cfg;
             // Declare config entries tied to the dictionary
 
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> RoutePriceOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> RiskLevelOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DescriptionOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> RoutePriceOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> RiskLevelOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> DescriptionOverride;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MinScrapOverrides;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MaxScrapOverrides;
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> ScrapValueMultiplier;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> ScrapListOverrides;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MinScrapOverrides;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MaxScrapOverrides;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<float>> ScrapValueMultiplier;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> ScrapListOverrides;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> InteriorEnemyPowerCountOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> DaytimeEnemyPowerCountOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DaytimeEnemyOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> NighttimeEnemyPowerCountOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> NighttimeEnemyOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> InteriorEnemyPowerCountOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> InteriorEnemyOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> DaytimeEnemyPowerCountOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> DaytimeEnemyOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> NighttimeEnemyPowerCountOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> NighttimeEnemyOverride;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MinTurretOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MaxTurretOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MinMineOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MaxMineOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MinSpikeTrapOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> MaxSpikeTrapOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MinTurretOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MaxTurretOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MinMineOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MaxMineOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MinSpikeTrapOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MaxSpikeTrapOverride;
 
             // [DataMember] public static Dictionary<string, SyncedEntry<string>> WeatherTypeOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> AddTags;
-            [DataMember] public static Dictionary<string, SyncedEntry<bool>> VisibleOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<bool>> LockedOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<bool>> TimeOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> TimeMultiplierOverride;
-            [DataMember] public static Dictionary<string, SyncedEntry<bool>> WatiForShipToLandBeforeTimeMoves;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> AddTags;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<bool>> VisibleOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<bool>> LockedOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<bool>> TimeOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<float>> TimeMultiplierOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<bool>> WatiForShipToLandBeforeTimeMoves;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> FaciltySizeOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<float>> FaciltySizeOverride;
 
-            public static Dictionary<string, float> MoonsNewScrapMultiplier = new Dictionary<string, float>();
+            public static Dictionary<ExtendedLevel, float> MoonsNewScrapMultiplier = new Dictionary<ExtendedLevel, float>();
 
             [DataMember] public static SyncedEntry<string> BigInteriorList { get; set; }
             [DataMember] public static SyncedEntry<string> BigDayTimeList { get; set; }
             [DataMember] public static SyncedEntry<string> BigNightTimeList { get; set; }
 
+            [DataMember] public static SyncedEntry<string> AddIndoorEnemiesToAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> AddDayEnemiesToAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> AddNightEnemiesToAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> ReplaceIndoorEnemiesOnAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> ReplaceDayEnemiesOnAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> ReplaceNightEnemiesOnAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> AddScrapToAllMoons { get; set; }
             public CreateMoonConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
                 _cfg = cfg;
                 // Intialize config entries tied to the dictionary
 
-                RoutePriceOverride = new Dictionary<string, SyncedEntry<int>>();
-                RiskLevelOverride = new Dictionary<string, SyncedEntry<string>>();
-                DescriptionOverride = new Dictionary<string, SyncedEntry<string>>();
+                RoutePriceOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                RiskLevelOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
+                DescriptionOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
 
-                MinScrapOverrides = new Dictionary<string, SyncedEntry<int>>();
-                MaxScrapOverrides = new Dictionary<string, SyncedEntry<int>>();
-                ScrapValueMultiplier = new Dictionary<string, SyncedEntry<float>>();
-                ScrapListOverrides = new Dictionary<string, SyncedEntry<string>>();
+                MinScrapOverrides = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MaxScrapOverrides = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                ScrapValueMultiplier = new Dictionary<ExtendedLevel, SyncedEntry<float>>();
+                ScrapListOverrides = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
 
-                InteriorEnemyPowerCountOverride = new Dictionary<string, SyncedEntry<int>>();
-                InteriorEnemyOverride = new Dictionary<string, SyncedEntry<string>>();
-                DaytimeEnemyPowerCountOverride = new Dictionary<string, SyncedEntry<int>>();
-                DaytimeEnemyOverride = new Dictionary<string, SyncedEntry<string>>();
-                NighttimeEnemyPowerCountOverride = new Dictionary<string, SyncedEntry<int>>();
-                NighttimeEnemyOverride = new Dictionary<string, SyncedEntry<string>>();
+                InteriorEnemyPowerCountOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                InteriorEnemyOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
+                DaytimeEnemyPowerCountOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                DaytimeEnemyOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
+                NighttimeEnemyPowerCountOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                NighttimeEnemyOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
 
-                MinTurretOverride = new Dictionary<string, SyncedEntry<int>>();
-                MaxTurretOverride = new Dictionary<string, SyncedEntry<int>>();
-                MinMineOverride = new Dictionary<string, SyncedEntry<int>>();
-                MaxMineOverride = new Dictionary<string, SyncedEntry<int>>();
-                MinSpikeTrapOverride = new Dictionary<string, SyncedEntry<int>>();
-                MaxSpikeTrapOverride = new Dictionary<string, SyncedEntry<int>>();
+                MinTurretOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MaxTurretOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MinMineOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MaxMineOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MinSpikeTrapOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
+                MaxSpikeTrapOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
 
                 // WeatherTypeOverride = new Dictionary<string, SyncedEntry<string>>();
-                AddTags = new Dictionary<string, SyncedEntry<string>>();
+                AddTags = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
 
-                VisibleOverride = new Dictionary<string, SyncedEntry<bool>>();
-                LockedOverride = new Dictionary<string, SyncedEntry<bool>>();
-                TimeOverride = new Dictionary<string, SyncedEntry<bool>>();
-                TimeMultiplierOverride = new Dictionary<string, SyncedEntry<float>>();
-                WatiForShipToLandBeforeTimeMoves = new Dictionary<string, SyncedEntry<bool>>();
+                VisibleOverride = new Dictionary<ExtendedLevel, SyncedEntry<bool>>();
+                LockedOverride = new Dictionary<ExtendedLevel, SyncedEntry<bool>>();
+                TimeOverride = new Dictionary<ExtendedLevel, SyncedEntry<bool>>();
+                TimeMultiplierOverride = new Dictionary<ExtendedLevel, SyncedEntry<float>>();
+                WatiForShipToLandBeforeTimeMoves = new Dictionary<ExtendedLevel, SyncedEntry<bool>>();
 
-                FaciltySizeOverride = new Dictionary<string, SyncedEntry<float>>();
+                FaciltySizeOverride = new Dictionary<ExtendedLevel, SyncedEntry<float>>();
+
+                ResetChanger.SavePlanetData();
 
                 List<ExtendedLevel> allExtendedLevels;
                 string ignoreList = CentralConfig.SyncConfig.BlacklistMoons.Value;
@@ -129,17 +143,17 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoGenOverrides)
                     {
-                        RoutePriceOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName, // Assigns the config with the dictionary so that it is unique to the level/moon/planet
+                        RoutePriceOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName, // Assigns the config with the dictionary so that it is unique to the level/moon/planet
                             PlanetName + " - Route Price",
                             level.RoutePrice,
                             "Sets the cost of routing to the moon.");
 
-                        RiskLevelOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        RiskLevelOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Risk Level",
                             level.SelectableLevel.riskLevel,
                             "Sets the risk level of the moon (only visual).");
 
-                        DescriptionOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        DescriptionOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Description",
                             level.SelectableLevel.LevelDescription,
                             "Sets the description of the moon, \\n is used to go to the next line (basically the enter key) (only visual).");
@@ -149,24 +163,24 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoScrapOverrides)
                     {
-                        MinScrapOverrides[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        MinScrapOverrides[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Min Scrap",
                             level.SelectableLevel.minScrap,
                             "Sets the minimum amount of scrap to generate on the moon.");
 
-                        MaxScrapOverrides[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        MaxScrapOverrides[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Max Scrap",
                             level.SelectableLevel.maxScrap,
                             "Sets the maximum amount of scrap to generate on the moon.");
 
-                        ScrapValueMultiplier[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        ScrapValueMultiplier[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " -  Scrap Value Multiplier",
                             1f,
                             "Each scrap object on this moon will have its personal min/max values multiplied by this amount.");
 
                         string ScrapList = ConfigAider.ConvertItemListToString(level.SelectableLevel.spawnableScrap); // Method turns the scrap list into string (check postfix)
 
-                        ScrapListOverrides[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        ScrapListOverrides[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Scrap List",
                             ScrapList,
                             "Sets the list of scrap with attached rarities to generate on the moon.");
@@ -176,38 +190,38 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoEnemyOverrides)
                     {
-                        InteriorEnemyPowerCountOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        InteriorEnemyPowerCountOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Interior Enemy Power",
                             level.SelectableLevel.maxEnemyPowerCount,
                             "Sets the power available for interior enemies on the moon.");
 
                         string InteriorEnemyList = ConfigAider.ConvertEnemyListToString(level.SelectableLevel.Enemies); // As above with these lists
 
-                        InteriorEnemyOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        InteriorEnemyOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Interior Enemy List",
                             InteriorEnemyList,
                             "Sets the spawn weights for interior enemies on the moon.");
 
-                        DaytimeEnemyPowerCountOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        DaytimeEnemyPowerCountOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Daytime Enemy Power",
                             level.SelectableLevel.maxDaytimeEnemyPowerCount,
                             "Sets the power available for daytime enemies on the moon.");
 
                         string DaytimeEnemyList = ConfigAider.ConvertEnemyListToString(level.SelectableLevel.DaytimeEnemies);
 
-                        DaytimeEnemyOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        DaytimeEnemyOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Daytime Enemy List",
                             DaytimeEnemyList,
                             "Sets the spawn weights for daytime enemies on the moon.");
 
-                        NighttimeEnemyPowerCountOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        NighttimeEnemyPowerCountOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Nighttime Enemy Power",
                             level.SelectableLevel.maxOutsideEnemyPowerCount,
                             "Sets the power available for nighttime enemies on the moon.");
 
                         string NighttimeEnemyList = ConfigAider.ConvertEnemyListToString(level.SelectableLevel.OutsideEnemies);
 
-                        NighttimeEnemyOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        NighttimeEnemyOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Nighttime Enemy List",
                             NighttimeEnemyList,
                             "Sets the spawn weights for nighttime enemies on the moon.");
@@ -227,12 +241,12 @@ namespace CentralConfig
                             int leftMost = (int)Math.Round(numberToSpawnCurve.Evaluate(0));
                             int rightMost = (int)Math.Round(numberToSpawnCurve.Evaluate(numberToSpawnCurve.keys[numberToSpawnCurve.length - 1].time));
 
-                            MinTurretOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinTurretOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Turrets",
                                 leftMost,
                                 "Sets the minimum number of turrets to spawn on the moon.");
 
-                            MaxTurretOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxTurretOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Turrets",
                                 rightMost,
                                 "Sets the maximum number of turrets to spawn on the moon.");
@@ -249,12 +263,12 @@ namespace CentralConfig
                         }
                         else
                         {
-                            MinTurretOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinTurretOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Turrets",
                                 0,
                                 "Sets the minimum number of turrets to spawn on the moon.");
 
-                            MaxTurretOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxTurretOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Turrets",
                                 0,
                                 "Sets the maximum number of turrets to spawn on the moon.");
@@ -290,12 +304,12 @@ namespace CentralConfig
                             int leftMost = (int)Math.Round(numberToSpawnCurve.Evaluate(0));
                             int rightMost = (int)Math.Round(numberToSpawnCurve.Evaluate(numberToSpawnCurve.keys[numberToSpawnCurve.length - 1].time));
 
-                            MinMineOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinMineOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Mines",
                                 leftMost,
                                 "Sets the minimum number of mines to spawn on the moon.");
 
-                            MaxMineOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxMineOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Mines",
                                 rightMost,
                                 "Sets the maximum number of mines to spawn on the moon.");
@@ -312,12 +326,12 @@ namespace CentralConfig
                         }
                         else
                         {
-                            MinMineOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinMineOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Mines",
                                 0,
                                 "Sets the minimum number of mines to spawn on the moon.");
 
-                            MaxMineOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxMineOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Mines",
                                 0,
                                 "Sets the maximum number of mines to spawn on the moon.");
@@ -353,12 +367,12 @@ namespace CentralConfig
                             int leftMost = (int)Math.Round(numberToSpawnCurve.Evaluate(0));
                             int rightMost = (int)Math.Round(numberToSpawnCurve.Evaluate(numberToSpawnCurve.keys[numberToSpawnCurve.length - 1].time));
 
-                            MinSpikeTrapOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinSpikeTrapOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Spike Traps",
                                 leftMost,
                                 "Sets the minimum number of spike traps to spawn on the moon.");
 
-                            MaxSpikeTrapOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxSpikeTrapOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Spike Traps",
                                 rightMost,
                                 "Sets the maximum number of spike traps to spawn on the moon.");
@@ -375,12 +389,12 @@ namespace CentralConfig
                         }
                         else
                         {
-                            MinSpikeTrapOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MinSpikeTrapOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Min Spike Traps",
                                 0,
                                 "Sets the minimum number of spike traps to spawn on the moon.");
 
-                            MaxSpikeTrapOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            MaxSpikeTrapOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Max Spike Traps",
                                 0,
                                 "Sets the maximum number of spike traps to spawn on the moon.");
@@ -429,7 +443,7 @@ namespace CentralConfig
                     {
                         string ContentTags = ConfigAider.ConvertTagsToString(level.ContentTags);
 
-                        AddTags[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        AddTags[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Content Tags",
                             ContentTags,
                             "Add new content tags to the moon (The tags shown in the default value cannot be removed).");
@@ -439,14 +453,14 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoDangerBools)
                     {
-                        VisibleOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        VisibleOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Should The Moon Be Hidden?",
                             level.IsRouteHidden,
                         "Set to true to hide the moon in the terminal.");
 
                         if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
                         {
-                            LockedOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            LockedOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                                 PlanetName + " - Should The Moon Be Locked?",
                                 level.IsRouteLocked,
                                 "Set to true to prevent visiting the moon.");
@@ -454,17 +468,17 @@ namespace CentralConfig
                     }
                     if (CentralConfig.SyncConfig.TimeSettings)
                     {
-                        TimeOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        TimeOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Should The Moon Have Time?",
                             level.SelectableLevel.planetHasTime,
                             "Set to true to enable time progression. Set to false for no time progression.");
 
-                        TimeMultiplierOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        TimeMultiplierOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Day Speed Multiplier",
                             1.4f,
                             "Adjusts the speed of day progression. For example, 2.8 will be twice as fast as vanilla.");
 
-                        WatiForShipToLandBeforeTimeMoves[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        WatiForShipToLandBeforeTimeMoves[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Should Time Wait on the Ship?",
                             true,
                             "Set to true to make time only progress AFTER the ship has landed.");
@@ -474,11 +488,49 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoDunSizeOverrides)
                     {
-                        FaciltySizeOverride[PlanetName] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                        FaciltySizeOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
                             PlanetName + " - Dungeon Size",
                             level.SelectableLevel.factorySizeMultiplier,
                             "Sets the dungeon size multiplier granted by this moon.");
                     }
+                }
+
+                if (CentralConfig.SyncConfig.GlobalEnemyAndScrap)
+                {
+                    AddIndoorEnemiesToAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Add Indoor Enemies To All Moons",
+                        "Default Values Were Empty",
+                        "Enemies in the 'EnemyName:Rarity' format will be added to the indoor enemy pool on every moon (Before manipulation by tags, current weather, and current dungeon).");
+
+                    ReplaceIndoorEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Replace Indoor Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn all moons, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
+
+                    AddDayEnemiesToAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Add Day Enemies To All Moons",
+                        "Default Values Were Empty",
+                        "Enemies in the 'EnemyName:Rarity' format will be added to the daytime enemy pool on every moon (Before manipulation by tags, current weather, and current dungeon).");
+
+                    ReplaceDayEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Replace Day Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn all moons, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
+
+                    AddNightEnemiesToAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Add Night Enemies To All Moons",
+                        "Default Values Were Empty",
+                        "Enemies in the 'EnemyName:Rarity' format will be added to the night enemy pool on every moon (Before manipulation by tags, current weather, and current dungeon).");
+
+                    ReplaceNightEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Replace Night Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn all moons, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
+
+                    AddScrapToAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Add Scrap To All Moons",
+                        "Default Values Were Empty",
+                        "Scrap in the 'ScrapName:Rarity; format will be added to the scrap pool on every moon.");
                 }
                 ConfigAider.Instance.CleanConfig(cfg); // Cleans out orphaned config entries (ones that you don't want to use anymore)
                 CentralConfig.instance.mls.LogInfo("Moon config has been registered.");
@@ -502,7 +554,6 @@ namespace CentralConfig
                     StartOfRound.Instance.randomMapSeed = seed;
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Starting Seed " + StartOfRound.Instance.randomMapSeed);
             CentralConfig.ConfigFile = new CreateMoonConfig(CentralConfig.instance.Config); // Moon config is created when you join a lobby (So every other config is already applied)
         }
     }
@@ -531,25 +582,25 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoGenOverrides)
                 {
-                    level.RoutePrice = WaitForMoonsToRegister.CreateMoonConfig.RoutePriceOverride[PlanetName]; // These are just easy variables
+                    level.RoutePrice = WaitForMoonsToRegister.CreateMoonConfig.RoutePriceOverride[level]; // These are just easy variables
 
-                    level.SelectableLevel.riskLevel = WaitForMoonsToRegister.CreateMoonConfig.RiskLevelOverride[PlanetName];
+                    level.SelectableLevel.riskLevel = WaitForMoonsToRegister.CreateMoonConfig.RiskLevelOverride[level];
 
-                    level.SelectableLevel.LevelDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[PlanetName];
-                    level.OverrideRouteNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[PlanetName];
-                    level.OverrideRouteConfirmNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[PlanetName];
-                    level.OverrideInfoNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[PlanetName];
+                    level.SelectableLevel.LevelDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[level];
+                    level.OverrideRouteNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[level];
+                    level.OverrideRouteConfirmNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[level];
+                    level.OverrideInfoNodeDescription = WaitForMoonsToRegister.CreateMoonConfig.DescriptionOverride[level];
                 }
 
                 // Scrap
 
                 if (CentralConfig.SyncConfig.DoScrapOverrides)
                 {
-                    level.SelectableLevel.minScrap = WaitForMoonsToRegister.CreateMoonConfig.MinScrapOverrides[PlanetName];
-                    level.SelectableLevel.maxScrap = WaitForMoonsToRegister.CreateMoonConfig.MaxScrapOverrides[PlanetName];
+                    level.SelectableLevel.minScrap = WaitForMoonsToRegister.CreateMoonConfig.MinScrapOverrides[level];
+                    level.SelectableLevel.maxScrap = WaitForMoonsToRegister.CreateMoonConfig.MaxScrapOverrides[level];
 
                     // ScrapList
-                    string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[PlanetName]; // Ok so the lists kinda suck
+                    string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[level]; // Ok so the lists kinda suck
                     Vector2 clamprarity = new Vector2(0, 99999);
                     List<SpawnableItemWithRarity> scrap = ConfigAider.ConvertStringToItemList(scrapStr, clamprarity); // This method turns the string back into a list
                     if (scrap.Count > 0)
@@ -566,7 +617,7 @@ namespace CentralConfig
                     {
                         if (level.SelectableLevel.maxEnemyPowerCount != 0)
                         {
-                            float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxEnemyPowerCount;
+                            float Intmultiplier = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[level] / level.SelectableLevel.maxEnemyPowerCount;
                             if (Intmultiplier != 1)
                             {
                                 AnimationCurve IntCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, Intmultiplier, level.NumberlessPlanetName, "Interior Curve");
@@ -578,7 +629,7 @@ namespace CentralConfig
                         }
                         if (level.SelectableLevel.maxDaytimeEnemyPowerCount != 0)
                         {
-                            float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
+                            float Daymultiplier = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[level] / level.SelectableLevel.maxDaytimeEnemyPowerCount;
                             if (Daymultiplier != 1)
                             {
                                 AnimationCurve DayCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, Daymultiplier, level.NumberlessPlanetName, "Daytime Curve");
@@ -590,7 +641,7 @@ namespace CentralConfig
                         }
                         if (level.SelectableLevel.maxOutsideEnemyPowerCount != 0)
                         {
-                            float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName] / level.SelectableLevel.maxOutsideEnemyPowerCount;
+                            float Noxmultiplier = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[level] / level.SelectableLevel.maxOutsideEnemyPowerCount;
                             if (Noxmultiplier != 1)
                             {
                                 AnimationCurve NoxCurve = ConfigAider.MultiplyYValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, Noxmultiplier, level.NumberlessPlanetName, "Nighttime Curve");
@@ -601,9 +652,9 @@ namespace CentralConfig
                             }
                         }
                     }
-                    level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[PlanetName]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
+                    level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[level]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
                     // InteriorEnemyList
-                    string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[PlanetName];
+                    string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[level];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                     if (IntEnemies != level.SelectableLevel.Enemies)
@@ -611,9 +662,9 @@ namespace CentralConfig
                         level.SelectableLevel.Enemies = IntEnemies;
                     }
 
-                    level.SelectableLevel.maxDaytimeEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[PlanetName];
+                    level.SelectableLevel.maxDaytimeEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[level];
                     // DaytimeEnemyList
-                    string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyOverride[PlanetName];
+                    string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyOverride[level];
                     Vector2 clampDayRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> DayEnemies = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                     if (DayEnemies != level.SelectableLevel.DaytimeEnemies)
@@ -621,14 +672,52 @@ namespace CentralConfig
                         level.SelectableLevel.DaytimeEnemies = DayEnemies;
                     }
 
-                    level.SelectableLevel.maxOutsideEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[PlanetName];
+                    level.SelectableLevel.maxOutsideEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[level];
                     // NighttimeEnemyList
-                    string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyOverride[PlanetName];
+                    string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyOverride[level];
                     Vector2 clampNightRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> NightEnemies = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                     if (NightEnemies != level.SelectableLevel.OutsideEnemies)
                     {
                         level.SelectableLevel.OutsideEnemies = NightEnemies;
+                    }
+                }
+                if (CentralConfig.SyncConfig.GlobalEnemyAndScrap)
+                {
+                    string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddIndoorEnemiesToAllMoons;
+                    Vector2 clampIntRarity = new Vector2(0, 99999);
+                    List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
+                    WaitForMoonsToRegister.IEnemies = interiorenemyList;
+
+                    string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddDayEnemiesToAllMoons;
+                    Vector2 clampDayRarity = new Vector2(0, 99999);
+                    List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
+                    WaitForMoonsToRegister.DEnemies = dayenemyList;
+
+                    string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddNightEnemiesToAllMoons;
+                    Vector2 clampNightRarity = new Vector2(0, 99999);
+                    List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
+                    WaitForMoonsToRegister.NEnemies = nightenemyList;
+
+                    string ScrStr = WaitForMoonsToRegister.CreateMoonConfig.AddScrapToAllMoons;
+                    Vector2 clampScrRarity = new Vector2(0, 99999);
+                    List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
+                    WaitForMoonsToRegister.Scrap = scraplist;
+
+                    level.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.Enemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceIndoorEnemiesOnAllMoons);
+                    if (WaitForMoonsToRegister.IEnemies.Count > 0)
+                    {
+                        level.SelectableLevel.Enemies = level.SelectableLevel.Enemies.Concat(WaitForMoonsToRegister.IEnemies).ToList();
+                    }
+                    level.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.DaytimeEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceDayEnemiesOnAllMoons);
+                    if (WaitForMoonsToRegister.DEnemies.Count > 0)
+                    {
+                        level.SelectableLevel.DaytimeEnemies = level.SelectableLevel.DaytimeEnemies.Concat(WaitForMoonsToRegister.DEnemies).ToList();
+                    }
+                    level.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.OutsideEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceNightEnemiesOnAllMoons);
+                    if (WaitForMoonsToRegister.NEnemies.Count > 0)
+                    {
+                        level.SelectableLevel.OutsideEnemies = level.SelectableLevel.OutsideEnemies.Concat(WaitForMoonsToRegister.NEnemies).ToList();
                     }
                 }
 
@@ -641,8 +730,8 @@ namespace CentralConfig
                     var turretContainerObject = level.SelectableLevel.spawnableMapObjects.FirstOrDefault(mo => mo.prefabToSpawn.name == "TurretContainer");
                     if (turretContainerObject != null)
                     {
-                        int minTurrets = WaitForMoonsToRegister.CreateMoonConfig.MinTurretOverride[PlanetName];
-                        int maxTurrets = WaitForMoonsToRegister.CreateMoonConfig.MaxTurretOverride[PlanetName];
+                        int minTurrets = WaitForMoonsToRegister.CreateMoonConfig.MinTurretOverride[level];
+                        int maxTurrets = WaitForMoonsToRegister.CreateMoonConfig.MaxTurretOverride[level];
 
                         Keyframe key1 = new Keyframe(0, minTurrets);
                         Keyframe key2 = new Keyframe(1, maxTurrets);
@@ -652,8 +741,8 @@ namespace CentralConfig
                     var landmineObject = level.SelectableLevel.spawnableMapObjects.FirstOrDefault(mo => mo.prefabToSpawn.name == "Landmine");
                     if (landmineObject != null)
                     {
-                        int minMines = WaitForMoonsToRegister.CreateMoonConfig.MinMineOverride[PlanetName];
-                        int maxMines = WaitForMoonsToRegister.CreateMoonConfig.MaxMineOverride[PlanetName];
+                        int minMines = WaitForMoonsToRegister.CreateMoonConfig.MinMineOverride[level];
+                        int maxMines = WaitForMoonsToRegister.CreateMoonConfig.MaxMineOverride[level];
 
                         Keyframe key1 = new Keyframe(0, minMines);
                         Keyframe key2 = new Keyframe(1, maxMines);
@@ -663,8 +752,8 @@ namespace CentralConfig
                     var spikeRoofTrapHazardObject = level.SelectableLevel.spawnableMapObjects.FirstOrDefault(mo => mo.prefabToSpawn.name == "SpikeRoofTrapHazard");
                     if (spikeRoofTrapHazardObject != null)
                     {
-                        int minSpikes = WaitForMoonsToRegister.CreateMoonConfig.MinSpikeTrapOverride[PlanetName];
-                        int maxSpikes = WaitForMoonsToRegister.CreateMoonConfig.MaxSpikeTrapOverride[PlanetName];
+                        int minSpikes = WaitForMoonsToRegister.CreateMoonConfig.MinSpikeTrapOverride[level];
+                        int maxSpikes = WaitForMoonsToRegister.CreateMoonConfig.MaxSpikeTrapOverride[level];
 
                         Keyframe key1 = new Keyframe(0, minSpikes);
                         Keyframe key2 = new Keyframe(1, maxSpikes);
@@ -691,7 +780,7 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
                 {
-                    string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[PlanetName];
+                    string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[level];
                     List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
                     if (MoonTags.Count > 0)
                     {
@@ -703,22 +792,22 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoDangerBools)
                 {
-                    level.IsRouteHidden = WaitForMoonsToRegister.CreateMoonConfig.VisibleOverride[PlanetName];
+                    level.IsRouteHidden = WaitForMoonsToRegister.CreateMoonConfig.VisibleOverride[level];
                     if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
                     {
-                        level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[PlanetName];
+                        level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[level];
                     }
                 }
                 if (CentralConfig.SyncConfig.TimeSettings)
                 {
-                    level.SelectableLevel.planetHasTime = WaitForMoonsToRegister.CreateMoonConfig.TimeOverride[PlanetName];
+                    level.SelectableLevel.planetHasTime = WaitForMoonsToRegister.CreateMoonConfig.TimeOverride[level];
                 }
 
                 // Dungeon Size
 
                 if (CentralConfig.SyncConfig.DoDunSizeOverrides)
                 {
-                    level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[PlanetName];
+                    level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[level];
                 }
             }
             if (CentralConfig.SyncConfig.BigEnemyList)
@@ -747,7 +836,14 @@ namespace CentralConfig
                 ConfigAider.SetBigList(2, WaitForMoonsToRegister.CreateMoonConfig.BigNightTimeList);
             }
             CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
+            ConfigAider.Instance.StartCoroutine(LogSeed());
             Ready = true;
+        }
+        static IEnumerator LogSeed()
+        {
+            yield return new WaitForSeconds(10);
+
+            CentralConfig.instance.mls.LogInfo($"Starting Seed: {StartOfRound.Instance.randomMapSeed}");
         }
     }
     [HarmonyPatch(typeof(HangarShipDoor), "Start")]
@@ -790,20 +886,19 @@ namespace CentralConfig
                 __instance.hourTimeBetweenEnemySpawnBatches = 1;
             }
 
-            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
             if (CentralConfig.SyncConfig.DoScrapOverrides)
             {
-                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(currentMoon))
+                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
                 {
-                    if (!WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(currentMoon))
+                    if (!WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
                     {
-                        float newMultiplier = __instance.scrapValueMultiplier * WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[currentMoon].Value;
-                        WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[currentMoon] = newMultiplier;
+                        float newMultiplier = __instance.scrapValueMultiplier * WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[LevelManager.CurrentExtendedLevel].Value;
+                        WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel] = newMultiplier;
                         __instance.scrapValueMultiplier = newMultiplier;
                     }
                     else
                     {
-                        __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[currentMoon];
+                        __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel];
                     }
                 }
             }
@@ -819,17 +914,17 @@ namespace CentralConfig
                 return true;
             }
             StartOfRound startOfRound = StartOfRound.Instance;
-            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves.ContainsKey(currentMoon))
+
+            if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
-                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[currentMoon].Value)
+                if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves[LevelManager.CurrentExtendedLevel].Value)
                 {
                     if (!startOfRound.shipHasLanded && !__instance.shipLeavingAlertCalled)
                     {
                         return false;
                     }
                 }
-                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+                __instance.globalTimeSpeedMultiplier = WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[LevelManager.CurrentExtendedLevel].Value;
             }
 
             float num = __instance.globalTime;
@@ -910,22 +1005,27 @@ namespace CentralConfig
             StartOfRound.Instance.speakerAudioSource.PlayOneShot(StartOfRound.Instance.zeroDaysLeftAlertSFX);
         }
     }
-    [HarmonyPatch(typeof(StartOfRound), "SetMapScreenInfoToCurrentLevel")]
+    [HarmonyPatch(typeof(StartOfRound), "ChangeLevel")]
     public static class UpdateLengthOfDay
     {
-        static void Prefix()
+        static void Postfix()
         {
             if (!CentralConfig.SyncConfig.TimeSettings)
             {
                 return;
             }
-            string currentMoon = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
+
             TimeOfDay timeOfDay = UnityEngine.Object.FindObjectOfType<TimeOfDay>();
-            if (WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride.ContainsKey(currentMoon))
+            if (WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
-                timeOfDay.lengthOfHours = 100f / WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[currentMoon].Value;
+                timeOfDay.lengthOfHours = 100f / WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[LevelManager.CurrentExtendedLevel].Value;
+            }
+            else
+            {
+                timeOfDay.lengthOfHours = 100f;
             }
             // CentralConfig.instance.mls.LogInfo("Updated lengthOfHours.");
+            // CentralConfig.instance.mls.LogInfo(LevelManager.CurrentExtendedLevel.NumberlessPlanetName);
         }
     }
     /*public class Ororo

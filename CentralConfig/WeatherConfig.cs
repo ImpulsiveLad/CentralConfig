@@ -254,28 +254,26 @@ namespace CentralConfig
         {
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
 
-            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-
-            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) || !WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName))
+            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
-                WeatherScrapData.OriginalMinScrap[PlanetName] = LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap;
-                WeatherScrapData.OriginalMaxScrap[PlanetName] = LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap;
+                WeatherScrapData.OriginalMinScrap[LevelManager.CurrentExtendedLevel] = LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap;
+                WeatherScrapData.OriginalMaxScrap[LevelManager.CurrentExtendedLevel] = LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap;
                 if (CentralConfig.SyncConfig.DoScrapOverrides)
                 {
-                    if (WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(PlanetName))
+                    if (WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
                     {
-                        WeatherScrapData.OriginalScrapValues[PlanetName] = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[PlanetName];
+                        WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel];
                     }
                     else
                     {
-                        WeatherScrapData.OriginalScrapValues[PlanetName] = 0.4f;
+                        WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = 0.4f;
                     }
                 }
                 else
                 {
-                    WeatherScrapData.OriginalScrapValues[PlanetName] = 0.4f;
+                    WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = 0.4f;
                 }
-                CentralConfig.instance.mls.LogInfo("Saved Scrap count/value for: " + PlanetName);
+                CentralConfig.instance.mls.LogInfo("Saved Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
 
             if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
@@ -301,22 +299,21 @@ namespace CentralConfig
     }
     public static class WeatherScrapData
     {
-        public static Dictionary<string, int> OriginalMinScrap = new Dictionary<string, int>();
-        public static Dictionary<string, int> OriginalMaxScrap = new Dictionary<string, int>();
-        public static Dictionary<string, float> OriginalScrapValues = new Dictionary<string, float>();
+        public static Dictionary<ExtendedLevel, int> OriginalMinScrap = new Dictionary<ExtendedLevel, int>();
+        public static Dictionary<ExtendedLevel, int> OriginalMaxScrap = new Dictionary<ExtendedLevel, int>();
+        public static Dictionary<ExtendedLevel, float> OriginalScrapValues = new Dictionary<ExtendedLevel, float>();
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ResetMoonsScrapAfterWeather
     {
         static void Prefix()
         {
-            string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            if (WeatherScrapData.OriginalMinScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalMaxScrap.ContainsKey(PlanetName) && WeatherScrapData.OriginalScrapValues.ContainsKey(PlanetName))
+            if (WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = WeatherScrapData.OriginalMinScrap[PlanetName];
-                LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = WeatherScrapData.OriginalMaxScrap[PlanetName];
-                WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[PlanetName] = WeatherScrapData.OriginalScrapValues[PlanetName];
-                CentralConfig.instance.mls.LogInfo("Reverted Scrap count/value for: " + PlanetName);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = WeatherScrapData.OriginalMinScrap[LevelManager.CurrentExtendedLevel];
+                LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = WeatherScrapData.OriginalMaxScrap[LevelManager.CurrentExtendedLevel];
+                WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel] = WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel];
+                CentralConfig.instance.mls.LogInfo("Reverted Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
         }
     }

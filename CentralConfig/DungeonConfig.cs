@@ -24,59 +24,59 @@ namespace CentralConfig
         {
             // Declare config entries tied to the dictionary
 
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> MinDungeonSize;
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> MaxDungeonSize;
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> DungeonSizeScaler;
-            [DataMember] public static Dictionary<string, SyncedEntry<float>> MapTileSize;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> RandomSizeMin;
-            [DataMember] public static Dictionary<string, SyncedEntry<int>> RandomSizeMax;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<float>> MinDungeonSize;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<float>> MaxDungeonSize;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<float>> DungeonSizeScaler;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<float>> MapTileSize;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<int>> RandomSizeMin;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<int>> RandomSizeMax;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonPlanetNameList;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonTagList;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonRoutePriceList;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DungeonModNameList;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DungeonPlanetNameList;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DungeonTagList;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DungeonRoutePriceList;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DungeonModNameList;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyByDungeon;
-            [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> InteriorEnemiesD;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyReplacementD;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DayTimeEnemyByDungeon;
-            [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> DayEnemiesD;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> DayEnemyReplacementD;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> NightTimeEnemyByDungeon;
-            [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> NightEnemiesD;
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> NightEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> InteriorEnemyByDungeon;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> InteriorEnemiesD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> InteriorEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DayTimeEnemyByDungeon;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> DayEnemiesD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DayEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> NightTimeEnemyByDungeon;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> NightEnemiesD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> NightEnemyReplacementD;
 
-            [DataMember] public static Dictionary<string, SyncedEntry<string>> ScrapByDungeon;
-            [DataMember] public static Dictionary<string, List<SpawnableItemWithRarity>> ScrapD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> ScrapByDungeon;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>> ScrapD;
 
             public CreateDungeonConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
                 // Intialize config entries tied to the dictionary
 
-                MinDungeonSize = new Dictionary<string, SyncedEntry<float>>();
-                MaxDungeonSize = new Dictionary<string, SyncedEntry<float>>();
-                DungeonSizeScaler = new Dictionary<string, SyncedEntry<float>>();
-                MapTileSize = new Dictionary<string, SyncedEntry<float>>();
-                RandomSizeMin = new Dictionary<string, SyncedEntry<int>>();
-                RandomSizeMax = new Dictionary<string, SyncedEntry<int>>();
+                MinDungeonSize = new Dictionary<ExtendedDungeonFlow, SyncedEntry<float>>();
+                MaxDungeonSize = new Dictionary<ExtendedDungeonFlow, SyncedEntry<float>>();
+                DungeonSizeScaler = new Dictionary<ExtendedDungeonFlow, SyncedEntry<float>>();
+                MapTileSize = new Dictionary<ExtendedDungeonFlow, SyncedEntry<float>>();
+                RandomSizeMin = new Dictionary<ExtendedDungeonFlow, SyncedEntry<int>>();
+                RandomSizeMax = new Dictionary<ExtendedDungeonFlow, SyncedEntry<int>>();
 
-                DungeonPlanetNameList = new Dictionary<string, SyncedEntry<string>>();
-                DungeonTagList = new Dictionary<string, SyncedEntry<string>>();
-                DungeonRoutePriceList = new Dictionary<string, SyncedEntry<string>>();
-                DungeonModNameList = new Dictionary<string, SyncedEntry<string>>();
+                DungeonPlanetNameList = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DungeonTagList = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DungeonRoutePriceList = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DungeonModNameList = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
 
-                InteriorEnemyByDungeon = new Dictionary<string, SyncedEntry<string>>();
-                InteriorEnemiesD = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
-                InteriorEnemyReplacementD = new Dictionary<string, SyncedEntry<string>>();
-                DayTimeEnemyByDungeon = new Dictionary<string, SyncedEntry<string>>();
-                DayEnemiesD = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
-                DayEnemyReplacementD = new Dictionary<string, SyncedEntry<string>>();
-                NightTimeEnemyByDungeon = new Dictionary<string, SyncedEntry<string>>();
-                NightEnemiesD = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
-                NightEnemyReplacementD = new Dictionary<string, SyncedEntry<string>>();
+                InteriorEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                InteriorEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
+                InteriorEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DayTimeEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DayEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
+                DayEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                NightTimeEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                NightEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
+                NightEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
 
-                ScrapByDungeon = new Dictionary<string, SyncedEntry<string>>();
-                ScrapD = new Dictionary<string, List<SpawnableItemWithRarity>>();
+                ScrapByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                ScrapD = new Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>>();
 
                 List<ExtendedDungeonFlow> AllExtendedDungeons;
                 string ignoreList = CentralConfig.SyncConfig.BlackListDungeons.Value;
@@ -130,34 +130,34 @@ namespace CentralConfig
                             dungeon.MapTileSize = 1.5f;
                         }
 
-                        MinDungeonSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName, // Assigns the config with the dictionary so that it is unique to the level/moon/planet
+                        MinDungeonSize[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName, // Assigns the config with the dictionary so that it is unique to the level/moon/planet
                             DungeonName + " - Minimum Size Multiplier",
                             MinSize,
                             "Sets the min size multiplier this dungeon can have.");
 
-                        MaxDungeonSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        MaxDungeonSize[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Maximum Size Multiplier",
                             MaxSize,
                             "Sets the max size multiplier this dungeon can have.");
 
-                        DungeonSizeScaler[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DungeonSizeScaler[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Dungeon Size Scaler",
                             100 - (dungeon.DynamicDungeonSizeLerpRate * 100),
                             "This setting controls the strictness of the clamp. At 0%, the clamp is inactive. At 100%, the clamp is fully enforced, pulling any out-of-bounds values back to the nearest boundary. For percentages in between, out-of-bounds values are partially pulled back towards the nearest boundary. For example given a value of 50%, a value exceeding the max would be adjusted halfway back to the max.");
 
                         // CentralConfig.instance.mls.LogInfo(DungeonName + " has a maptilesize of " + dungeon.MapTileSize);
 
-                        MapTileSize[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        MapTileSize[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Map Tile Size",
                             dungeon.MapTileSize,
                             "The size multiplier from the moon is divided by this value before clamps are applied. It ensures that interiors with different '1x' tile counts and room sizes are comparable in total size.\nThe Facility is 1x and the Mansion is 1.5x in Vanilla.");
 
-                        RandomSizeMin[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        RandomSizeMin[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Random Size Multiplier Min",
                             dungeon.DungeonFlow.Length.Min,
                             "The minimum random size multiplier applied to this dungeon's overall size AFTER all previous settings (inclusive).");
 
-                        RandomSizeMax[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        RandomSizeMax[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Random Size Multiplier Max",
                             dungeon.DungeonFlow.Length.Max,
                             "The maximum random size multiplier applied to this dungeon's overall size AFTER all previous settings (inclusive).");
@@ -169,28 +169,28 @@ namespace CentralConfig
                     {
                         string DungeonPlanetList = ConfigAider.ConvertStringWithRarityToString(dungeon.LevelMatchingProperties.planetNames);
 
-                        DungeonPlanetNameList[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DungeonPlanetNameList[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Dungeon by Planet Name",
                             DungeonPlanetList,
                             "The dungeon will be added to any moons listed here. This must be the exact numberless name. \"Experimentatio\" =/= \"Experimentation\"");
 
                         string dungeonTagList = ConfigAider.ConvertStringWithRarityToString(dungeon.LevelMatchingProperties.levelTags);
 
-                        DungeonTagList[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DungeonTagList[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Dungeon by Planet Tags",
                             dungeonTagList,
                             "The dungeon will be added to all moons with a matching tag");
 
                         string DungeonRouteList = ConfigAider.ConvertVector2WithRaritiesToString(dungeon.LevelMatchingProperties.currentRoutePrice);
 
-                        DungeonRoutePriceList[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DungeonRoutePriceList[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Dungeon by Route Price",
                             DungeonRouteList,
                             "This dungeon will be added to all moons that have a route price between the first two values with a rarity of the final value.");
 
                         string DungeonModList = ConfigAider.ConvertStringWithRarityToString(dungeon.LevelMatchingProperties.modNames);
 
-                        DungeonModNameList[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DungeonModNameList[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Dungeon By Mod Name",
                             DungeonModList,
                             "The dungeon will be added to all moons of any mod listed here. This doesn't have to be an exact match, \"Rosie\" works for \"Rosie's Moons\".");
@@ -198,39 +198,39 @@ namespace CentralConfig
 
                     if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
                     {
-                        InteriorEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        InteriorEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Interior Enemies",
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the interior enemy list on any moons currently featuring this dungeon.");
 
-                        InteriorEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        InteriorEnemyReplacementD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Interior Enemies",
                             "Default Values Were Empty",
                             "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently featuring this dungeon, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
-                        DayTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DayTimeEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Day Enemies",
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the day enemy list on any moons currently featuring this dungeon.");
 
-                        DayEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        DayEnemyReplacementD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Day Enemies",
                             "Default Values Were Empty",
                             "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently featuring this dungeon, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
-                        NightTimeEnemyByDungeon[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        NightTimeEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Night Enemies",
                             "Default Values Were Empty",
                             "Enemies listed here in the EnemyName:rarity,EnemyName:rarity format will be added to the night enemy list on any moons currently featuring this dungeon.");
 
-                        NightEnemyReplacementD[DungeonName] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                        NightEnemyReplacementD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Replace Night Enemies",
                             "Default Values Were Empty",
                             "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently featuring this dungeon, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
                     }
                     if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
                     {
-                        ScrapByDungeon[DungeonName] = cfg.BindSyncedEntry("Tag: " + DungeonName,
+                        ScrapByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Scrap",
                             "Default Values Were Empty",
                             "Scrap listed here in the ScrapName:rarity,ScrapName,rarity format will be added to the scrap list any moons currently featuring this dungeon");
@@ -273,14 +273,14 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoDunSizeOverrides)
                 {
                     Vector2 newSize = dungeon.DynamicDungeonSizeMinMax;
-                    newSize.x = WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName];
-                    newSize.y = WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName];
+                    newSize.x = WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[dungeon];
+                    newSize.y = WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[dungeon];
                     dungeon.DynamicDungeonSizeMinMax = newSize;
 
-                    dungeon.DynamicDungeonSizeLerpRate = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName];
+                    dungeon.DynamicDungeonSizeLerpRate = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[dungeon];
 
-                    dungeon.DungeonFlow.Length.Min = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMin[DungeonName];
-                    dungeon.DungeonFlow.Length.Max = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMax[DungeonName];
+                    dungeon.DungeonFlow.Length.Min = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMin[dungeon];
+                    dungeon.DungeonFlow.Length.Max = WaitForDungeonsToRegister.CreateDungeonConfig.RandomSizeMax[dungeon];
                 }
 
                 // Injection
@@ -293,7 +293,7 @@ namespace CentralConfig
                     dungeon.LevelMatchingProperties.currentRoutePrice.Clear();
 
                     // PlanetName
-                    string PlanetNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonPlanetNameList[DungeonName];
+                    string PlanetNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonPlanetNameList[dungeon];
                     Vector2 planetNameRarity = new Vector2(0, 99999);
                     List<StringWithRarity> InjectionPlanets = ConfigAider.ConvertPlanetNameStringToStringWithRarityList(PlanetNameStr, planetNameRarity);
                     if (InjectionPlanets.Count > 0)
@@ -302,7 +302,7 @@ namespace CentralConfig
                     }
 
                     // Tags
-                    string TagStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonTagList[DungeonName];
+                    string TagStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonTagList[dungeon];
                     Vector2 tagRarity = new Vector2(0, 99999);
                     List<StringWithRarity> InjectionTags = ConfigAider.ConvertTagStringToStringWithRarityList(TagStr, tagRarity);
                     if (InjectionTags.Count > 0)
@@ -311,7 +311,7 @@ namespace CentralConfig
                     }
 
                     // ModName
-                    string ModNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonModNameList[DungeonName];
+                    string ModNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonModNameList[dungeon];
                     Vector2 modNameRarity = new Vector2(0, 99999);
                     List<StringWithRarity> InjectionMods = ConfigAider.ConvertModStringToStringWithRarityList(ModNameStr, modNameRarity);
                     if (InjectionMods.Count > 0)
@@ -320,7 +320,7 @@ namespace CentralConfig
                     }
 
                     // RoutePrice
-                    string RoutePriceStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonRoutePriceList[DungeonName];
+                    string RoutePriceStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonRoutePriceList[dungeon];
                     Vector2 RoutePriceRarity = new Vector2(0, 99999);
                     List<Vector2WithRarity> InjectionPrices = ConfigAider.ConvertStringToVector2WithRarityList(RoutePriceStr, RoutePriceRarity);
                     if (InjectionPrices.Count > 0)
@@ -331,33 +331,33 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
                 {
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonName))
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(dungeon))
                     {
-                        string IntEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon[DungeonName];
+                        string IntEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon[dungeon];
                         Vector2 clampIntRarity = new Vector2(0, 99999);
                         List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
-                        WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonName] = interiorenemyList;
+                        WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[dungeon] = interiorenemyList;
 
-                        string DayEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.DayTimeEnemyByDungeon[DungeonName];
+                        string DayEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.DayTimeEnemyByDungeon[dungeon];
                         Vector2 clampDayRarity = new Vector2(0, 99999);
                         List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
-                        WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonName] = dayenemyList;
+                        WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[dungeon] = dayenemyList;
 
-                        string NightEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.NightTimeEnemyByDungeon[DungeonName];
+                        string NightEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.NightTimeEnemyByDungeon[dungeon];
                         Vector2 clampNightRarity = new Vector2(0, 99999);
                         List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
-                        WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonName] = nightenemyList;
+                        WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[dungeon] = nightenemyList;
                     }
                 }
 
                 if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
                 {
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon.ContainsKey(DungeonName))
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon.ContainsKey(dungeon))
                     {
-                        string ScrStr = WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon[DungeonName];
+                        string ScrStr = WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon[dungeon];
                         Vector2 clampScrRarity = new Vector2(0, 99999);
                         List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
-                        WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[DungeonName] = scraplist;
+                        WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[dungeon] = scraplist;
                     }
                 }
             }
@@ -419,20 +419,20 @@ namespace CentralConfig
             float NewMultiplier = LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier;
             if (CentralConfig.SyncConfig.DoDunSizeOverrides)
             {
-                if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonName))
+                if (WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
                 {
-                    NewMultiplier /= WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize[DungeonName];
+                    NewMultiplier /= WaitForDungeonsToRegister.CreateDungeonConfig.MapTileSize[DungeonManager.CurrentExtendedDungeonFlow];
                     NewMultiplier *= __instance.mapSizeMultiplier;
                     NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
 
                     PreClampValue = NewMultiplier;
-                    if (NewMultiplier < WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName])
+                    if (NewMultiplier < WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonManager.CurrentExtendedDungeonFlow])
                     {
-                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MinDungeonSize[DungeonManager.CurrentExtendedDungeonFlow], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonManager.CurrentExtendedDungeonFlow] / 100);
                     }
-                    else if (NewMultiplier > WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName])
+                    else if (NewMultiplier > WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonManager.CurrentExtendedDungeonFlow])
                     {
-                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonName], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonName] / 100);
+                        NewMultiplier = Mathf.Lerp(NewMultiplier, WaitForDungeonsToRegister.CreateDungeonConfig.MaxDungeonSize[DungeonManager.CurrentExtendedDungeonFlow], WaitForDungeonsToRegister.CreateDungeonConfig.DungeonSizeScaler[DungeonManager.CurrentExtendedDungeonFlow] / 100);
                     }
                     NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
                     if (PreClampValue != NewMultiplier)
@@ -784,41 +784,35 @@ namespace CentralConfig
         public static string AllItemsTable = "All Items Registered:";
         static void Postfix()
         {
-            ExtendedDungeonFlow dungeon = DungeonManager.CurrentExtendedDungeonFlow;
-
-            string Dun = dungeon.DungeonName + " (" + dungeon.name + ")";
-            Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
-            string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
-
             if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
-                if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonName))
+                if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
                 {
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyReplacementD[DungeonName]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonName].Count > 0)
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonName]).ToList();
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
                     }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemyReplacementD[DungeonName]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonName].Count > 0)
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonName]).ToList();
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
                     }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemyReplacementD[DungeonName]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonName].Count > 0)
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonName]).ToList();
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
                     }
                 }
             }
 
             if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
             {
-                if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD.ContainsKey(DungeonName))
+                if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
                 {
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[DungeonName].Count > 0)
+                    if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[DungeonName]).ToList();
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
                         LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
                     }
                 }
@@ -841,6 +835,7 @@ namespace CentralConfig
         {
             yield return new WaitForSeconds(10);
 
+            EnemyTables = "";
             List<SpawnableEnemyWithRarity> InteriorEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies;
             EnemyTables += "\nInterior Enemy List for current game:";
             foreach (SpawnableEnemyWithRarity enemy in InteriorEnemies)

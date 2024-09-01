@@ -13,6 +13,7 @@ using static CentralConfig.WaitForWeathersToRegister;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Linq;
+using static CentralConfig.ResetChanger;
 
 namespace CentralConfig
 {
@@ -22,7 +23,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.10.10";
+        private const string modVersion = "0.11.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -64,6 +65,7 @@ namespace CentralConfig
             ConfigFile5 = new CreateWeatherConfig(base.Config);
 
             harmony.PatchAll(typeof(RenameCelest));
+            harmony.PatchAll(typeof(ResetOnDisconnect));
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
@@ -148,6 +150,8 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> UpdateTimeFaster { get; private set; }
         [DataMember] public SyncedEntry<int> BracketTries { get; private set; }
         [DataMember] public SyncedEntry<bool> LogEnemies { get; private set; }
+        [DataMember] public SyncedEntry<string> NewTags { get; private set; }
+        [DataMember] public SyncedEntry<bool> GlobalEnemyAndScrap { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -162,6 +166,11 @@ namespace CentralConfig
                 false,
                 "If set to true, only the moons listed above will be generated.");
 
+            GlobalEnemyAndScrap = cfg.BindSyncedEntry("~Global~",
+                "Global Enemy and Scrap Injection",
+                false,
+                "If set to true, allows adding/replacing enemies to the indoor, daytime, and nighttime enemy pools as well as adding scrap onto every moon through only a few settings.");
+                
             DoGenOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable General Overrides?",
                 false,
@@ -177,7 +186,7 @@ namespace CentralConfig
                 false,
                 "If set to true, allows altering of the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).");
 
-            BigEnemyList = cfg.BindSyncedEntry("_Moons_",
+            BigEnemyList = cfg.BindSyncedEntry("~Big Lists~",
                 "Big Enemy Lists?",
                 false,
                 "If set to true, you will be able to set the enemy lists for every moon with just three strings. This is helpful if you want to copy-paste from a spreadsheet.\nIf you set enemy lists per moon with the setting above, they will contribute to the default value but be overridden by the big lists given the specific moon is found in the big list string.");
@@ -346,6 +355,11 @@ namespace CentralConfig
                 "Log Current Enemy Tables?",
                 false,
                 "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools 10 seconds after loading into the level.");
+
+            NewTags = cfg.BindSyncedEntry("_TagLists_",
+                "New Tags",
+                "Smunguss,Glorble,Badungle",
+                "New 'tags' that are considered by this mod's settings (Remember to not blacklist them above).");
         }
     }
     public static class WRCompatibility
