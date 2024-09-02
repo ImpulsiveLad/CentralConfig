@@ -58,14 +58,16 @@ namespace CentralConfig
                 List<ContentTag> AllContentTags;
                 List<ContentTag> allcontenttagslist = ConfigAider.GrabFullTagList();
                 string ignoreList = CentralConfig.SyncConfig.BlacklistTags.Value;
+                List<string> SplitIgnoreList = ConfigAider.SplitStringsByDaComma(ignoreList);
+                List<string> CauterizedIgnoreList = SplitIgnoreList.Select(tag => ConfigAider.CauterizeString(tag)).ToList();
 
                 if (CentralConfig.SyncConfig.IsTagWhiteList)
                 {
-                    AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
+                    AllContentTags = allcontenttagslist.Where(tag => CauterizedIgnoreList.Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
                 }
                 else
                 {
-                    AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
+                    AllContentTags = allcontenttagslist.Where(tag => !CauterizedIgnoreList.Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
                 }
                 foreach (ContentTag tag in AllContentTags)
                 {
@@ -138,14 +140,16 @@ namespace CentralConfig
             List<ContentTag> AllContentTags;
             List<ContentTag> allcontenttagslist = ConfigAider.GrabFullTagList();
             string ignoreList = CentralConfig.SyncConfig.BlacklistTags.Value;
+            List<string> SplitIgnoreList = ConfigAider.SplitStringsByDaComma(ignoreList);
+            List<string> CauterizedIgnoreList = SplitIgnoreList.Select(tag => ConfigAider.CauterizeString(tag)).ToList();
 
             if (CentralConfig.SyncConfig.IsTagWhiteList)
             {
-                AllContentTags = allcontenttagslist.Where(tag => ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
+                AllContentTags = allcontenttagslist.Where(tag => CauterizedIgnoreList.Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
             }
             else
             {
-                AllContentTags = allcontenttagslist.Where(tag => !ignoreList.Split(',').Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
+                AllContentTags = allcontenttagslist.Where(tag => !CauterizedIgnoreList.Any(b => ConfigAider.CauterizeString(tag.contentTagName).Equals(b))).ToList();
             }
             foreach (ContentTag tag in AllContentTags)
             {

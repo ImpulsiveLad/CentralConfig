@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using System.Drawing;
 
 namespace CentralConfig
 {
@@ -30,6 +31,7 @@ namespace CentralConfig
         public const string DaComma = ",";
         public const string DaColon = ":";
         public const string DaDash = "-";
+        public static Color MagentaColor = Color.magenta;
         public static List<Item> Items { get; internal set; } = new List<Item>();
         public static string CauterizeString(string inputString)
         {
@@ -97,29 +99,18 @@ namespace CentralConfig
             List<string> newTags = SplitStringsByDaComma(CentralConfig.SyncConfig.NewTags);
             foreach (string tag in newTags)
             {
-                ContentTag newTag = ContentTag.Create(tag);
-                allContentTagsList.Add(newTag);
+                if (!allContentTagsList.Any(ct => ct.contentTagName == tag))
+                {
+                    ContentTag newTag = ContentTag.Create(tag, MagentaColor);
+                    allContentTagsList.Add(newTag);
+                }
             }
             return allContentTagsList;
         }
 
         public static List<string> SplitStringsByDaComma(string newInputString)
         {
-            List<string> stringList = new List<string>();
-
-            string inputString = newInputString;
-
-            while (inputString.Contains(DaComma))
-            {
-                string inputStringWithoutTextBeforeFirstComma = inputString.Substring(inputString.IndexOf(DaComma));
-                stringList.Add(inputString.Replace(inputStringWithoutTextBeforeFirstComma, ""));
-                if (inputStringWithoutTextBeforeFirstComma.Contains(DaComma))
-                    inputString = inputStringWithoutTextBeforeFirstComma.Substring(inputStringWithoutTextBeforeFirstComma.IndexOf(DaComma) + 1);
-
-            }
-            stringList.Add(inputString);
-
-            return stringList;
+            return newInputString.Split(new[] { DaComma }, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
         public static (string, string) SplitStringsByDaColon(string inputString)
         {
