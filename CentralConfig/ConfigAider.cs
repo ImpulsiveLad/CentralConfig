@@ -930,6 +930,29 @@ namespace CentralConfig
 
             return new AnimationCurve(keyframes.ToArray());
         }
+        public static AnimationCurve ScaleXValues(AnimationCurve curve, float scaleFactor, string LevelName, string TypeOf, int minKeyframes = 10)
+        {
+            if (curve == null || curve.length == 0)
+            {
+                // CentralConfig.instance.mls.LogWarning($"{LevelName} {TypeOf} - Curve does not exist or has no keyframes. Skipping.");
+                return null;
+            }
+            curve = AddKeyframes(curve, minKeyframes);
+
+            Keyframe[] keyframes = new Keyframe[curve.length];
+
+            for (int i = 0; i < curve.length; i++)
+            {
+                Keyframe key = curve[i];
+                float originalTime = key.time;
+                key.time = key.time / scaleFactor;
+                keyframes[i] = key;
+
+                CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} - Keyframe {i}: Original X-Value = {originalTime}, New X-Value = {key.time}");
+            }
+
+            return new AnimationCurve(keyframes);
+        }
 
         // Modified cfg cleaner from Kitten :3
 

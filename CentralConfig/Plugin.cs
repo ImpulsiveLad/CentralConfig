@@ -23,7 +23,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.11.1";
+        private const string modVersion = "0.11.2";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -71,7 +71,6 @@ namespace CentralConfig
             harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
             harmony.PatchAll(typeof(TimeFix));
             harmony.PatchAll(typeof(DayTimePassFix));
-            harmony.PatchAll(typeof(UpdateLengthOfDay));
             harmony.PatchAll(typeof(RandomNextPatch));
             harmony.PatchAll(typeof(UpdateTimeFaster));
             harmony.PatchAll(typeof(WaitForDungeonsToRegister));
@@ -152,6 +151,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> LogEnemies { get; private set; }
         [DataMember] public SyncedEntry<string> NewTags { get; private set; }
         [DataMember] public SyncedEntry<bool> GlobalEnemyAndScrap { get; private set; }
+        [DataMember] public SyncedEntry<bool> EnemySpawnTimes { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -200,6 +200,11 @@ namespace CentralConfig
                 "Scale Enemy Spawn Rate?",
                 false,
                 "When enabled, this setting adjusts the enemy spawn rate to match the new enemy powers. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default max power of 4 for interior enemies. If you set this to 6, interior enemies will spawn ~1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
+
+            EnemySpawnTimes = cfg.BindSyncedEntry("_Enemies_",
+                "Accelerate Enemy Spawning?",
+                false,
+                "If set to true, allows you to set a new value per moon that tweaks the enemy spawn timing.");
 
             DoTrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Trap Overrides?",

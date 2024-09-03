@@ -52,6 +52,7 @@ namespace CentralConfig
             [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> DaytimeEnemyOverride;
             [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> NighttimeEnemyPowerCountOverride;
             [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<string>> NighttimeEnemyOverride;
+            [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<float>> SpawnSpeedScaler;
 
             [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MinTurretOverride;
             [DataMember] public static Dictionary<ExtendedLevel, SyncedEntry<int>> MaxTurretOverride;
@@ -103,6 +104,7 @@ namespace CentralConfig
                 DaytimeEnemyOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
                 NighttimeEnemyPowerCountOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
                 NighttimeEnemyOverride = new Dictionary<ExtendedLevel, SyncedEntry<string>>();
+                SpawnSpeedScaler = new Dictionary<ExtendedLevel, SyncedEntry<float>>();
 
                 MinTurretOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
                 MaxTurretOverride = new Dictionary<ExtendedLevel, SyncedEntry<int>>();
@@ -226,6 +228,13 @@ namespace CentralConfig
                             NighttimeEnemyList,
                             "Sets the spawn weights for nighttime enemies on the moon.");
 
+                    }
+                    if (CentralConfig.SyncConfig.EnemySpawnTimes)
+                    {
+                        SpawnSpeedScaler[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            PlanetName + " - Spawn Speed Scaler",
+                            1f,
+                            "This value determines how fast (or slow) it takes for the enemy spawn curves to advance. If it is 2x, you can expect to see night enemies spawn in twice as early. If it is 0.25x, enemies will arrive slower and be minimal.\nThis affects the indoor, daytime, and nighttime enemy spawn curves.");
                     }
 
                     // Traps
@@ -720,6 +729,37 @@ namespace CentralConfig
                         level.SelectableLevel.OutsideEnemies = level.SelectableLevel.OutsideEnemies.Concat(WaitForMoonsToRegister.NEnemies).ToList();
                     }
                 }
+                if (CentralConfig.SyncConfig.EnemySpawnTimes)
+                {
+                    float scaleFactor = WaitForMoonsToRegister.CreateMoonConfig.SpawnSpeedScaler[level];
+                    if (scaleFactor != 1)
+                    {
+                        if (level.SelectableLevel.maxEnemyPowerCount != 0)
+                        {
+                            AnimationCurve IntCurve = ConfigAider.ScaleXValues(level.SelectableLevel.enemySpawnChanceThroughoutDay, scaleFactor, level.NumberlessPlanetName, "Interior Curve");
+                            if (IntCurve != null)
+                            {
+                                level.SelectableLevel.enemySpawnChanceThroughoutDay = IntCurve;
+                            }
+                        }
+                        if (level.SelectableLevel.maxDaytimeEnemyPowerCount != 0)
+                        {
+                            AnimationCurve DayCurve = ConfigAider.ScaleXValues(level.SelectableLevel.daytimeEnemySpawnChanceThroughDay, scaleFactor, level.NumberlessPlanetName, "Daytime Curve");
+                            if (DayCurve != null)
+                            {
+                                level.SelectableLevel.daytimeEnemySpawnChanceThroughDay = DayCurve;
+                            }
+                        }
+                        if (level.SelectableLevel.maxOutsideEnemyPowerCount != 0)
+                        {
+                            AnimationCurve NoxCurve = ConfigAider.ScaleXValues(level.SelectableLevel.outsideEnemySpawnChanceThroughDay, scaleFactor, level.NumberlessPlanetName, "Nighttime Curve");
+                            if (NoxCurve != null)
+                            {
+                                level.SelectableLevel.outsideEnemySpawnChanceThroughDay = NoxCurve;
+                            }
+                        }
+                    }
+                }
 
                 // Traps
 
@@ -1005,48 +1045,6 @@ namespace CentralConfig
             StartOfRound.Instance.speakerAudioSource.PlayOneShot(StartOfRound.Instance.zeroDaysLeftAlertSFX);
         }
     }
-    [HarmonyPatch(typeof(StartOfRound), "ChangeLevel")]
-    public static class UpdateLengthOfDay
-    {
-        static void Postfix()
-        {
-            if (!CentralConfig.SyncConfig.TimeSettings)
-            {
-                return;
-            }
-
-            TimeOfDay timeOfDay = UnityEngine.Object.FindObjectOfType<TimeOfDay>();
-            if (WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride.ContainsKey(LevelManager.CurrentExtendedLevel))
-            {
-                timeOfDay.lengthOfHours = 100f / WaitForMoonsToRegister.CreateMoonConfig.TimeMultiplierOverride[LevelManager.CurrentExtendedLevel].Value;
-            }
-            else
-            {
-                timeOfDay.lengthOfHours = 100f;
-            }
-            // CentralConfig.instance.mls.LogInfo("Updated lengthOfHours.");
-            // CentralConfig.instance.mls.LogInfo(LevelManager.CurrentExtendedLevel.NumberlessPlanetName);
-        }
-    }
-    /*public class Ororo
-    {
-        public void SetSinglePlanetWeather(ExtendedLevel level)
-        {
-            string currentMoon = level.NumberlessPlanetName;
-            string WeatherStr = WaitForMoonsToRegister.CreateMoonConfig.WeatherTypeOverride[currentMoon];
-            RandomWeatherWithVariables[] PossibleWeathers = ConfigAider.ConvertStringToWeatherArray(WeatherStr);
-
-            System.Random rand = new System.Random(StartOfRound.Instance.randomMapSeed + 69);
-            if (PossibleWeathers != null && PossibleWeathers.Length != 0)
-            {
-                level.SelectableLevel.currentWeather = PossibleWeathers[rand.Next(0, PossibleWeathers.Length)].weatherType;
-            }
-            else
-            {
-                level.SelectableLevel.currentWeather = LevelWeatherType.None;
-            }
-        }
-    }*/
     [HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
     public static class ShowIntEnemyCount
     {
