@@ -37,6 +37,9 @@ Extends the 20 inside/day/night enemy caps to the maximum and sets the interior 
 **Scale Enemy Spawn Rate?** -
 This setting adjusts the enemy spawn rate to match the moon's new max enemy counts (double the original will make twice as many enemies spawn).
 
+**Accelerate Enemy Spawning?** -
+Allows you to set a new value per moon that tweaks the enemy spawn timing.
+
 **Remove Duplicate Enemies?** - 
 Only keeps the highest rarity of a specific enemy in a spawnlist. This runs after tags, the current dungeon, and the current weather adds/replaces enemies.
 
@@ -58,9 +61,6 @@ Allows altering the min/max scrap count, the list of scrap objects on each moon,
 **Enable Enemy Overrides?** -
 Allows altering the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).
 
-**Big Enemy Lists?** -
-Lets you set all enemy spawn lists from just three strings (Helpful for spreadsheet junkies).
-
 **Enable Trap Overrides?** -
 Allows altering the min/max count for each trap on each moon. (I have to add support for modded traps manually.)
 
@@ -78,12 +78,21 @@ Allows adding/replacing enemies on moons based on matching tags (inside, day, an
 
 **Enable Scrap Injection by Tag?** -
 Allows adding scrap to moons based on matching tags.
+
+**Add New Tags** -
+You can type in your own moons tags (I.E. `Spooky,OuterSpace,Amogus`) and use them for other tag settings (if they aren't blacklisted and you add the tag to the moon).
 ## Weather
 **Enable Enemy Injection by Current Weather?** - 
 Allows adding/replacing enemies on moons based on the current weather (inside, day, and night).
 
 **Enable Scrap Injection by Current Weather?** - 
 Allows adding scrap to moons based on the current weather as well as multipliers to the scrap amount and individual scrap values.
+## Extra
+**Big Enemy Lists?** -
+Lets you set all enemy spawn lists from just three strings (Helpful for spreadsheet junkies).
+
+**Global Changes** -
+Allows you to add/replace enemies and add scrap to all moons after the individual lists are overridden by other settings and before any temporary changes from current dungeon or weather.
 ## Misc
 **Accurate Clock?** - 
 Causes the clock to update when time moves as opposed to every 3 seconds.
