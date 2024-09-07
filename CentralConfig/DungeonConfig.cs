@@ -11,6 +11,7 @@ using UnityEngine;
 using System;
 using DunGen;
 using System.Collections;
+using Unity.Netcode;
 
 namespace CentralConfig
 {
@@ -411,7 +412,10 @@ namespace CentralConfig
             string Dun = dungeon.DungeonName + " (" + dungeon.name + ")";
             Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
             string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
-            CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
+            if (NetworkManager.Singleton.IsHost)
+            {
+                CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
+            }
 
             __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
             __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed + 420;
@@ -437,11 +441,17 @@ namespace CentralConfig
                     NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
                     if (PreClampValue != NewMultiplier)
                     {
-                        CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                        if (NetworkManager.Singleton.IsHost)
+                        {
+                            CentralConfig.instance.mls.LogInfo("Clamps for the dungeon have been applied. Original value: " + PreClampValue + " New value: " + NewMultiplier);
+                        }
                     }
                     else
                     {
-                        CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                        if (NetworkManager.Singleton.IsHost)
+                        {
+                            CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                        }
                     }
                 }
                 else
@@ -450,7 +460,10 @@ namespace CentralConfig
                     NewMultiplier *= __instance.mapSizeMultiplier;
                     NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
 
-                    CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
+                    if (NetworkManager.Singleton.IsHost)
+                    {
+                        CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
+                    }
                 }
             }
             else
@@ -459,19 +472,28 @@ namespace CentralConfig
                 NewMultiplier *= __instance.mapSizeMultiplier;
                 NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
 
-                CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
+                }
             }
 
             if (NewMultiplier < 0)
             {
                 NewMultiplier = 1f;
-                CentralConfig.instance.mls.LogInfo("Dungeon size is in the negatives, go fix your size settings. It is now 1x");
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Dungeon size is in the negatives, go fix your size settings. It is now 1x");
+                }
             }
             __instance.dungeonGenerator.Generator.LengthMultiplier = NewMultiplier;
 
             if (!CentralConfig.SyncConfig.UseNewGen)
             {
-                CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
+                }
                 __instance.dungeonGenerator.Generate();
                 /*for (int i = 0; i < 100; i++)
                 {
@@ -524,7 +546,10 @@ namespace CentralConfig
             {
                 if (ex.Message == "Dungeon Generation failed.")
                 {
-                    CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed. Defaulting interior");
+                    if (NetworkManager.Singleton.IsHost)
+                    {
+                        CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed. Defaulting interior");
+                    }
                     __instance.dungeonGenerator.Generator.DungeonFlow = WaitForDungeonsToRegister.DefaultFacility.DungeonFlow;
                     __instance.currentDungeonType = 0;
 
@@ -550,17 +575,26 @@ namespace CentralConfig
 
                     __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
                     __instance.dungeonGenerator.Generator.Seed = StartOfRound.Instance.randomMapSeed - 420;
-                    CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
+                    if (NetworkManager.Singleton.IsHost)
+                    {
+                        CentralConfig.instance.mls.LogInfo(DungeonManager.CurrentExtendedDungeonFlow.DungeonName);
+                    }
 
                     InnerGenerateWithRetries.Defaulted = true;
                     __instance.dungeonGenerator.Generator.Cancel();
                     __instance.dungeonGenerator.Generate();
-                    CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config using a safeguard dungeon.");
+                    if (NetworkManager.Singleton.IsHost)
+                    {
+                        CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config using a safeguard dungeon.");
+                    }
                 }
             }
             if (!InnerGenerateWithRetries.Defaulted)
             {
-                CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x after " + InnerGenerateWithRetries.RetryCounter + " attempts.");
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Dungeon has been loaded by Central Config. Final dungeon size multiplier is: " + InnerGenerateWithRetries.LengthMultiplier + "x after " + InnerGenerateWithRetries.RetryCounter + " attempts.");
+                }
             }
             InnerGenerateWithRetries.RetryCounter = 0;
             InnerGenerateWithRetries.TryBig = false;
@@ -681,17 +715,26 @@ namespace CentralConfig
                     }
                 }
                 __instance.LengthMultiplier = (float)Math.Round(__instance.LengthMultiplier, 2);
-                CentralConfig.instance.mls.LogInfo("Dungeon Length Multiplier reduced to: " + __instance.LengthMultiplier);
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Dungeon Length Multiplier reduced to: " + __instance.LengthMultiplier);
+                }
             }
             else
             {
-                CentralConfig.instance.mls.LogInfo("Retrying before reduction on attempt #" + (RetryCounter + 1));
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Retrying before reduction on attempt #" + (RetryCounter + 1));
+                }
             }
             RetryCounter++;
 
             if (__instance.LengthMultiplier <= 0 && TryBig == true)
             {
-                CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed " + RetryCounter + " times, this would indicate the dungeon refused to generate at any size. Please notify me if you see this.");
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Dungeon Generation has failed " + RetryCounter + " times, this would indicate the dungeon refused to generate at any size. Please notify me if you see this.");
+                }
                 GenFailed = true;
                 isRetry = false;
                 throw new Exception("Dungeon Generation failed.");
@@ -707,7 +750,10 @@ namespace CentralConfig
                     __instance.LengthMultiplier = 1f;
                 }
                 TryBig = true;
-                CentralConfig.instance.mls.LogInfo("Trying to increase dungeon size in case it was too small.");
+                if (NetworkManager.Singleton.IsHost)
+                {
+                    CentralConfig.instance.mls.LogInfo("Trying to increase dungeon size in case it was too small.");
+                }
             }
             isRetry = false;
             LengthMultiplier = __instance.LengthMultiplier;
@@ -780,8 +826,19 @@ namespace CentralConfig
     public class EnactDungeonInjections
     {
         public static string EnemyTables;
-        public static string AllEnemiesTable = "All Enemies Registered:";
+        public static string ScrapSpawned;
+
+        /*public static string AllEnemiesTable = "All Enemies Registered:";
         public static string AllItemsTable = "All Items Registered:";
+        public static string PostableEnemies = "Postable Enemies:\n";
+        public static string PostableScrap = "Postable Scrap:\n";
+        public static string ScrapInLevels = "Scrap in levels:\n";
+        public static string ScrapNotInLevels = "Scrap NOT in levels:\n";
+        public static string ScrapInFewLevels = "Scrap in FEW levels:\n";
+        public static Dictionary<Item, int> ItemAppearance = new Dictionary<Item, int>();
+        public static Dictionary<ExtendedLevel, int> ScrapListLength = new Dictionary<ExtendedLevel, int>();
+        public static int totalScrapTotal;
+        public static int Moons;*/
         static void Postfix()
         {
             if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
@@ -818,7 +875,11 @@ namespace CentralConfig
                 }
             }
 
-            CentralConfig.instance.mls.LogInfo("Dungeon Enemy/Scrap Injections Enacted.");
+            if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            {
+                CentralConfig.instance.mls.LogInfo("Dungeon Enemy/Scrap Injections Enacted.");
+            }
+
             if (CentralConfig.SyncConfig.RemoveDuplicateEnemies)
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
@@ -826,7 +887,20 @@ namespace CentralConfig
                 LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveDuplicateEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
                 CentralConfig.instance.mls.LogInfo("Duplicate Enemies Removed.");
             }
-            if (CentralConfig.SyncConfig.LogEnemies)
+            LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
+
+            if (CentralConfig.SyncConfig.ScrapShuffle)
+            {
+                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap, StartOfRound.Instance.randomMapSeed);
+            }
+            if (CentralConfig.SyncConfig.EnemyShuffle)
+            {
+                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, StartOfRound.Instance.randomMapSeed);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, StartOfRound.Instance.randomMapSeed);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, StartOfRound.Instance.randomMapSeed);
+            }
+
+            if (CentralConfig.SyncConfig.LogEnemies && NetworkManager.Singleton.IsHost)
             {
                 ConfigAider.Instance.StartCoroutine(LogEnemyTables());
             }
@@ -836,6 +910,7 @@ namespace CentralConfig
             yield return new WaitForSeconds(10);
 
             EnemyTables = "";
+            ScrapSpawned = "Scrap Spawned:";
             List<SpawnableEnemyWithRarity> InteriorEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies;
             EnemyTables += "\nInterior Enemy List for current game:";
             foreach (SpawnableEnemyWithRarity enemy in InteriorEnemies)
@@ -859,21 +934,85 @@ namespace CentralConfig
 
             CentralConfig.instance.mls.LogInfo(EnemyTables);
 
+            List<SpawnableItemWithRarity> Scrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
+            foreach (SpawnableItemWithRarity scrap in Scrap)
+            {
+                ScrapSpawned += $"\n{scrap.spawnableItem.itemName},{scrap.rarity}";
+            }
+
+            CentralConfig.instance.mls.LogInfo(ScrapSpawned);
+
             /*List<EnemyType> AllEnemies = ConfigAider.GrabFullEnemyList();
             var sortedEnemiesList = AllEnemies.OrderBy(type => type.enemyName).ToList();
             foreach (EnemyType type in sortedEnemiesList)
             {
                 AllEnemiesTable += $"\n{type.enemyName}";
+                PostableEnemies += $"{type.enemyName}:1,";
             }
-            CentralConfig.instance.mls.LogInfo(AllEnemiesTable);
+             CentralConfig.instance.mls.LogInfo(AllEnemiesTable);
 
             List<Item> AllItems = ConfigAider.GrabFullItemList();
             var sortedAllItemsList = AllItems.OrderBy(item => item.itemName).ToList();
             foreach (Item item in sortedAllItemsList)
             {
                 AllItemsTable += $"\n{item.itemName}";
+                if (item.isScrap && item.minValue > 0)
+                {
+                    PostableScrap += $"{item.itemName}:1,";
+                }
             }
-            CentralConfig.instance.mls.LogInfo(AllItemsTable);*/
+            PostableScrap += $"\nWhats on levels\n";
+            foreach (ExtendedLevel level in PatchedContent.ExtendedLevels.Where(level => level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation"))
+            {
+                foreach (SpawnableItemWithRarity item in level.SelectableLevel.spawnableScrap)
+                {
+                    if (ItemAppearance.ContainsKey(item.spawnableItem))
+                    {
+                        ItemAppearance[item.spawnableItem] += 1;
+                    }
+                    else
+                    {
+                        ItemAppearance[item.spawnableItem] = 1;
+                    }
+
+                    if (ScrapListLength.ContainsKey(level))
+                    {
+                        ScrapListLength[level]++;
+                    }
+                    else
+                    {
+                        ScrapListLength[level] = 1;
+                    }
+                }
+                totalScrapTotal += ScrapListLength[level];
+                Moons += 1;
+            }
+            // CentralConfig.instance.mls.LogInfo($"TotalTotalScrap,{totalScrapTotal} Moons,{Moons} Math,{totalScrapTotal/Moons}");
+            foreach (Item item in ConfigAider.GrabFullItemList())
+            {
+                if (ItemAppearance.ContainsKey(item))
+                {
+                    if (ItemAppearance[item] > 4)
+                    {
+                        ScrapInLevels += $"{item.itemName}:1,";
+                    }
+                    else
+                    {
+                        ScrapInFewLevels += $"{item.itemName}:1,";
+                    }
+                }
+                else
+                {
+                    ScrapNotInLevels += $"{item.itemName}:1,";
+                }
+            }*/
+            // CentralConfig.instance.mls.LogInfo(AllItemsTable);
+
+            // CentralConfig.instance.mls.LogInfo(PostableEnemies);
+            // CentralConfig.instance.mls.LogInfo(PostableScrap);
+            // CentralConfig.instance.mls.LogInfo(ScrapInLevels);
+            // CentralConfig.instance.mls.LogInfo(ScrapNotInLevels);
+            // CentralConfig.instance.mls.LogInfo(ScrapInFewLevels);
         }
     }
 }

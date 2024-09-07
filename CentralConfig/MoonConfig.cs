@@ -126,6 +126,24 @@ namespace CentralConfig
 
                 ResetChanger.SavePlanetData();
 
+                if (CentralConfig.HarmonyTouch)
+                {
+                    if (NetworkManager.Singleton.IsHost && CentralConfig.SyncConfig.ShuffleSave) // sets the string versions of the dicts to the saved ones
+                    {
+                        if (CentralConfig.SyncConfig.ScrapShuffle && ES3.KeyExists("ScrapAppearanceString", GameNetworkManager.Instance.currentSaveFileName))
+                        {
+                            ShuffleSaver.ScrapAppearanceString = ES3.Load<Dictionary<string, int>>("ScrapAppearanceString", GameNetworkManager.Instance.currentSaveFileName);
+                            CentralConfig.instance.mls.LogInfo("Loaded Scrap Shuffle Data");
+                        }
+                        if (CentralConfig.SyncConfig.EnemyShuffle && ES3.KeyExists("EnemyAppearanceString", GameNetworkManager.Instance.currentSaveFileName))
+                        {
+                            ShuffleSaver.EnemyAppearanceString = ES3.Load<Dictionary<string, int>>("EnemyAppearanceString", GameNetworkManager.Instance.currentSaveFileName);
+                            CentralConfig.instance.mls.LogInfo("Loaded Enemy Shuffle Data");
+                        }
+                    }
+                }
+                CentralConfig.HarmonyTouch = true;
+
                 List<ExtendedLevel> allExtendedLevels;
                 string ignoreList = CentralConfig.SyncConfig.BlacklistMoons.Value;
 
@@ -562,6 +580,10 @@ namespace CentralConfig
                 {
                     StartOfRound.Instance.randomMapSeed = seed;
                 }
+
+                StartOfRound.Instance.SetPlanetsWeather();
+                StartOfRound.Instance.SetMapScreenInfoToCurrentLevel();
+
             }
             CentralConfig.ConfigFile = new CreateMoonConfig(CentralConfig.instance.Config); // Moon config is created when you join a lobby (So every other config is already applied)
         }
@@ -662,7 +684,7 @@ namespace CentralConfig
                         }
                     }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[level]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
-                    // InteriorEnemyList
+                                                                                                                                               // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[level];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
@@ -727,6 +749,10 @@ namespace CentralConfig
                     if (WaitForMoonsToRegister.NEnemies.Count > 0)
                     {
                         level.SelectableLevel.OutsideEnemies = level.SelectableLevel.OutsideEnemies.Concat(WaitForMoonsToRegister.NEnemies).ToList();
+                    }
+                    if (WaitForMoonsToRegister.Scrap.Count > 0)
+                    {
+                        level.SelectableLevel.spawnableScrap = level.SelectableLevel.spawnableScrap.Concat(WaitForMoonsToRegister.Scrap).ToList();
                     }
                 }
                 if (CentralConfig.SyncConfig.EnemySpawnTimes)

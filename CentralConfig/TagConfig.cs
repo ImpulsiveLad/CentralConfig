@@ -241,7 +241,10 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Tag Enemy/Scrap Injections Enacted.");
+            if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+            {
+                CentralConfig.instance.mls.LogInfo("Tag Enemy/Scrap Injections Enacted.");
+            }
         }
     }
 }

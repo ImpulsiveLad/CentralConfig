@@ -209,7 +209,7 @@ namespace CentralConfig
         static void Prefix()
         {
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
-            CentralConfig.instance.mls.LogInfo($"{weatherName}");
+            // CentralConfig.instance.mls.LogInfo($"{weatherName}");
 
             if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
             {
@@ -244,7 +244,10 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Weather Enemy/Scrap Injections Enacted.");
+            if (CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            {
+                CentralConfig.instance.mls.LogInfo("Weather Enemy/Scrap Injections Enacted.");
+            }
         }
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
@@ -252,6 +255,11 @@ namespace CentralConfig
     {
         static void Prefix(RoundManager __instance)
         {
+            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            {
+                return;
+            }
+
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
 
             if (!WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
@@ -273,27 +281,22 @@ namespace CentralConfig
                 {
                     WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = 0.4f;
                 }
-                CentralConfig.instance.mls.LogInfo("Saved Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
+                CentralConfig.instance.mls.LogInfo("Saved original Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
 
-            if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
             {
-                if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
+                if (WRCompatibility.enabled)
                 {
-                    if (WRCompatibility.enabled)
-                    {
-                        __instance.scrapValueMultiplier = WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value * 0.4f;
-                    }
-                    else
-                    {
-                        __instance.scrapValueMultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value;
-                    }
+                    __instance.scrapValueMultiplier = WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value * 0.4f;
                 }
-                if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier.ContainsKey(weatherName))
+                else
                 {
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
+                    __instance.scrapValueMultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value;
                 }
+                LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
+                CentralConfig.instance.mls.LogInfo("Applied weather Scrap count/value multiplier for: " + LevelManager.CurrentExtendedLevel);
             }
         }
     }
@@ -308,12 +311,16 @@ namespace CentralConfig
     {
         static void Prefix()
         {
+            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            {
+                return;
+            }
             if (WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = WeatherScrapData.OriginalMinScrap[LevelManager.CurrentExtendedLevel];
                 LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = WeatherScrapData.OriginalMaxScrap[LevelManager.CurrentExtendedLevel];
                 WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel] = WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel];
-                CentralConfig.instance.mls.LogInfo("Reverted Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
+                CentralConfig.instance.mls.LogInfo("Reverted weather applied Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
         }
     }

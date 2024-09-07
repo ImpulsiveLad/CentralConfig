@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using System.Drawing;
 
 namespace CentralConfig
 {
@@ -252,6 +251,63 @@ namespace CentralConfig
                 return result.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).Last()).ToList();
             }
         }
+        public static List<SpawnableEnemyWithRarity> IncreaseEnemyRarities(List<SpawnableEnemyWithRarity> enemies, int seed)
+        {
+            int Glop = 0;
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
+            foreach (SpawnableEnemyWithRarity enemy in enemies)
+            {
+                if (!EnemyShuffler.EnemyAppearances.ContainsKey(enemy.enemyType))
+                {
+                    if (ShuffleSaver.EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
+                    {
+                        EnemyShuffler.EnemyAppearances.Add(enemy.enemyType, ShuffleSaver.EnemyAppearanceString[enemy.enemyType.enemyName]);
+                        // CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyShuffler.EnemyAppearances[enemy.enemyType]}");
+                    }
+                    else
+                    {
+                        EnemyShuffler.EnemyAppearances.Add(enemy.enemyType, 0);
+                        ShuffleSaver.EnemyAppearanceString.Add(enemy.enemyType.enemyName, 0);
+                        // CentralConfig.instance.mls.LogInfo($"Added new Enemy Key: {enemy.enemyType.enemyName}");
+                    }
+                }
+
+                int LastAppearance = EnemyShuffler.EnemyAppearances[enemy.enemyType];
+                seed += Glop;
+                System.Random random = new System.Random(seed);
+                int multiplier = random.Next(CentralConfig.SyncConfig.EnemyShuffleRandomMin, CentralConfig.SyncConfig.EnemyShuffleRandomMax + 1);
+
+                if (LastAppearance == 0)
+                {
+                    SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                    newEnemy.enemyType = enemy.enemyType;
+                    newEnemy.rarity = enemy.rarity;
+                    returnList.Add(newEnemy);
+                }
+                else
+                {
+                    SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                    newEnemy.enemyType = enemy.enemyType;
+                    newEnemy.rarity = enemy.rarity + (LastAppearance * multiplier);
+                    returnList.Add(newEnemy);
+                }
+                Glop++;
+            }
+            /*foreach (SpawnableEnemyWithRarity Old in enemies)
+            {
+                foreach (SpawnableEnemyWithRarity New in returnList)
+                {
+                    if (New.enemyType == Old.enemyType)
+                    {
+                        if (New.rarity != Old.rarity)
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Enemy: {Old.enemyType.enemyName} rarity increased from {Old.rarity} to {New.rarity}");
+                        }
+                    }
+                }
+            }*/
+            return returnList;
+        }
         public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig) // takes in the original enemy list and the config for replacing enemies
         {
             if (string.IsNullOrEmpty(ReplaceConfig) || ReplaceConfig == "Default Values Were Empty")
@@ -467,7 +523,7 @@ namespace CentralConfig
                         // CentralConfig.instance.mls.LogInfo("BigString does not contain: " + level.NumberlessPlanetName);
                     }
                 }
-                CentralConfig.instance.mls.LogInfo(level.SelectableLevel.levelID + " is linked to " + level.NumberlessPlanetName);
+                // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.levelID + " is linked to " + level.NumberlessPlanetName);
             }
         }
 
@@ -531,6 +587,63 @@ namespace CentralConfig
         public static List<SpawnableItemWithRarity> RemoveLowerRarityDuplicateItems(List<SpawnableItemWithRarity> items)
         {
             return items.GroupBy(e => e.spawnableItem.itemName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
+        }
+        public static List<SpawnableItemWithRarity> IncreaseScrapRarities(List<SpawnableItemWithRarity> items, int seed)
+        {
+            int Glop = 0; // local int to make seed be different through the foreach
+            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
+            foreach (SpawnableItemWithRarity item in items)
+            {
+                if (!ScrapShuffler.ScrapAppearances.ContainsKey(item.spawnableItem))
+                {
+                    if (ShuffleSaver.ScrapAppearanceString.ContainsKey(item.spawnableItem.itemName))
+                    {
+                        ScrapShuffler.ScrapAppearances.Add(item.spawnableItem, ShuffleSaver.ScrapAppearanceString[item.spawnableItem.itemName]);
+                        // CentralConfig.instance.mls.LogInfo($"Remembered saved Item Key: {item.spawnableItem.itemName}, Days: {ScrapShuffler.ScrapAppearances[item.spawnableItem]}");
+                    }
+                    else
+                    {
+                        ScrapShuffler.ScrapAppearances.Add(item.spawnableItem, 0);
+                        ShuffleSaver.ScrapAppearanceString.Add(item.spawnableItem.itemName, 0);
+                        // CentralConfig.instance.mls.LogInfo($"Added new Item Key: {item.spawnableItem.itemName}");
+                    }
+                }
+
+                int LastAppearance = ScrapShuffler.ScrapAppearances[item.spawnableItem];
+                seed += Glop;
+                System.Random random = new System.Random(seed); // local generator to use the slightly different seed (seed starts synced)
+                int multiplier = random.Next(CentralConfig.SyncConfig.ScrapShuffleRandomMin, CentralConfig.SyncConfig.ScrapShuffleRandomMax + 1); // not just '+ x' but + 'x * (config min/max)' 
+
+                if (LastAppearance == 0) // appearred last game
+                {
+                    SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
+                    newItem.spawnableItem = item.spawnableItem;
+                    newItem.rarity = item.rarity;
+                    returnList.Add(newItem);
+                }
+                else // didn't
+                {
+                    SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
+                    newItem.spawnableItem = item.spawnableItem;
+                    newItem.rarity = item.rarity + (LastAppearance * multiplier);
+                    returnList.Add(newItem);
+                }
+                Glop++;
+            }
+            /*foreach (SpawnableItemWithRarity Old in items)
+            {
+                foreach (SpawnableItemWithRarity New in returnList)
+                {
+                    if (New.spawnableItem == Old.spawnableItem)
+                    {
+                        if (New.rarity != Old.rarity)
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Scrap: {Old.spawnableItem.itemName} rarity increased from {Old.rarity} to {New.rarity}");
+                        }
+                    }
+                }
+            }*/
+            return returnList;
         }
 
         // Weather
@@ -948,7 +1061,7 @@ namespace CentralConfig
                 key.time = key.time / scaleFactor;
                 keyframes[i] = key;
 
-                CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} - Keyframe {i}: Original X-Value = {originalTime}, New X-Value = {key.time}");
+                // CentralConfig.instance.mls.LogInfo($"{LevelName} {TypeOf} - Keyframe {i}: Original X-Value = {originalTime}, New X-Value = {key.time}");
             }
 
             return new AnimationCurve(keyframes);
@@ -995,7 +1108,7 @@ namespace CentralConfig
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            if (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
                 if (OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
                 {
@@ -1005,7 +1118,7 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Reverted Enemy lists for: " + PlanetName);
                 }
             }
-            if (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            if (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
             {
                 if (OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
                 {
@@ -1023,7 +1136,7 @@ namespace CentralConfig
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            if (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
                 if (!OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
                 {
@@ -1033,7 +1146,7 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Saved Enemy lists for: " + PlanetName);
                 }
             }
-            if (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            if (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
             {
                 if (!OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
                 {

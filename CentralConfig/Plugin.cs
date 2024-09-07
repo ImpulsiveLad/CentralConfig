@@ -14,6 +14,9 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Linq;
 using static CentralConfig.ResetChanger;
+using static CentralConfig.ScrapShuffler;
+using static CentralConfig.EnemyShuffler;
+using static CentralConfig.ShuffleSaver;
 
 namespace CentralConfig
 {
@@ -23,7 +26,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.11.2";
+        private const string modVersion = "0.12.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -33,6 +36,8 @@ namespace CentralConfig
         public static int LastUsedSeed;
 
         public static float shid = 0;
+
+        public static bool HarmonyTouch = false;
 
         public static CreateMoonConfig ConfigFile;
 
@@ -90,6 +95,10 @@ namespace CentralConfig
             harmony.PatchAll(typeof(ApplyWeatherScrapMultipliers));
             harmony.PatchAll(typeof(WaitForTagsToRegister));
             harmony.PatchAll(typeof(FrApplyTag));
+            harmony.PatchAll(typeof(IncreaseScrapAppearances));
+            harmony.PatchAll(typeof(CheckForEnemySpawns));
+            harmony.PatchAll(typeof(UpdateEnemyDictionary));
+            harmony.PatchAll(typeof(SaveShuffleDataStrings));
 
             harmony.PatchAll(typeof(ResetEnemyAndScrapLists));
             harmony.PatchAll(typeof(FetchEnemyAndScrapLists));
@@ -152,6 +161,13 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<string> NewTags { get; private set; }
         [DataMember] public SyncedEntry<bool> GlobalEnemyAndScrap { get; private set; }
         [DataMember] public SyncedEntry<bool> EnemySpawnTimes { get; private set; }
+        [DataMember] public SyncedEntry<bool> ScrapShuffle { get; private set; }
+        [DataMember] public SyncedEntry<bool> EnemyShuffle { get; private set; }
+        [DataMember] public SyncedEntry<int> ScrapShuffleRandomMin { get; private set; }
+        [DataMember] public SyncedEntry<int> ScrapShuffleRandomMax { get; private set; }
+        [DataMember] public SyncedEntry<int> EnemyShuffleRandomMin { get; private set; }
+        [DataMember] public SyncedEntry<int> EnemyShuffleRandomMax { get; private set; }
+        [DataMember] public SyncedEntry<bool> ShuffleSave { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -170,7 +186,7 @@ namespace CentralConfig
                 "Global Enemy and Scrap Injection",
                 false,
                 "If set to true, allows adding/replacing enemies to the indoor, daytime, and nighttime enemy pools as well as adding scrap onto every moon through only a few settings.");
-                
+
             DoGenOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable General Overrides?",
                 false,
@@ -291,6 +307,11 @@ namespace CentralConfig
                 -1,
                 "Leave at -1 to have it be random. The seed will be updated daily regardless of this setting.");
 
+            LogEnemies = cfg.BindSyncedEntry("~Misc~",
+                "Log Current Enemy/Scrap Tables?",
+                false,
+                "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools as well as the current scrap pool 10 seconds after loading into the level.\nOnly accurate on the host, as enemy and scrap pools are ultimately decided by the host.");
+
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
                 "Enable Fine Overrides?",
                 false,
@@ -356,15 +377,45 @@ namespace CentralConfig
                 false,
                 "If set to true, allows adding scrap to levels based on the current weather as well as multipliers to the scrap amount and individiual scrap values.");
 
-            LogEnemies = cfg.BindSyncedEntry("_Enemies_",
-                "Log Current Enemy Tables?",
-                false,
-                "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools 10 seconds after loading into the level.");
-
             NewTags = cfg.BindSyncedEntry("_TagLists_",
                 "New Tags",
                 "Smunguss,Glorble,Badungle",
                 "New 'tags' that are considered by this mod's settings (Remember to not blacklist them above).");
+
+            ScrapShuffle = cfg.BindSyncedEntry("~Shufflers~",
+                "Scrap Shuffler",
+                false,
+                "If set to true, scrap that could have but did not spawn on a given day will be more likely to spawn the next day, provided that the scrap is in the next level's final scrap pool as well.\nThis temporary selection chance boost increases every day the specific scrap was in the scrap pool but was not selected. The boost returns to 0 when ANY amount of that scrap is spawned.");
+
+            ScrapShuffleRandomMin = cfg.BindSyncedEntry("~Shufflers~",
+                "Scrap Shuffler Random Min",
+                0,
+                "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
+
+            ScrapShuffleRandomMax = cfg.BindSyncedEntry("~Shufflers~",
+                "Scrap Shuffler Random Max",
+                2,
+                "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
+
+            EnemyShuffle = cfg.BindSyncedEntry("~Shufflers~",
+                "Enemy Shuffler",
+                false,
+                "If set to true, enemies that could have but did spawn on a given day will be more likely to spawn the next day, provided that the enemy is in one of the next level's final enemy pools as well.\nThis temporary selection chance boost increases every day the specific enemy was in the spawn pool but was not spawned. The boost returns to 0 when ANY number of that enemy is spawned inside, during the day, or during the night.");
+
+            EnemyShuffleRandomMin = cfg.BindSyncedEntry("~Shufflers~",
+                "Enemy Shuffler Random Min",
+                0,
+                "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
+
+            EnemyShuffleRandomMax = cfg.BindSyncedEntry("~Shufflers~",
+                "Enemy Shuffler Random Max",
+                2,
+                "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
+
+            ShuffleSave = cfg.BindSyncedEntry("~Shufflers~",
+                "Save Shuffle Data",
+                false,
+                "If set to true, the shuffle data for enemies and scrap will be committed to the save file and loaded on start-up. This means that the counters for how many days since they last spawned will be preserved, and the rarity boosters will be applied accordingly on next landing.\nIf this setting remains false, the shuffle will only exist in the session and be forgotten on reboot.");
         }
     }
     public static class WRCompatibility
