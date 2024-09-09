@@ -18,98 +18,105 @@ I strongly recommend players to keep a copy of their config file somewhere safe 
 
 The mod generates these config sections during runtime in order to pull its current config values from other mod's configs and have "the final say" in what this settings will be in game.
 # Configuration Options
+'Host Only' settings are only set by the host and do not run on clients. They do not need to be synced. 'All Players' settings MUST BE SYNCED and set on all players in the lobby.
 ## Dungeons
-**Enable Dungeon Size Overrides?** -
+**Enable Dungeon Size Overrides? (All Players)** -
 Allows altering various dungeon size related numbers. This includes the moon-tied size multipliers, the Dungeon's Map Tile Size (which is divided from the moon's size), a Dungeon specific min/max size clamp applied after the MTS is factored in, the scaler to determine how strict the size clamp should be, and a Dungeon specific min/max random size multiplier applied after the clamping.
 
-**Enable Dungeon Selection Overrides?** -
+**Enable Dungeon Selection Overrides? (Host Only)** -
 Allows altering the dungeon selection pool tied to the dungeon by moon name, level tags, route price range, and mod name.
 
-**Enable Enemy Injection by Current Dungeon?** - 
+**Enable Enemy Injection by Current Dungeon? (Host Only)** - 
 Allows adding/replacing enemies on moons based on the current dungeon (inside, day, and night).
 
-**Enable Scrap Injectiom by Current Dungeon?** -
+**Enable Scrap Injectiom by Current Dungeon? (Host Only)** -
 Allows adding scrap to moons based on the current dungeon.
 ## Enemies
-**Free Them?** -
+**Free Them? (Host Only)** -
 Extends the 20 inside/day/night enemy caps to the maximum and sets the interior enemy spawn waves to be hourly instead of every other hour.
 
-**Scale Enemy Spawn Rate?** -
+**Scale Enemy Spawn Rate? (Host Only)** -
 This setting adjusts the enemy spawn rate to match the moon's new max enemy counts (double the original will make twice as many enemies spawn).
 
-**Accelerate Enemy Spawning?** -
+**Accelerate Enemy Spawning? (Host Only)** -
 Allows you to set a new value per moon that tweaks the enemy spawn timing.
 
-**Remove Duplicate Enemies?** - 
+**Remove Duplicate Enemies? (Host Only)** - 
 Only keeps the highest rarity of a specific enemy in a spawnlist. This runs after tags, the current dungeon, and the current weather adds/replaces enemies.
 
-**Keep Smallest Rarity?** -
+**Keep Smallest Rarity? (Host Only)** -
 The lowest rarity of a given enemy with be kept instead of its highest rarity (For setting above).
 
-**Always Keep Zeros?** -
+**Always Keep Zeros? (Host Only)** -
 Any enemies with that have an entry of 0 rarity will be kept regardless, use this to prevent specific enemies from spawning under certain conditions (For the setting above above).
-
-**Log Current Enemy Tables?** -
-This setting is mostly for information or debugging, this will log the full indoor, day, and night enemy pools 10 seconds into the match.
 ## Moons
-**Enable General Overrides?** -
+**Enable General Overrides? (All Players)** -
 Allows altering basic properties like route price, risk level, and description for each moon.
 
-**Enable Scrap Overrides?** -
+**Enable Scrap Overrides? (Host Only)** -
 Allows altering the min/max scrap count, the list of scrap objects on each moon, and a multiplier for individual scrap item values.
 
-**Enable Enemy Overrides?** -
+**Enable Enemy Overrides? (Host Only)** -
 Allows altering the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).
 
-**Enable Trap Overrides?** -
+**Enable Trap Overrides? (Host Only)** -
 Allows altering the min/max count for each trap on each moon. (I have to add support for modded traps manually.)
 
-**Enable Time Settings?** - 
+**Enable Time Settings? (All Players)** - 
 Allows altering time settings such as time existence, time speed multiplier, and if time should wait until the ship lands to begin moving.
 
-**Enable Misc Overrides?** -
+**Enable Misc Overrides? (All Players)** -
 Allows altering miscellaneous traits such as hidden/unhidden status, and locked/unlocked status.
 
-**Rename Celest?** -
+**Rename Celest? (All Players)** -
 Changes the name of `Celest` to `Celeste`, fixing the age old string confusion. If this is true, you will have to use `Celeste` for any config settings you want to apply to it.
 ## Tags
-**Enable Enemy Injection by Tag?** -
+**Enable Enemy Injection by Tag? (Host Only)** -
 Allows adding/replacing enemies on moons based on matching tags (inside, day, and night).
 
-**Enable Scrap Injection by Tag?** -
+**Enable Scrap Injection by Tag? (Host Only)** -
 Allows adding scrap to moons based on matching tags.
 
-**Add New Tags** -
+**Add New Tags (Host Only)** -
 You can type in your own moons tags (I.E. `Spooky,OuterSpace,Amogus`) and use them for other tag settings (if they aren't blacklisted and you add the tag to the moon).
 ## Weather
-**Enable Enemy Injection by Current Weather?** - 
+**Enable Enemy Injection by Current Weather? (Host Only)** - 
 Allows adding/replacing enemies on moons based on the current weather (inside, day, and night).
 
-**Enable Scrap Injection by Current Weather?** - 
+**Enable Scrap Injection by Current Weather? (Host Only)** - 
 Allows adding scrap to moons based on the current weather as well as multipliers to the scrap amount and individual scrap values.
 ## Extra
-**Big Enemy Lists?** -
+**Big Enemy Lists? (Host Only)** -
 Lets you set all enemy spawn lists from just three strings (Helpful for spreadsheet junkies).
 
-**Global Changes** -
+**Global Changes (Host Only)** -
 Allows you to add/replace enemies and add scrap to all moons after the individual lists are overridden by other settings and before any temporary changes from current dungeon or weather.
 ## Misc
-**Accurate Clock?** - 
+**Accurate Clock? (All Players)** - 
 Causes the clock to update when time moves as opposed to every 3 seconds.
 
-**Keep Orphaned Entries?** -
+**Keep Orphaned Entries? (Personal)** -
 Prevents the config from 'cleaning' itself of removed entries, use to prevent accidental config entry loss. This will result in a more crowded and messy file if left true for long.
 
-**Starting Seed** - 
+**Starting Seed (Host Only)** - 
 Sets the `randonMapSeed`, leave at -1 to randomize. This is usually not set until loading into a level which causes weathers, the store, and I certain other things to always be the same on Day 1.
 
-**Enable Fine Overrides?** -
+**Log Current Enemy/Scrap Tables? (Host Only)** -
+The console will log the current indoor, daytime, and nighttime enemy spawn pools as well as the current scrap pool 10 seconds after loading into the level.\nOnly accurate on the host, as enemy and scrap pools are ultimately decided by the host
+
+**Enable Fine Overrides? (All Players)** -
 Allows altering the fine for dead players, the reduction to the fine for recovering bodies, and if you want the fine value to be proportional to the players (if half the lobby is dead, you will be fined half of the fine amount). The company has its own fine values (No fines there by default).
 
-**Enable Scan Node Extensions?** - 
+**Enable Scan Node Extensions? (All Players)** - 
 Allows you to set the min/max ranges for the scan nodes on the ship, main entrance, and fire exits (if you have ScannableFireExit installed).
+## Shufflers (Host Only)
+Several settings to boost the chances of spawning a specific scrap or enemy compounded for every day they could have, but did not spawn. Boosts reset whenever any amount of that scrap/enemy is spawned.
+
+The min/max multiplier for the rarity boost is configurable (It is the # of days since it last appearanced * random value, this gets added to the rarity for that scrap/enemy in all current pools).
+
+You can also choose whether or not the boosts are reset when leaving a session or remain commit to the save file (picks up when you rejoin).
 # Miscellaneous Fixes
-**Dungeon Generation:** Optional setting that enacts safeguards for the dungeon generation process.
+**Dungeon Generation: (All Players)** Optional setting that enacts safeguards for the dungeon generation process.
 
 - Extends the retry cap and makes it dynamic, instead relying on a set loop of reattempts.
 - If the dungeon fails to generate with the current size multiplier, it will reduce the multiplier by a percentage every retry until the value is low and it instead subtracts by a set value.
