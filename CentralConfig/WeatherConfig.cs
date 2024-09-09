@@ -9,6 +9,8 @@ using System.Linq;
 using CSync.Extensions;
 using UnityEngine;
 using System;
+using Unity.Netcode;
+using System.Data;
 
 namespace CentralConfig
 {
@@ -124,7 +126,14 @@ namespace CentralConfig
                             "Multiplier applied to each scrap object's value in the level on any moons currently experiencing this weather.");
                     }
                 }
-                CentralConfig.instance.mls.LogInfo("Weather config has been registered.");
+                if (CentralConfig.HarmonyTouch4)
+                {
+                    if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoEnemyWeatherInjections))
+                    {
+                        CentralConfig.instance.mls.LogInfo("Weather config has been registered.");
+                    }
+                }
+                CentralConfig.HarmonyTouch4 = true;
             }
         }
         static void Prefix()
@@ -166,7 +175,7 @@ namespace CentralConfig
             {
                 string weatherName = weatherType;
 
-                if (CentralConfig.SyncConfig.DoEnemyWeatherInjections)
+                if (CentralConfig.SyncConfig.DoEnemyWeatherInjections && NetworkManager.Singleton.IsHost)
                 {
                     if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather.ContainsKey(weatherName))
                     {
@@ -187,7 +196,7 @@ namespace CentralConfig
                     }
                 }
 
-                if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
+                if (CentralConfig.SyncConfig.DoScrapWeatherInjections && NetworkManager.Singleton.IsHost)
                 {
                     if (WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather.ContainsKey(weatherName))
                     {
@@ -198,7 +207,10 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Weather config Values Applied.");
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoEnemyWeatherInjections))
+            {
+                CentralConfig.instance.mls.LogInfo("Weather config Values Applied.");
+            }
             Ready = true;
         }
     }
@@ -208,6 +220,11 @@ namespace CentralConfig
     {
         static void Prefix()
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
             // CentralConfig.instance.mls.LogInfo($"{weatherName}");
 
@@ -255,7 +272,7 @@ namespace CentralConfig
     {
         static void Prefix(RoundManager __instance)
         {
-            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections || !NetworkManager.Singleton.IsHost)
             {
                 return;
             }
@@ -311,7 +328,7 @@ namespace CentralConfig
     {
         static void Prefix()
         {
-            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            if (!CentralConfig.SyncConfig.DoScrapWeatherInjections || !NetworkManager.Singleton.IsHost)
             {
                 return;
             }

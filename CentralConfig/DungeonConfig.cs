@@ -237,7 +237,14 @@ namespace CentralConfig
                             "Scrap listed here in the ScrapName:rarity,ScrapName,rarity format will be added to the scrap list any moons currently featuring this dungeon");
                     }
                 }
-                CentralConfig.instance.mls.LogInfo("Dungeon config has been registered.");
+                if (CentralConfig.HarmonyTouch2)
+                {
+                    if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon || CentralConfig.SyncConfig.DoDungeonSelectionOverrides || CentralConfig.SyncConfig.DoDunSizeOverrides))
+                    {
+                        CentralConfig.instance.mls.LogInfo("Dungeon config has been registered.");
+                    }
+                }
+                CentralConfig.HarmonyTouch2 = true;
             }
         }
         static void Prefix()
@@ -286,7 +293,7 @@ namespace CentralConfig
 
                 // Injection
 
-                if (CentralConfig.SyncConfig.DoDungeonSelectionOverrides)
+                if (CentralConfig.SyncConfig.DoDungeonSelectionOverrides && NetworkManager.Singleton.IsHost)
                 {
                     dungeon.LevelMatchingProperties.planetNames.Clear();
                     dungeon.LevelMatchingProperties.levelTags.Clear();
@@ -330,7 +337,7 @@ namespace CentralConfig
                     }
                 }
 
-                if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+                if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon && NetworkManager.Singleton.IsHost)
                 {
                     if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(dungeon))
                     {
@@ -351,7 +358,7 @@ namespace CentralConfig
                     }
                 }
 
-                if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+                if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon && NetworkManager.Singleton.IsHost)
                 {
                     if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon.ContainsKey(dungeon))
                     {
@@ -362,7 +369,10 @@ namespace CentralConfig
                     }
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Dungeon config Values Applied.");
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon || CentralConfig.SyncConfig.DoDungeonSelectionOverrides || CentralConfig.SyncConfig.DoDunSizeOverrides))
+            {
+                CentralConfig.instance.mls.LogInfo("Dungeon config Values Applied.");
+            }
             Ready = true;
         }
     }
@@ -841,6 +851,11 @@ namespace CentralConfig
         public static int Moons;*/
         static void Postfix()
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))

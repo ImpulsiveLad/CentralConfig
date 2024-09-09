@@ -25,7 +25,11 @@ namespace CentralConfig
                 OGNightEnemies[level] = level.SelectableLevel.OutsideEnemies;
                 OGScrapPool[level] = level.SelectableLevel.spawnableScrap;
             }
-            CentralConfig.instance.mls.LogInfo("Saved OG enemy/scrap lists for all moons.");
+            if (CentralConfig.HarmonyTouch5)
+            {
+                CentralConfig.instance.mls.LogInfo("Saved OG enemy/scrap lists for all moons.");
+            }
+            CentralConfig.HarmonyTouch5 = true;
         }
         [HarmonyPatch(typeof(GameNetworkManager), "Disconnect")]
         public static class ResetOnDisconnect

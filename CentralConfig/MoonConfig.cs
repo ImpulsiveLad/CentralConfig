@@ -560,7 +560,11 @@ namespace CentralConfig
                         "Scrap in the 'ScrapName:Rarity; format will be added to the scrap pool on every moon.");
                 }
                 ConfigAider.Instance.CleanConfig(cfg); // Cleans out orphaned config entries (ones that you don't want to use anymore)
-                CentralConfig.instance.mls.LogInfo("Moon config has been registered.");
+                if (CentralConfig.HarmonyTouch6)
+                {
+                    CentralConfig.instance.mls.LogInfo("Moon config has been registered.");
+                }
+                CentralConfig.HarmonyTouch6 = true;
             }
         }
         static void Prefix()
@@ -625,7 +629,7 @@ namespace CentralConfig
 
                 // Scrap
 
-                if (CentralConfig.SyncConfig.DoScrapOverrides)
+                if (CentralConfig.SyncConfig.DoScrapOverrides && NetworkManager.Singleton.IsHost)
                 {
                     level.SelectableLevel.minScrap = WaitForMoonsToRegister.CreateMoonConfig.MinScrapOverrides[level];
                     level.SelectableLevel.maxScrap = WaitForMoonsToRegister.CreateMoonConfig.MaxScrapOverrides[level];
@@ -642,7 +646,7 @@ namespace CentralConfig
 
                 // Enemies
 
-                if (CentralConfig.SyncConfig.DoEnemyOverrides)
+                if (CentralConfig.SyncConfig.DoEnemyOverrides && NetworkManager.Singleton.IsHost)
                 {
                     if (CentralConfig.SyncConfig.ScaleEnemySpawnRate)
                     {
@@ -684,7 +688,7 @@ namespace CentralConfig
                         }
                     }
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[level]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
-                                                                                                                                               // InteriorEnemyList
+                    // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[level];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
@@ -713,7 +717,7 @@ namespace CentralConfig
                         level.SelectableLevel.OutsideEnemies = NightEnemies;
                     }
                 }
-                if (CentralConfig.SyncConfig.GlobalEnemyAndScrap)
+                if (CentralConfig.SyncConfig.GlobalEnemyAndScrap && NetworkManager.Singleton.IsHost)
                 {
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddIndoorEnemiesToAllMoons;
                     Vector2 clampIntRarity = new Vector2(0, 99999);
@@ -755,7 +759,7 @@ namespace CentralConfig
                         level.SelectableLevel.spawnableScrap = level.SelectableLevel.spawnableScrap.Concat(WaitForMoonsToRegister.Scrap).ToList();
                     }
                 }
-                if (CentralConfig.SyncConfig.EnemySpawnTimes)
+                if (CentralConfig.SyncConfig.EnemySpawnTimes && NetworkManager.Singleton.IsHost)
                 {
                     float scaleFactor = WaitForMoonsToRegister.CreateMoonConfig.SpawnSpeedScaler[level];
                     if (scaleFactor != 1)
@@ -789,7 +793,7 @@ namespace CentralConfig
 
                 // Traps
 
-                if (CentralConfig.SyncConfig.DoTrapOverrides)
+                if (CentralConfig.SyncConfig.DoTrapOverrides && NetworkManager.Singleton.IsHost)
                 {
                     List<string> mapObjectNames = level.SelectableLevel.spawnableMapObjects.Select(mapObject => mapObject.prefabToSpawn.name).ToList();
 
@@ -844,7 +848,7 @@ namespace CentralConfig
 
                 // Tags
 
-                if (CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections)
+                if ((CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections) && NetworkManager.Singleton.IsHost)
                 {
                     string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[level];
                     List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
@@ -876,7 +880,7 @@ namespace CentralConfig
                     level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[level];
                 }
             }
-            if (CentralConfig.SyncConfig.BigEnemyList)
+            if (CentralConfig.SyncConfig.BigEnemyList && NetworkManager.Singleton.IsHost)
             {
                 string BigInteriorList = ConfigAider.GetBigList(0);
                 string BigDayTimeList = ConfigAider.GetBigList(1);
@@ -947,6 +951,11 @@ namespace CentralConfig
     {
         static void Prefix(RoundManager __instance)
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             if (CentralConfig.SyncConfig.FreeEnemies)
             {
                 __instance.hourTimeBetweenEnemySpawnBatches = 1;
@@ -1140,29 +1149,27 @@ namespace CentralConfig
             }
         }
     }
-    [HarmonyPatch(typeof(HangarShipDoor), "Start")]
+    [HarmonyPatch(typeof(ExtendedLevel), "GetNumberlessPlanetName")]
     [HarmonyPriority(1000)]
     public class RenameCelest
     {
-        static void Prefix()
+        static bool Prefix(ref SelectableLevel selectableLevel, ref string __result)
         {
-            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
-            foreach (ExtendedLevel level in allExtendedLevels)
+            if (selectableLevel != null)
             {
-                if (level.NumberlessPlanetName == "Celest" && CentralConfig.SyncConfig.RenameCelest)
+                string planetName = new string(selectableLevel.PlanetName.SkipWhile(c => !char.IsLetter(c)).ToArray());
+                if (planetName == "Celest" && CentralConfig.SyncConfig.RenameCelest)
                 {
-                    level.SelectableLevel.PlanetName = "68 Celeste";
-                    // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.PlanetName);
+                    __result = "Celeste";
+                    return false;
                 }
             }
-            /*List<ExtendedDungeonFlow> allExtendedDungeonFlows = PatchedContent.ExtendedDungeonFlows;
-            foreach (ExtendedDungeonFlow flow in allExtendedDungeonFlows)
+            else
             {
-                if (flow.DungeonName == "Level3Flow")
-                {
-                    flow.DungeonName = "Mineshaft";
-                }
-            }*/
+                __result = string.Empty;
+                return false;
+            }
+            return true;
         }
     }
 }

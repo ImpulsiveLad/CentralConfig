@@ -8,6 +8,8 @@ using LethalLevelLoader;
 using System.Linq;
 using CSync.Extensions;
 using UnityEngine;
+using Unity.Netcode;
+using System.Data;
 
 namespace CentralConfig
 {
@@ -114,7 +116,14 @@ namespace CentralConfig
                             "Scrap listed here in the ScrapName:rarity,ScrapName,rarity format will be added to the scrap list on any moons with this tag.");
                     }
                 }
-                CentralConfig.instance.mls.LogInfo("Tag config has been registered.");
+                if (CentralConfig.HarmonyTouch3)
+                {
+                    if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoEnemyTagInjections))
+                    {
+                        CentralConfig.instance.mls.LogInfo("Tag config has been registered.");
+                    }
+                }
+                CentralConfig.HarmonyTouch3 = true;
             }
         }
         static void Prefix()
@@ -155,7 +164,7 @@ namespace CentralConfig
             {
                 string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
-                if (CentralConfig.SyncConfig.DoEnemyTagInjections)
+                if (CentralConfig.SyncConfig.DoEnemyTagInjections && NetworkManager.Singleton.IsHost)
                 {
                     string IntEneStr = WaitForTagsToRegister.CreateTagConfig.InteriorEnemyByTag[TagName];
                     Vector2 clampIntRarity = new Vector2(0, 99999);
@@ -173,7 +182,7 @@ namespace CentralConfig
                     WaitForTagsToRegister.CreateTagConfig.NightEnemies[TagName] = nightenemyList;
                 }
 
-                if (CentralConfig.SyncConfig.DoScrapTagInjections)
+                if (CentralConfig.SyncConfig.DoScrapTagInjections && NetworkManager.Singleton.IsHost)
                 {
                     string ScrStr = WaitForTagsToRegister.CreateTagConfig.ScrapByTag[TagName];
                     Vector2 clampScrRarity = new Vector2(0, 99999);
@@ -191,7 +200,10 @@ namespace CentralConfig
                         "The current default value of this represents which moons have this tag. CHANGING THIS SETTING DOESN'T CHANGE ANYTHING!");
                 }
             }
-            CentralConfig.instance.mls.LogInfo("Tag config Values Applied.");
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoEnemyTagInjections))
+            {
+                CentralConfig.instance.mls.LogInfo("Tag config Values Applied.");
+            }
             Ready = true;
         }
     }
@@ -201,6 +213,11 @@ namespace CentralConfig
     {
         static void Prefix()
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             List<ContentTag> ThisLevelTags = LevelManager.CurrentExtendedLevel.ContentTags;
             var sortedContentTags = ThisLevelTags.OrderBy(tag => tag.contentTagName).ToList();
             foreach (ContentTag tag in sortedContentTags)

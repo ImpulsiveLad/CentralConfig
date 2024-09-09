@@ -26,7 +26,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.12.0";
+        private const string modVersion = "0.12.5";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -38,6 +38,11 @@ namespace CentralConfig
         public static float shid = 0;
 
         public static bool HarmonyTouch = false;
+        public static bool HarmonyTouch2 = false;
+        public static bool HarmonyTouch3 = false;
+        public static bool HarmonyTouch4 = false;
+        public static bool HarmonyTouch5 = false;
+        public static bool HarmonyTouch6 = false;
 
         public static CreateMoonConfig ConfigFile;
 
@@ -119,6 +124,7 @@ namespace CentralConfig
     [DataContract]
     public class GeneralConfig : SyncedConfig2<GeneralConfig>
     {
+        [DataMember] public SyncedEntry<string> Important { get; private set; }
         [DataMember] public SyncedEntry<string> BlacklistMoons { get; private set; }
         [DataMember] public SyncedEntry<bool> IsWhiteList { get; private set; }
         [DataMember] public SyncedEntry<bool> DoGenOverrides { get; private set; }
@@ -172,58 +178,63 @@ namespace CentralConfig
         {
             ConfigManager.Register(this);
 
+            Important = cfg.BindSyncedEntry("!READ THIS!",
+                "Important Info !!!",
+                "This does nothing btw.",
+                "The bulk of settings are created and applied individually foreach different entry in a group. They are not generated until after enabling the main true/false toggle for the related setting then rebooting the game.\nEach intial entry is marked with either 'Host Only' or 'All Players'. 'Host Only' settings are only set by the host and do not run on clients. They do not need to be synced.\n'All Players' settings MUST BE SYNCED and set on all players in the lobby.\nIf in doubt just send the config file to everyone.");
+
             BlacklistMoons = cfg.BindSyncedEntry("_MoonLists_", // These are used to decide what more in-depth config values should be made
-                "Blacklisted Moons",
+                "Blacklisted Moons (All Players (for general, time, and/or misc settings)",
                 "Liquidation,Gordion",
                 "Excludes the listed moons from the config. If they are already created, they will be removed on config regeneration.");
 
             IsWhiteList = cfg.BindSyncedEntry("_MoonLists_",
-                "Is Moon Blacklist a Whitelist?",
+                "Is Moon Blacklist a Whitelist? (All Players (for general, time, and/or misc settings))",
                 false,
                 "If set to true, only the moons listed above will be generated.");
 
             GlobalEnemyAndScrap = cfg.BindSyncedEntry("~Global~",
-                "Global Enemy and Scrap Injection",
+                "Global Enemy and Scrap Injection (Host Only)",
                 false,
                 "If set to true, allows adding/replacing enemies to the indoor, daytime, and nighttime enemy pools as well as adding scrap onto every moon through only a few settings.");
 
             DoGenOverrides = cfg.BindSyncedEntry("_Moons_",
-                "Enable General Overrides?",
+                "Enable General Overrides? (All Players)",
                 false,
                 "If set to true, allows altering of some basic properties including the route price, risk level, and description for each moon.");
 
             DoScrapOverrides = cfg.BindSyncedEntry("_Moons_",
-                "Enable Scrap Overrides?",
+                "Enable Scrap Overrides? (Host Only)",
                 false,
                 "If set to true, allows altering of the min/max scrap count, the list of scrap objects on each moon, and a multiplier for the individual scrap item's values.");
 
             DoEnemyOverrides = cfg.BindSyncedEntry("_Moons_",
-                "Enable Enemy Overrides?",
+                "Enable Enemy Overrides? (Host Only)",
                 false,
                 "If set to true, allows altering of the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).");
 
             BigEnemyList = cfg.BindSyncedEntry("~Big Lists~",
-                "Big Enemy Lists?",
+                "Big Enemy Lists? (Host Only)",
                 false,
                 "If set to true, you will be able to set the enemy lists for every moon with just three strings. This is helpful if you want to copy-paste from a spreadsheet.\nIf you set enemy lists per moon with the setting above, they will contribute to the default value but be overridden by the big lists given the specific moon is found in the big list string.");
 
             FreeEnemies = cfg.BindSyncedEntry("_Enemies_",
-                "Free Them?",
+                "Free Them? (Host Only)",
                 false,
                 "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be hourly instead of every other hour.");
 
             ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Enemies_",
-                "Scale Enemy Spawn Rate?",
+                "Scale Enemy Spawn Rate? (Host Only)",
                 false,
                 "When enabled, this setting adjusts the enemy spawn rate to match the new enemy powers. Note that this requires the ‘Enemy Overrides’ setting to be true.\nFor example, Experimentation has a default max power of 4 for interior enemies. If you set this to 6, interior enemies will spawn ~1.5x as fast.\nThis applies to interior, day, and night enemy spawns.");
 
             EnemySpawnTimes = cfg.BindSyncedEntry("_Enemies_",
-                "Accelerate Enemy Spawning?",
+                "Accelerate Enemy Spawning? (Host Only)",
                 false,
                 "If set to true, allows you to set a new value per moon that tweaks the enemy spawn timing.");
 
             DoTrapOverrides = cfg.BindSyncedEntry("_Moons_",
-                "Enable Trap Overrides?",
+                "Enable Trap Overrides? (Host Only)",
                 false,
                 "If set to true, allows altering of the min/max count for each trap on each moon.");
 
@@ -233,187 +244,187 @@ namespace CentralConfig
                 "If set to true, allows altering of the possible weathers to each moon.\nBeware that adding new weathers to moons that didn't have them before will likely cause funky buggies.\nDO NOT USE WITH WEATHER REGISTRY!!");*/
 
             UpdateTimeFaster = cfg.BindSyncedEntry("~Misc~",
-                "Accurate Clock?",
+                "Accurate Clock? (All Players)",
                 true,
                 "If set to true, the in-game clock will be updated when time moves instead of every 3 seconds.");
 
             TimeSettings = cfg.BindSyncedEntry("_Moons_",
-                "Enable Time Settings?",
+                "Enable Time Settings? (All Players)",
                 false,
                 "If set to true, allows setting if time exists, the time speed multiplier, and if time should wait until the ship lands to begin moving (All per moon).");
 
             DoDangerBools = cfg.BindSyncedEntry("_Moons_",
-                "Enable Misc Overrides?",
+                "Enable Misc Overrides? (All Players)",
                 false,
-                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, and locked/unlocked status (Keep this false for Selene's Choice to work).");
+                "If set to true, allows altering of miscellaneous traits of moons such as hidden/unhidden status, and locked/unlocked status (Keep this false for Selene's Choice compat).");
 
             RenameCelest = cfg.BindSyncedEntry("_Moons_",
-                "Rename Celest?",
+                "Rename Celest? (All Players)",
                 false,
                 "If set to true, Celest will be renamed to Celeste. This fixes any config entry mismatches between her and Celestria.");
 
             BlackListDungeons = cfg.BindSyncedEntry("_DungeonLists_",
-                "Blacklisted Dungeons",
+                "Blacklisted Dungeons (All Players (for dungeon size))",
                 "",
                 "Excludes the listed dungeons from the config. If they are already created, they will be removed on config regeneration.");
 
             IsDunWhiteList = cfg.BindSyncedEntry("_DungeonLists_",
-                "Is Dungeon Blacklist a Whitelist?",
+                "Is Dungeon Blacklist a Whitelist? (All Players (for dungeon size))",
                 false,
                 "If set to true, only the dungeons listed above will be generated.");
 
             UseNewGen = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Dungeon Generation Safeguards?",
+                "Enable Dungeon Generation Safeguards? (All Players)",
                 true,
                 "If set to true, this refines the dungeon loading process to retry with various imput sizes.\nInstead of a hard-cap of 20 attempts, the dungeon will go through and attempt to generate with a different size until it succeeds.\nThis *should* only fail if the dungeon has its own generation issues or its size multiplier is reduced below an acceptable size to begin with.");
 
             UnShrankDungenTries = cfg.BindSyncedEntry("_Dungeons_",
-                "Retries before Changing Size",
+                "Retries before Changing Size (All Players)",
                 20,
                 "The number of attempts made by the dungeon to generate using its original input size multiplier before it begins to adjust the multiplier either upwards or downwards.\nPreviously, the size adjustment used to happen after just one failed attempt.");
 
             BracketTries = cfg.BindSyncedEntry("_Dungeons_",
-                "Tries per Dungeon Size Bracket",
+                "Tries per Dungeon Size Bracket (All Players)",
                 25,
                 "The number of generation attempts spent on each size bracket (The brackets are: 20x-10x, 10x-5x, 5x-3x, 3x-2x, and 2x-1x for reference).\nIncreasing this value gives an exponentially higher chance of generation success but takes more time.");
 
             DoDunSizeOverrides = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Dungeon Size Overrides?",
+                "Enable Dungeon Size Overrides? (All Players)",
                 false,
                 "If set to true, allows altering various dungeon size related numbers. This includes the moon-tied size multipliers, the Dungeon's Map Tile Size (which is divided from the moon's size), a Dungeon specific min/max size clamp applied after the MTS is factored in, the scaler to determine how strict the size clamp should be, and a Dungeon specific min/max random size multiplier applied after the clamping.");
 
             DoDungeonSelectionOverrides = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Dungeon Selection Overrides?",
+                "Enable Dungeon Selection Overrides? (Host Only)",
                 false,
                 "If set to true, allows altering the dungeon selection pool tied to the dungeon by moon name, level tags, route price range, and mod name.");
 
             DoEnemyInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Enemy Injection by Current Dungeon?",
+                "Enable Enemy Injection by Current Dungeon? (Host Only)",
                 false,
                 "If set to true, allows adding/replacing enemies on levels based on the current dungeon (inside, day, and night.");
 
             DoScrapInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
-                "Enable Scrap Injection by Current Dungeon?",
+                "Enable Scrap Injection by Current Dungeon? (Host Only)",
                 false,
                 "If set to true, allows adding scrap to levels based on matching tags.");
 
             KeepOrphans = cfg.BindSyncedEntry("~Misc~",
-                "Keep Orphaned Entries?",
-                false,
+                "Keep Orphaned Entries? (Personal)",
+                true,
                 "If set to true, the config will not 'clean' itself after processing, this will result in a more crowded/messy config but will prevent unloaded entries from being removed.");
 
             RandomSeed = cfg.BindSyncedEntry("~Misc~",
-                "Starting Random Seed",
+                "Starting Random Seed (Host Only)",
                 -1,
                 "Leave at -1 to have it be random. The seed will be updated daily regardless of this setting.");
 
             LogEnemies = cfg.BindSyncedEntry("~Misc~",
-                "Log Current Enemy/Scrap Tables?",
+                "Log Current Enemy/Scrap Tables? (Host Only)",
                 false,
                 "If set to true, the console will log the current indoor, daytime, and nighttime enemy spawn pools as well as the current scrap pool 10 seconds after loading into the level.\nOnly accurate on the host, as enemy and scrap pools are ultimately decided by the host.");
 
             DoFineOverrides = cfg.BindSyncedEntry("~Misc~",
-                "Enable Fine Overrides?",
+                "Enable Fine Overrides? (All Players)",
                 false,
                 "If set to true, allows you to set the fine for dead/missing players and the reduction on the fine for having brought the body back to the ship.");
 
             DoScanNodeOverrides = cfg.BindSyncedEntry("~Misc~",
-                "Enable Scan Node Extensions?",
+                "Enable Scan Node Extensions? (All Players)",
                 false,
                 "If set to true, allows you to set the min/max ranges for the scan nodes on the ship, main entrance, and fire exits (if you have ScannableFireExit installed).");
 
             BlacklistTags = cfg.BindSyncedEntry("_TagLists_",
-                "Blacklisted Tags",
+                "Blacklisted Tags (Host Only)",
                 "vanilla,custom,free,paid,argon,canyon,company,forest,marsh,military,ocean,rocky,tundra,valley,wasteland,volcanic,rosiedev,sfdesat,starlancermoons,tolian",
                 "Excludes the listed tags from the config. If they are already created, they will be removed on config regeneration.");
 
             IsTagWhiteList = cfg.BindSyncedEntry("_TagLists_",
-                "Is Tag Blacklist a Whitelist?",
+                "Is Tag Blacklist a Whitelist? (Host Only)",
                 true,
                 "If set to true, only the tags listed above will be generated.");
 
             DoEnemyTagInjections = cfg.BindSyncedEntry("_Tags_",
-                "Enable Enemy Injection by Tag?",
+                "Enable Enemy Injection by Tag? (Host Only)",
                 false,
                 "If set to true, allows adding/replacing enemies on levels based on matching tags (inside, day, and night).");
 
             DoScrapTagInjections = cfg.BindSyncedEntry("_Tags_",
-                "Enable Scrap Injection by Tag?",
+                "Enable Scrap Injection by Tag? (Host Only)",
                 false,
                 "If set to true, allows adding scrap to levels based on matching tags.");
 
             RemoveDuplicateEnemies = cfg.BindSyncedEntry("_Enemies_",
-                "Remove Duplicate Enemies?",
+                "Remove Duplicate Enemies? (Host Only)",
                 false,
                 "If set to true, after enemy spawn lists are updated by various means, any time there are 2 or more of the same enemy, only the entry for the enemy with the highest rarity will be kept.\nThis means that if 4 sources add the bracken at various rarities, only the highest value is kept. (In \"Flowerman:5,Flowerman:75,Flowerman:66,Flowerman:73\" The bracken will only be added once with a rarity of 75.)");
 
             KeepSmallerDupes = cfg.BindSyncedEntry("_Enemies_",
-                "Keep Smallest Rarity?",
+                "Keep Smallest Rarity? (Host Only)",
                 false,
                 "If this and Remove Duplicates is set to true, the lowest rarity of a given enemy with be kept instead of its highest rarity.");
 
             AlwaysKeepZeros = cfg.BindSyncedEntry("_Enemies_",
-                "Always Keep Zeros?",
+                "Always Keep Zeros? (Host Only)",
                 false,
                 "If this and Remove Duplicates is set to true, any enemies with that have an entry of 0 rarity will be kept regardless. This allows you to blacklist enemies from specific weathers/tags/dungeons by putting EnemyName:0 under the setting.");
 
             BlacklistWeathers = cfg.BindSyncedEntry("_WeatherLists_",
-                "Blacklisted Weathers",
+                "Blacklisted Weathers (Host Only)",
                 "",
                 "Excludes the listed weathers from the config. If they are already created, they will be removed on config regeneration.");
 
             IsWeatherWhiteList = cfg.BindSyncedEntry("_WeatherLists_",
-                "Is Weather Blacklist a Whitelist?",
+                "Is Weather Blacklist a Whitelist? (Host Only)",
                 false,
                 "If set to true, only the weathers listed above will be generated.");
 
             DoEnemyWeatherInjections = cfg.BindSyncedEntry("_Weathers_",
-                "Enable Enemy Injection by Current Weather?",
+                "Enable Enemy Injection by Current Weather? (Host Only)",
                 false,
                 "If set to true, allows adding/replacing enemies on levels based on the current weather (inside, day, and night).");
 
             DoScrapWeatherInjections = cfg.BindSyncedEntry("_Weathers_",
-                "Enable Scrap Injection by Current Weather?",
+                "Enable Scrap Injection by Current Weather? (Host Only)",
                 false,
                 "If set to true, allows adding scrap to levels based on the current weather as well as multipliers to the scrap amount and individiual scrap values.");
 
             NewTags = cfg.BindSyncedEntry("_TagLists_",
-                "New Tags",
+                "New Tags (Host Only)",
                 "Smunguss,Glorble,Badungle",
                 "New 'tags' that are considered by this mod's settings (Remember to not blacklist them above).");
 
             ScrapShuffle = cfg.BindSyncedEntry("~Shufflers~",
-                "Scrap Shuffler",
+                "Scrap Shuffler (Host Only)",
                 false,
                 "If set to true, scrap that could have but did not spawn on a given day will be more likely to spawn the next day, provided that the scrap is in the next level's final scrap pool as well.\nThis temporary selection chance boost increases every day the specific scrap was in the scrap pool but was not selected. The boost returns to 0 when ANY amount of that scrap is spawned.");
 
             ScrapShuffleRandomMin = cfg.BindSyncedEntry("~Shufflers~",
-                "Scrap Shuffler Random Min",
+                "Scrap Shuffler Random Min (Host Only)",
                 0,
                 "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
             ScrapShuffleRandomMax = cfg.BindSyncedEntry("~Shufflers~",
-                "Scrap Shuffler Random Max",
+                "Scrap Shuffler Random Max (Host Only)",
                 2,
                 "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
             EnemyShuffle = cfg.BindSyncedEntry("~Shufflers~",
-                "Enemy Shuffler",
+                "Enemy Shuffler (Host Only)",
                 false,
                 "If set to true, enemies that could have but did spawn on a given day will be more likely to spawn the next day, provided that the enemy is in one of the next level's final enemy pools as well.\nThis temporary selection chance boost increases every day the specific enemy was in the spawn pool but was not spawned. The boost returns to 0 when ANY number of that enemy is spawned inside, during the day, or during the night.");
 
             EnemyShuffleRandomMin = cfg.BindSyncedEntry("~Shufflers~",
-                "Enemy Shuffler Random Min",
+                "Enemy Shuffler Random Min (Host Only)",
                 0,
                 "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
             EnemyShuffleRandomMax = cfg.BindSyncedEntry("~Shufflers~",
-                "Enemy Shuffler Random Max",
+                "Enemy Shuffler Random Max (Host Only)",
                 2,
                 "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
             ShuffleSave = cfg.BindSyncedEntry("~Shufflers~",
-                "Save Shuffle Data",
+                "Save Shuffle Data (Host Only)",
                 false,
                 "If set to true, the shuffle data for enemies and scrap will be committed to the save file and loaded on start-up. This means that the counters for how many days since they last spawned will be preserved, and the rarity boosters will be applied accordingly on next landing.\nIf this setting remains false, the shuffle will only exist in the session and be forgotten on reboot.");
         }
