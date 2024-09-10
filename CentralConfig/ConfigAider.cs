@@ -1,7 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using LethalLevelLoader;
-using LethalLib.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using static LethalLib.Modules.Enemies;
 
 namespace CentralConfig
 {
@@ -26,28 +26,16 @@ namespace CentralConfig
                 return _instance;
             }
         }
-        // Safety box of LLL config stuff renamed + some other random methods
-        public const string DaComma = ",";
-        public const string DaColon = ":";
-        public const string DaDash = "-";
+
         public static Color MagentaColor = Color.magenta;
-        public static List<Item> Items { get; internal set; } = new List<Item>();
         public static string CauterizeString(string inputString)
         {
-            return (inputString.SkipToLetters().RemoveWhitespace().ToLower());
+            return inputString.SkipToLetters().RemoveWhitespace().ToLower();
         }
 
-        internal static List<Item> GrabFullItemList()
+        public static List<Item> GrabFullItemList()
         {
-            List<Item> allItems = StartOfRound.Instance.allItemsList.itemsList;
-            foreach (Item item in allItems)
-            {
-                if (!Items.Contains(item))
-                {
-                    Items.Add(item);
-                }
-            }
-            return Items.ToList();
+            return StartOfRound.Instance.allItemsList.itemsList;
         }
 
         public static List<EnemyType> GrabFullEnemyList()
@@ -68,7 +56,7 @@ namespace CentralConfig
                     allEnemies.Add(extendedEnemy.EnemyType);
                 }
             }
-            foreach (Enemies.SpawnableEnemy spawnableEnemy in Enemies.spawnableEnemies)
+            foreach (SpawnableEnemy spawnableEnemy in spawnableEnemies)
             {
                 if (!allEnemies.Contains(spawnableEnemy.enemy))
                 {
@@ -109,51 +97,31 @@ namespace CentralConfig
 
         public static List<string> SplitStringsByDaComma(string newInputString)
         {
-            return newInputString.Split(new[] { DaComma }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            return newInputString.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
-        public static (string, string) SplitStringsByDaColon(string inputString)
-        {
-            return SplitStringByChars(inputString, DaColon);
-        }
-        public static (string, string) SplitStringByDaDash(string inputString)
-        {
-            return SplitStringByChars(inputString, DaDash);
-        }
-        public static (string, string) SplitStringByChars(string newInputString, string splitValue)
-        {
-            if (!newInputString.Contains(splitValue))
-                return ((newInputString, string.Empty));
-            else
-            {
-                string firstValue = string.Empty;
-                string secondValue = string.Empty;
-                firstValue = newInputString.Replace(newInputString.Substring(newInputString.IndexOf(splitValue)), "");
-                secondValue = newInputString.Substring(newInputString.IndexOf(splitValue) + 1);
-                return ((firstValue, secondValue));
-            }
-        }
-
-        public static List<StringWithRarity> ConvertStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
+        /*public static List<StringWithRarity> ConvertStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
         {
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
-            List<string> stringList = SplitStringsByDaComma(newInputString);
+            var pairs = newInputString.Split(',');
 
-            foreach (string stringString in stringList)
+            foreach (string pair in pairs)
             {
-                (string, string) splitStringData = SplitStringsByDaColon(stringString);
-                string levelName = splitStringData.Item1;
-                int rarity = 0;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var String = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
 
-                if (clampRarity != Vector2.zero)
-                    rarity = Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
-                returnList.Add(new StringWithRarity(levelName, rarity));
+                    returnList.Add(new StringWithRarity(String, Rarity));
+                }
             }
+
             return returnList;
-        }
+        }*/
 
         // Enemies
 
@@ -167,7 +135,7 @@ namespace CentralConfig
             {
                 if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
                 {
-                    returnString += spawnableEnemyWithRarity.enemyType.enemyName + DaColon + spawnableEnemyWithRarity.rarity.ToString() + DaComma;
+                    returnString += spawnableEnemyWithRarity.enemyType.enemyName + ":" + spawnableEnemyWithRarity.rarity.ToString() + ",";
                 }
             }
 
@@ -185,32 +153,74 @@ namespace CentralConfig
             {
                 return new List<SpawnableEnemyWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
 
             List<EnemyType> AllEnemies = GrabFullEnemyList();
 
-            foreach (EnemyType enemyType in AllEnemies)
+            var pairs = newInputString.Split(',');
+
+            foreach (string pair in pairs)
             {
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
                 {
-                    if (enemyType.enemyName.ToLower().Contains(stringString.Name.ToLower()))
+                    var EnemyName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
+                    bool added = false;
+
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+
+                    foreach (EnemyType enemyType in AllEnemies)
                     {
-                        SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
-                        newEnemy.enemyType = enemyType;
-                        newEnemy.rarity = stringString.Rarity;
-                        returnList.Add(newEnemy);
-                        stringList.Remove(stringString);
+                        if (enemyType.enemyName.Equals(EnemyName))
+                        {
+                            SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                            newEnemy.enemyType = enemyType;
+                            newEnemy.rarity = Rarity;
+                            returnList.Add(newEnemy);
+                            added = true;
+                            // CentralConfig.instance.mls.LogMessage($"Added enemy {enemyType.enemyName} with rarity {Rarity} from string {EnemyName}");
+                            break;
+                        }
+                        else
+                        {
+                            // CentralConfig.instance.mls.LogMessage($"Did not add enemy {enemyType.enemyName} from string {EnemyName}");
+                        }
+                    }
+                    if (!added)
+                    {
+                        foreach (EnemyType enemyType in AllEnemies)
+                        {
+                            if (enemyType.enemyPrefab != null)
+                            {
+                                ScanNodeProperties enemyScanNode = enemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>();
+                                if (enemyScanNode != null)
+                                {
+                                    string headerText = CauterizeString(enemyScanNode.headerText);
+                                    if (headerText.Equals(CauterizeString(EnemyName)))
+                                    {
+                                        SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                                        newEnemy.enemyType = enemyType;
+                                        newEnemy.rarity = Rarity;
+                                        returnList.Add(newEnemy);
+                                        added = true;
+                                        // CentralConfig.instance.mls.LogMessage($"Added enemy {enemyType.enemyName} with rarity {Rarity} from scan node name {EnemyName}");
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-            StringBuilder sb = new StringBuilder();
+            /*StringBuilder sb = new StringBuilder();
             sb.AppendLine("Return List:");
             foreach (SpawnableEnemyWithRarity enemyType in returnList)
             {
                 sb.AppendLine($"Item Name: {enemyType.enemyType.enemyName}, Rarity: {enemyType.rarity}");
             }
-            // CentralConfig.instance.mls.LogInfo(sb.ToString());
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
 
             return returnList;
         }
@@ -308,15 +318,16 @@ namespace CentralConfig
             }*/
             return returnList;
         }
-        public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig) // takes in the original enemy list and the config for replacing enemies
+        public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig)
         {
             if (string.IsNullOrEmpty(ReplaceConfig) || ReplaceConfig == "Default Values Were Empty")
             {
                 return EnemyList; // if the config is unused just returns the list untouched
             }
+
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(); // makes a new list of enemies
             List<string> replacedEnemies = new List<string>(); // To remember what was replaced
-            List<SpawnableEnemyWithRarity> backupList = EnemyList; // for readding enemies that aren't replaced while being able to empty the EnemyList
+            List<SpawnableEnemyWithRarity> backupList = new List<SpawnableEnemyWithRarity>(EnemyList); // clone the list to keep a backup
             var random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
             var pairs = ReplaceConfig.Split(','); // breaks the string by comma to get each argument of x enemy replacing y
@@ -354,8 +365,10 @@ namespace CentralConfig
                     }
                     else
                     {
-                        replacementName = replacement; // just leaes the replacement name as the replacement if it doesn't have a chance attached
+                        replacementName = replacement; // just leaves the replacement name as the replacement if it doesn't have a chance attached
                     }
+
+                    bool replaced = false;
 
                     EnemyList = EnemyList.OrderBy(e => e.enemyType.enemyName).ToList();
                     for (int i = 0; i < EnemyList.Count; i++)
@@ -363,7 +376,7 @@ namespace CentralConfig
                         var enemy = EnemyList[i];
                         if (enemy.enemyType.enemyName.Equals(originalName)) // if the entry matches an original name
                         {
-                            if (random.Next(100) < chanceToReplace) // the enemy is only replaced if the chance to replace is greater than the random synced(?) value from 0 to 99
+                            if (random.Next(100) < chanceToReplace) // the enemy is only replaced if the chance to replace is greater than the random synced value from 0 to 99
                             {
                                 SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
                                 newEnemy.enemyType = GetEnemyTypeByName(replacementName); // method to check all enemyTypes and get the one with the name of the replacement, then sets the new enemies' enemyType to the replacements
@@ -372,7 +385,7 @@ namespace CentralConfig
 
                                 if (rarityReplacement != -1)
                                 {
-                                    newEnemy.rarity = rarityReplacement; // if the rarityreplacement is set, it will use that
+                                    newEnemy.rarity = rarityReplacement; // if the rarityReplacement is set, it will use that
                                     SuccessReplacementLogMessage += $", using rarity override of {rarityReplacement}.";
                                 }
                                 else
@@ -381,24 +394,33 @@ namespace CentralConfig
                                     SuccessReplacementLogMessage += $", using the original enemy rarity of {enemy.rarity}.";
                                 }
 
-                                returnList.Add(newEnemy); // adds this new enemy to the returnlist
+                                returnList.Add(newEnemy); // adds this new enemy to the returnList
                                 replacedEnemies.Add(originalName); // adds the replacement to the string list I made
                                 SuccessReplacementLogMessage += $"\nChance to replace was: {chanceToReplace}%";
                                 // CentralConfig.instance.mls.LogInfo(SuccessReplacementLogMessage);
+
+                                replaced = true; // indicate that a replacement was made
+                                EnemyList.Remove(enemy);
+                                break; // break out of the inner loop to stop checking further enemies
                             }
                             else
                             {
                                 // CentralConfig.instance.mls.LogInfo($"Didn't replace enemy: {originalName} with {replacementName}, chance was only {chanceToReplace}%");
                             }
-                            EnemyList.Remove(enemy);
                         }
                         else
                         {
                             // CentralConfig.instance.mls.LogInfo($"Enemy: {originalName} was not found in the enemy list.");
                         }
                     }
+
+                    if (replaced)
+                    {
+                        continue; // move on to the next pair if a replacement was made
+                    }
                 }
             }
+
             backupList = backupList.OrderBy(e => e.enemyType.enemyName).ToList();
             foreach (var enemy in backupList) // goes through the enemy list again
             {
@@ -407,7 +429,7 @@ namespace CentralConfig
                     SpawnableEnemyWithRarity oldEnemy = new SpawnableEnemyWithRarity();
                     oldEnemy.enemyType = enemy.enemyType; // add it as is
                     oldEnemy.rarity = enemy.rarity; // same
-                    returnList.Add(oldEnemy); // yeah its added to the return list untouched
+                    returnList.Add(oldEnemy); // yeah its added to the returnList untouched
                     // CentralConfig.instance.mls.LogInfo("Added non replaced enemy: " + oldEnemy.enemyType.enemyName);
                 }
             }
@@ -415,8 +437,7 @@ namespace CentralConfig
         }
         public static EnemyType GetEnemyTypeByName(string enemyName)
         {
-            List<EnemyType> AllEnemies = GrabFullEnemyList();
-            foreach (var enemyType in AllEnemies)
+            foreach (var enemyType in GrabFullEnemyList())
             {
                 if (enemyType.enemyName == enemyName)
                 {
@@ -539,7 +560,7 @@ namespace CentralConfig
             {
                 if (spawnableItemWithRarity.rarity > 0)
                 {
-                    returnString += spawnableItemWithRarity.spawnableItem.itemName + DaColon + spawnableItemWithRarity.rarity.ToString() + DaComma;
+                    returnString += spawnableItemWithRarity.spawnableItem.itemName + ":" + spawnableItemWithRarity.rarity.ToString() + ",";
                 }
             }
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
@@ -555,32 +576,48 @@ namespace CentralConfig
             {
                 return new List<SpawnableItemWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
 
             List<Item> allItems = GrabFullItemList();
 
-            foreach (Item item in allItems)
+            var pairs = newInputString.Split(',');
+
+            foreach (string pair in pairs)
             {
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
                 {
-                    if (CauterizeString(item.itemName).Contains(CauterizeString(stringString.Name)) || CauterizeString(stringString.Name).Contains(CauterizeString(item.itemName)))
+                    var ItemName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
+
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+
+                    foreach (Item item in allItems)
                     {
-                        SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
-                        newItem.spawnableItem = item;
-                        newItem.rarity = stringString.Rarity;
-                        returnList.Add(newItem);
-                        stringList.Remove(stringString);
+                        if (item.itemName.Equals(ItemName))
+                        {
+                            SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
+                            newItem.spawnableItem = item;
+                            newItem.rarity = Rarity;
+                            returnList.Add(newItem);
+                            // CentralConfig.instance.mls.LogMessage($"Added scrap {item.itemName} with rarity {Rarity} from string {ItemName}");
+                            break;
+                        }
+                        else
+                        {
+                            // CentralConfig.instance.mls.LogMessage($"Did not add scrap {item.itemName} from string {ItemName}");
+                        }
                     }
                 }
             }
-            StringBuilder sb = new StringBuilder();
+            /*StringBuilder sb = new StringBuilder();
             sb.AppendLine("Return List:");
             foreach (SpawnableItemWithRarity item in returnList)
             {
                 sb.AppendLine($"Item Name: {item.spawnableItem.itemName}, Rarity: {item.rarity}");
             }
-            // CentralConfig.instance.mls.LogInfo(sb.ToString());
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
 
             return returnList;
         }
@@ -648,7 +685,7 @@ namespace CentralConfig
 
         // Weather
 
-        public static string ConvertWeatherArrayToString(RandomWeatherWithVariables[] randomWeatherArray)
+        /*public static string ConvertWeatherArrayToString(RandomWeatherWithVariables[] randomWeatherArray)
         {
             string returnString = "";
             bool noneExists = false;
@@ -659,12 +696,12 @@ namespace CentralConfig
                 {
                     noneExists = true;
                 }
-                returnString += randomWeather.weatherType + DaComma;
+                returnString += randomWeather.weatherType + ",";
             }
 
             if (!noneExists)
             {
-                returnString = "None" + DaComma + returnString;
+                returnString = "None," + returnString;
             }
 
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
@@ -700,7 +737,7 @@ namespace CentralConfig
             }
             // CentralConfig.instance.mls.LogInfo(sb.ToString());
             return returnArray;
-        }
+        }*/
 
         // Tags
 
@@ -715,7 +752,7 @@ namespace CentralConfig
                 string tagName = CauterizeString(contentTag.contentTagName);
                 if (uniqueTags.Add(tagName))
                 {
-                    returnString += tagName + DaComma;
+                    returnString += tagName + ",";
                 }
             }
 
@@ -733,29 +770,31 @@ namespace CentralConfig
             {
                 return new List<ContentTag>();
             }
-            List<string> stringList = newInputString.Split(',').ToList();
             List<ContentTag> returnList = new List<ContentTag>();
 
             List<ContentTag> allContentTagsList = GrabFullTagList();
 
-            foreach (ContentTag contentTag in allContentTagsList)
+            var tags = newInputString.Split(',');
+
+            foreach (string tag in tags)
             {
-                foreach (string stringString in new List<string>(stringList))
+                foreach (ContentTag contentTag in allContentTagsList)
                 {
-                    if (CauterizeString(contentTag.contentTagName).Contains(CauterizeString(stringString)) || CauterizeString(stringString).Contains(CauterizeString(contentTag.contentTagName)))
+                    if (CauterizeString(contentTag.contentTagName).Equals(CauterizeString(tag)))
                     {
                         returnList.Add(contentTag);
-                        stringList.Remove(stringString);
+                        break;
                     }
                 }
             }
-            StringBuilder sb = new StringBuilder();
+            /*StringBuilder sb = new StringBuilder();
             sb.AppendLine("Return List:");
             foreach (ContentTag tag in returnList)
             {
                 sb.AppendLine($"{tag.contentTagName}");
             }
-            // CentralConfig.instance.mls.LogInfo(sb.ToString());
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
+
             return returnList;
         }
 
@@ -774,7 +813,7 @@ namespace CentralConfig
 
                 if (TagsOnMoon.Contains(CauterizeString(contentTag.contentTagName)))
                 {
-                    returnString += level.NumberlessPlanetName + DaComma;
+                    returnString += level.NumberlessPlanetName + ",";
                     TagNumber++;
                 }
             }
@@ -801,7 +840,7 @@ namespace CentralConfig
             {
                 if (name.Rarity > 0)
                 {
-                    returnString += name.Name + DaColon + name.Rarity.ToString() + DaComma;
+                    returnString += name.Name + ":" + name.Rarity.ToString() + ",";
                 }
             }
 
@@ -821,22 +860,24 @@ namespace CentralConfig
             }
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
-            List<string> stringList = SplitStringsByDaComma(newInputString);
+            var pairs = newInputString.Split(',');
 
-            foreach (string stringString in stringList)
+            foreach (string pair in pairs)
             {
-                (string, string) splitStringData = SplitStringsByDaColon(stringString);
-                string modName = splitStringData.Item1;
-                int rarity = 0;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var ModName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
 
-                if (clampRarity != Vector2.zero)
-                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
-                returnList.Add(new StringWithRarity(modName, rarity));
+                    returnList.Add(new StringWithRarity(ModName, Rarity));
+                }
             }
-            return (returnList);
+
+            return returnList;
         }
         public static List<StringWithRarity> ConvertTagStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
         {
@@ -846,22 +887,24 @@ namespace CentralConfig
             }
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
-            List<string> stringList = SplitStringsByDaComma(newInputString);
+            var pairs = newInputString.Split(',');
 
-            foreach (string stringString in stringList)
+            foreach (string pair in pairs)
             {
-                (string, string) splitStringData = SplitStringsByDaColon(stringString);
-                string tagName = splitStringData.Item1;
-                int rarity = 0;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var TagName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
 
-                if (clampRarity != Vector2.zero)
-                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
-                returnList.Add(new StringWithRarity(tagName, rarity));
+                    returnList.Add(new StringWithRarity(TagName, Rarity));
+                }
             }
-            return (returnList);
+
+            return returnList;
         }
 
         // This method should make the planet name list have to be the exact name
@@ -874,33 +917,43 @@ namespace CentralConfig
             }
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
-            List<string> stringList = SplitStringsByDaComma(newInputString);
+            var pairs = newInputString.Split(',');
 
-            HashSet<string> allPlanetNames = new HashSet<string>(PatchedContent.ExtendedLevels.Select(level => level.NumberlessPlanetName));
-
-            foreach (string stringString in stringList)
+            foreach (string pair in pairs)
             {
-                (string planetName, string rarityString) = SplitStringsByDaColon(stringString);
-                int rarity = 0;
-                if (int.TryParse(rarityString, out int value))
-                    rarity = value;
-
-                if (clampRarity != Vector2.zero)
-                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
-
-                if (allPlanetNames.Contains(planetName))
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
                 {
-                    returnList.Add(new StringWithRarity(planetName, rarity));
+                    var PlanetName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
+
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+
+                    foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
+                    {
+                        if (level.NumberlessPlanetName.Equals(PlanetName))
+                        {
+                            returnList.Add(new StringWithRarity(PlanetName, Rarity));
+                            //CentralConfig.instance.mls.LogMessage($"Added level {level.NumberlessPlanetName} with rarity {Rarity} from string {PlanetName}");
+                            break;
+                        }
+                        else
+                        {
+                            //CentralConfig.instance.mls.LogMessage($"Did not add level {level.NumberlessPlanetName} from string {PlanetName}");
+                        }
+                    }
                 }
             }
-            StringBuilder sb = new StringBuilder();
+            /*StringBuilder sb = new StringBuilder();
             sb.AppendLine("Return List:");
             foreach (StringWithRarity planetName in returnList)
             {
                 sb.AppendLine($"{planetName.Name}: {planetName.Rarity}");
             }
-            // CentralConfig.instance.mls.LogInfo(sb.ToString());
-            return (returnList);
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
+
+            return returnList;
         }
 
         // For Route Price settings
@@ -910,7 +963,7 @@ namespace CentralConfig
             string returnString = string.Empty;
 
             foreach (Vector2WithRarity vector2withRarity in values)
-                returnString += vector2withRarity.Min + DaDash + vector2withRarity.Max + DaColon + vector2withRarity.Rarity + DaComma;
+                returnString += vector2withRarity.Min + "-" + vector2withRarity.Max + ":" + vector2withRarity.Rarity + ",";
 
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
@@ -918,7 +971,7 @@ namespace CentralConfig
             if (returnString == string.Empty)
                 returnString = "Default Values Were Empty";
 
-            return (returnString);
+            return returnString;
         }
         public static List<Vector2WithRarity> ConvertStringToVector2WithRarityList(string newInputString, Vector2 clampRarity)
         {
@@ -928,55 +981,71 @@ namespace CentralConfig
             }
             List<Vector2WithRarity> returnList = new List<Vector2WithRarity>();
 
-            List<string> stringList = SplitStringsByDaComma(newInputString);
+            var pairs = newInputString.Split(',');
 
-            foreach (string stringString in stringList)
+            foreach (string pair in pairs)
             {
-                (string, string) splitStringData = SplitStringsByDaColon(stringString);
-                (string, string) vector2Strings = SplitStringByDaDash(splitStringData.Item1);
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var RouteRange = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
 
-                float x = 0f;
-                float y = 0f;
-                int rarity = 0;
-                if (float.TryParse(vector2Strings.Item1, out float xValue))
-                    x = xValue;
-                if (float.TryParse(vector2Strings.Item2, out float yValue))
-                    y = yValue;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
+                    var duos = RouteRange.Split('-');
+                    if (duos.Length == 2)
+                    {
+                        int LowerRange = int.Parse(duos[0].Trim());
+                        int UpperRange = int.Parse(duos[1].Trim());
 
-                if (clampRarity != Vector2.zero)
-                    Mathf.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+                        if (clampRarity != Vector2.zero)
+                            Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
-                returnList.Add(new Vector2WithRarity(new Vector2(x, y), rarity));
+                        returnList.Add(new Vector2WithRarity(new Vector2(LowerRange, UpperRange), Rarity));
+                    }
+                }
             }
-            return (returnList);
+
+            return returnList;
         }
 
         // Dungeons
 
-        public static List<ExtendedDungeonFlowWithRarity> ConvertStringToDungeonFlowWithRarityList(string newInputString, Vector2 clampRarity)
+        /*public static List<ExtendedDungeonFlowWithRarity> ConvertStringToDungeonFlowWithRarityList(string newInputString, Vector2 clampRarity)
         {
             if (string.IsNullOrEmpty(newInputString) || newInputString == "Default Values Were Empty" || newInputString == "Default Values Were Empty:0" || newInputString == ":0")
             {
                 return new List<ExtendedDungeonFlowWithRarity>();
             }
-            List<StringWithRarity> stringList = ConvertStringToStringWithRarityList(newInputString, clampRarity);
             List<ExtendedDungeonFlowWithRarity> returnList = new List<ExtendedDungeonFlowWithRarity>();
 
             List<ExtendedDungeonFlow> alldungeonFlows = PatchedContent.ExtendedDungeonFlows;
 
-            foreach (ExtendedDungeonFlow dungeon in alldungeonFlows)
+            var pairs = newInputString.Split(',');
+
+            foreach (string pair in pairs)
             {
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
                 {
-                    if (CauterizeString(dungeon.DungeonName).Contains(CauterizeString(stringString.Name)) || CauterizeString(stringString.Name).Contains(CauterizeString(dungeon.DungeonName)))
+                    var DungeonName = parts[0].Trim();
+                    int Rarity = int.Parse(parts[1].Trim());
+
+                    if (clampRarity != Vector2.zero)
+                        Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
+
+                    foreach (ExtendedDungeonFlow flow in alldungeonFlows)
                     {
-                        ExtendedDungeonFlowWithRarity newDungeon = new ExtendedDungeonFlowWithRarity(dungeon, stringString.Rarity);
-                        newDungeon.extendedDungeonFlow = dungeon;
-                        newDungeon.rarity = stringString.Rarity;
-                        returnList.Add(newDungeon);
-                        stringList.Remove(stringString);
+                        if (flow.DungeonName.Equals(DungeonName))
+                        {
+                            ExtendedDungeonFlowWithRarity newFlow = new ExtendedDungeonFlowWithRarity(flow, Rarity);
+                            returnList.Add(newFlow);
+                            // CentralConfig.instance.mls.LogMessage($"Added dungeon {flow.DungeonName} with rarity {Rarity} from string {DungeonName}");
+                            break;
+                        }
+                        else
+                        {
+                            // CentralConfig.instance.mls.LogMessage($"Did not add dungeon {flow.DungeonName} from string {DungeonName}");
+                        }
                     }
                 }
             }
@@ -986,10 +1055,10 @@ namespace CentralConfig
             {
                 sb.AppendLine($"Item Name: {dungeon.extendedDungeonFlow.DungeonName}, Rarity: {dungeon.rarity}");
             }
-            // CentralConfig.instance.mls.LogInfo(sb.ToString());
+            CentralConfig.instance.mls.LogInfo(sb.ToString());
 
             return returnList;
-        }
+        }*/
 
         // For updating enemy spawn curves
 

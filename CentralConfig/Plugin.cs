@@ -26,7 +26,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.12.5";
+        private const string modVersion = "0.12.6";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -310,7 +310,7 @@ namespace CentralConfig
 
             KeepOrphans = cfg.BindSyncedEntry("~Misc~",
                 "Keep Orphaned Entries? (Personal)",
-                true,
+                false,
                 "If set to true, the config will not 'clean' itself after processing, this will result in a more crowded/messy config but will prevent unloaded entries from being removed.");
 
             RandomSeed = cfg.BindSyncedEntry("~Misc~",
