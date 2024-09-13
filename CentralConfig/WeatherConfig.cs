@@ -61,15 +61,15 @@ namespace CentralConfig
                 {
                     AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
                 }
-                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistWeathers.Value);
+                List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistWeathers.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
                 if (CentralConfig.SyncConfig.IsWeatherWhiteList)
                 {
-                    AllWeatherTypes = AllWeatherTypes.Where(weatherType => ignoreList.Split(',').Any(b => weatherType.ToString().Equals(b))).ToList();
+                    AllWeatherTypes = AllWeatherTypes.Where(weatherType => ignoreListEntries.Any(b => ConfigAider.CauterizeString(weatherType).Equals(b))).ToList();
                 }
                 else
                 {
-                    AllWeatherTypes = AllWeatherTypes.Where(weatherType => !ignoreList.Split(',').Any(b => weatherType.ToString().Equals(b))).ToList();
+                    AllWeatherTypes = AllWeatherTypes.Where(weatherType => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(weatherType).Equals(b))).ToList();
                 }
                 foreach (string weatherType in AllWeatherTypes)
                 {
@@ -161,15 +161,15 @@ namespace CentralConfig
             {
                 AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
             }
-            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistWeathers.Value);
+            List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistWeathers.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
             if (CentralConfig.SyncConfig.IsWeatherWhiteList)
             {
-                AllWeatherTypes = AllWeatherTypes.Where(weatherType => ignoreList.Split(',').Any(b => weatherType.ToString().Equals(b))).ToList();
+                AllWeatherTypes = AllWeatherTypes.Where(weatherType => ignoreListEntries.Any(b => ConfigAider.CauterizeString(weatherType).Equals(b))).ToList();
             }
             else
             {
-                AllWeatherTypes = AllWeatherTypes.Where(weatherType => !ignoreList.Split(',').Any(b => weatherType.ToString().Equals(b))).ToList();
+                AllWeatherTypes = AllWeatherTypes.Where(weatherType => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(weatherType).Equals(b))).ToList();
             }
             foreach (string weatherType in AllWeatherTypes)
             {

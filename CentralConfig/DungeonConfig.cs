@@ -80,15 +80,15 @@ namespace CentralConfig
                 ScrapD = new Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>>();
 
                 List<ExtendedDungeonFlow> AllExtendedDungeons;
-                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlackListDungeons.Value);
+                List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlackListDungeons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
                 if (CentralConfig.SyncConfig.IsWhiteList)
                 {
-                    AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreList.Split(',').Any(b => dungeon.DungeonName.Equals(b))).ToList();
+                    AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
                 }
                 else
                 {
-                    AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => !ignoreList.Split(',').Any(b => dungeon.DungeonName.Equals(b))).ToList();
+                    AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
                 }
                 foreach (ExtendedDungeonFlow dungeon in AllExtendedDungeons)
                 {
@@ -258,15 +258,15 @@ namespace CentralConfig
         public void UpdateDungeonValues() // This is called on as a postfix on the same method as creating the config stuff so it gets applied here right after the config is intialized
         {
             List<ExtendedDungeonFlow> AllExtendedDungeons;
-            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlackListDungeons.Value);
+            List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlackListDungeons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
             if (CentralConfig.SyncConfig.IsWhiteList)
             {
-                AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreList.Split(',').Any(b => dungeon.DungeonName.Equals(b))).ToList();
+                AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
             }
             else
             {
-                AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => !ignoreList.Split(',').Any(b => dungeon.DungeonName.Equals(b))).ToList();
+                AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
             }
             foreach (ExtendedDungeonFlow dungeon in AllExtendedDungeons)
             {

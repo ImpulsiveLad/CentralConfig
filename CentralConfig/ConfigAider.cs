@@ -313,9 +313,9 @@ namespace CentralConfig
         {
             int Glop = 0;
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
-            string ignoreList = CauterizeString(CentralConfig.SyncConfig.EnemyShuffleBlacklist.Value);
-            List<SpawnableEnemyWithRarity> WhiteListEnemies = enemies.Where(e => !ignoreList.Split(',').Any(b => e.enemyType.enemyName.Equals(b))).ToList();
-            List<SpawnableEnemyWithRarity> BlackListEnemies = enemies.Where(e => ignoreList.Split(',').Any(b => e.enemyType.enemyName.Equals(b))).ToList();
+            List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.EnemyShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
+            List<SpawnableEnemyWithRarity> WhiteListEnemies = enemies.Where(e => !ignoreListEntries.Any(b => CauterizeString(e.enemyType.enemyName).Equals(b))).ToList();
+            List<SpawnableEnemyWithRarity> BlackListEnemies = enemies.Where(e => ignoreListEntries.Any(b => CauterizeString(e.enemyType.enemyName).Equals(b))).ToList();
             foreach (SpawnableEnemyWithRarity enemy in BlackListEnemies)
             {
                 returnList.Add(enemy);
@@ -712,9 +712,9 @@ namespace CentralConfig
         {
             int Glop = 0; // local int to make seed be different through the foreach
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
-            string ignoreList = CauterizeString(CentralConfig.SyncConfig.ScrapShuffleBlacklist.Value);
-            List<SpawnableItemWithRarity> WhiteListItems = items.Where(i => !ignoreList.Split(',').Any(b => i.spawnableItem.itemName.Equals(b))).ToList();
-            List<SpawnableItemWithRarity> BlackListItems = items.Where(i => ignoreList.Split(',').Any(b => i.spawnableItem.itemName.Equals(b))).ToList();
+            List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.ScrapShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
+            List<SpawnableItemWithRarity> WhiteListItems = items.Where(i => !ignoreListEntries.Any(b => CauterizeString(i.spawnableItem.itemName).Equals(b))).ToList();
+            List<SpawnableItemWithRarity> BlackListItems = items.Where(i => ignoreListEntries.Any(b => CauterizeString(i.spawnableItem.itemName).Equals(b))).ToList();
             foreach (SpawnableItemWithRarity item in BlackListItems)
             {
                 returnList.Add(item);

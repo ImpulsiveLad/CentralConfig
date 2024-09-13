@@ -145,15 +145,15 @@ namespace CentralConfig
                 CentralConfig.HarmonyTouch = true;
 
                 List<ExtendedLevel> allExtendedLevels;
-                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistMoons.Value);
+                List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistMoons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
                 if (CentralConfig.SyncConfig.IsWhiteList)
                 {
-                    allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => ignoreList.Split(',').Any(b => level.NumberlessPlanetName.Equals(b))).ToList();
+                    allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
                 }
                 else
                 {
-                    allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreList.Split(',').Any(b => level.NumberlessPlanetName.Equals(b))).ToList();
+                    allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
                 }
                 foreach (ExtendedLevel level in allExtendedLevels)
                 {
@@ -598,15 +598,15 @@ namespace CentralConfig
         public void UpdateMoonValues() // This is called on as a postfix on the same method as creating the config stuff so it gets applied here right after the config is intialized
         {
             List<ExtendedLevel> allExtendedLevels;
-            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistMoons.Value);
+            List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistMoons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
             if (CentralConfig.SyncConfig.IsWhiteList)
             {
-                allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => ignoreList.Split(',').Any(b => level.NumberlessPlanetName.Equals(b))).ToList();
+                allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
             }
             else
             {
-                allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreList.Split(',').Any(b => level.NumberlessPlanetName.Equals(b))).ToList();
+                allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
             }
             foreach (ExtendedLevel level in allExtendedLevels)
             {
