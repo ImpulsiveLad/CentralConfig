@@ -10,9 +10,6 @@ using static CentralConfig.WaitForDungeonsToRegister;
 using static CentralConfig.MiscConfig;
 using static CentralConfig.WaitForTagsToRegister;
 using static CentralConfig.WaitForWeathersToRegister;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using System.Linq;
 using static CentralConfig.ResetChanger;
 using static CentralConfig.ScrapShuffler;
 using static CentralConfig.EnemyShuffler;
@@ -22,11 +19,15 @@ namespace CentralConfig
 {
     [BepInPlugin(modGUID, modName, modVersion)]
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Xilef.LethalBestiary", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Kittenji.FootballEntity", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Chaos.Diversity", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("nomnomab.rollinggiant", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.12.6";
+        private const string modVersion = "0.13.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -78,7 +79,7 @@ namespace CentralConfig
             harmony.PatchAll(typeof(ResetOnDisconnect));
             harmony.PatchAll(typeof(WaitForMoonsToRegister));
             harmony.PatchAll(typeof(FrApplyMoon));
-            harmony.PatchAll(typeof(ApplyScrapValueMultiplier));
+            harmony.PatchAll(typeof(FreeEnemies));
             harmony.PatchAll(typeof(TimeFix));
             harmony.PatchAll(typeof(DayTimePassFix));
             harmony.PatchAll(typeof(RandomNextPatch));
@@ -174,6 +175,9 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<int> EnemyShuffleRandomMin { get; private set; }
         [DataMember] public SyncedEntry<int> EnemyShuffleRandomMax { get; private set; }
         [DataMember] public SyncedEntry<bool> ShuffleSave { get; private set; }
+        [DataMember] public SyncedEntry<string> ScrapShuffleBlacklist { get; private set; }
+        [DataMember] public SyncedEntry<string> EnemyShuffleBlacklist { get; private set; }
+        [DataMember] public SyncedEntry<bool> RemoveZeros { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -370,7 +374,7 @@ namespace CentralConfig
 
             BlacklistWeathers = cfg.BindSyncedEntry("_WeatherLists_",
                 "Blacklisted Weathers (Host Only)",
-                "",
+                "DustClouds",
                 "Excludes the listed weathers from the config. If they are already created, they will be removed on config regeneration.");
 
             IsWeatherWhiteList = cfg.BindSyncedEntry("_WeatherLists_",
@@ -408,6 +412,11 @@ namespace CentralConfig
                 2,
                 "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
+            ScrapShuffleBlacklist = cfg.BindSyncedEntry("~Shufflers~",
+                "Blacklisted Scrap (Host Only)",
+                "Default Values Are Empty",
+                "Scrap listed here in 'ScrapName,ScrapName' format will be ignored by the shuffle.");
+
             EnemyShuffle = cfg.BindSyncedEntry("~Shufflers~",
                 "Enemy Shuffler (Host Only)",
                 false,
@@ -423,37 +432,20 @@ namespace CentralConfig
                 2,
                 "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
+            EnemyShuffleBlacklist = cfg.BindSyncedEntry("~Shufflers~",
+                "Blacklisted Enemies (Host Only)",
+                "Default Values Are Empty",
+                "Enemies listed here in 'EnemyName,EnemyName' format will be ignored by the shuffle.");
+
             ShuffleSave = cfg.BindSyncedEntry("~Shufflers~",
                 "Save Shuffle Data (Host Only)",
                 false,
                 "If set to true, the shuffle data for enemies and scrap will be committed to the save file and loaded on start-up. This means that the counters for how many days since they last spawned will be preserved, and the rarity boosters will be applied accordingly on next landing.\nIf this setting remains false, the shuffle will only exist in the session and be forgotten on reboot.");
-        }
-    }
-    public static class WRCompatibility
-    {
-        private static bool? _enabled;
 
-        public static bool enabled
-        {
-            get
-            {
-                if (_enabled == null)
-                {
-                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("mrov.WeatherRegistry");
-                }
-                return (bool)_enabled;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public static List<string> GetAllWeathersWithWR()
-        {
-            List<string> weatherlist = WeatherRegistry.WeatherManager.RegisteredWeathers.Cast<WeatherRegistry.Weather>().Select(w => w.ToString()).ToList();
-            for (int i = 0; i < weatherlist.Count; i++)
-            {
-                weatherlist[i] = weatherlist[i].Replace(" (WeatherRegistry.Weather)", "");
-            }
-            return weatherlist;
+            RemoveZeros = cfg.BindSyncedEntry("~Shufflers~",
+                "Remove Zero Rarity Scrap and Enemies? (Host Only)",
+                true,
+                "If set to true, the shuffler will remove all scrap/enemies with a rarity of 0 before boosting rarities. This ensures they won’t gain days when they may have a rarity of 0 to prevent them from spawning on specific moons, during certain weather conditions, or in particular dungeons.");
         }
     }
 }

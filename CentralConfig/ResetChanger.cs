@@ -113,6 +113,10 @@ namespace CentralConfig
                             // CentralConfig.instance.mls.LogInfo($"Added new Item Key: {item.itemName}");
                         }
                     }
+                    if (!ScrapAppearanceString.ContainsKey(item.itemName))
+                    {
+                        ScrapAppearanceString.Add(item.itemName, ScrapAppearances[item]);
+                    }
 
                     if (CapturedScrapToSpawn.Contains(item))
                     {
@@ -167,6 +171,10 @@ namespace CentralConfig
                             // CentralConfig.instance.mls.LogInfo($"Added new Enemy Key: {enemy.enemyType.enemyName}");
                         }
                     }
+                    if (!EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
+                    {
+                        EnemyAppearanceString.Add(enemy.enemyType.enemyName, EnemyAppearances[enemy.enemyType]);
+                    }
 
                     if (!DidSpawnYet[enemy.enemyType])
                     {
@@ -206,6 +214,10 @@ namespace CentralConfig
                             EnemyAppearanceString.Add(enemy.enemyType.enemyName, 0); // also creates the string version to be saved
                             // CentralConfig.instance.mls.LogInfo($"Added new Enemy Key: {enemy.enemyType.enemyName}");
                         }
+                    }
+                    if (!EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
+                    {
+                        EnemyAppearanceString.Add(enemy.enemyType.enemyName, EnemyAppearances[enemy.enemyType]);
                     }
 
                     if (!DidSpawnYet[enemy.enemyType])

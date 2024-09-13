@@ -6,9 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
-using static LethalLib.Modules.Enemies;
 
 namespace CentralConfig
 {
@@ -30,7 +28,8 @@ namespace CentralConfig
         public static Color MagentaColor = Color.magenta;
         public static string CauterizeString(string inputString)
         {
-            return inputString.SkipToLetters().RemoveWhitespace().ToLower();
+            string cleanedString = new string(inputString.Where(c => char.IsLetterOrDigit(c)).ToArray());
+            return cleanedString.ToLower();
         }
 
         public static List<Item> GrabFullItemList()
@@ -38,58 +37,92 @@ namespace CentralConfig
             return StartOfRound.Instance.allItemsList.itemsList;
         }
 
+        public static List<EnemyType> allEnemies;
         public static List<EnemyType> GrabFullEnemyList()
         {
-            List<EnemyType> allEnemies = new List<EnemyType>();
+            if (allEnemies == null)
+            {
+                allEnemies = new List<EnemyType>();
 
-            foreach (EnemyType enemy in OriginalContent.Enemies)
-            {
-                if (!allEnemies.Contains(enemy))
+                foreach (EnemyType enemy in OriginalContent.Enemies)
                 {
-                    allEnemies.Add(enemy);
+                    if (!allEnemies.Contains(enemy))
+                    {
+                        allEnemies.Add(enemy);
+                        // CentralConfig.instance.mls.LogMessage($"Added enemy: {enemy.enemyName} from OriginalContent");
+                    }
                 }
-            }
-            foreach (ExtendedEnemyType extendedEnemy in PatchedContent.ExtendedEnemyTypes)
-            {
-                if (!allEnemies.Contains(extendedEnemy.EnemyType))
+                foreach (ExtendedEnemyType extendedEnemy in PatchedContent.ExtendedEnemyTypes)
                 {
-                    allEnemies.Add(extendedEnemy.EnemyType);
+                    if (!allEnemies.Contains(extendedEnemy.EnemyType))
+                    {
+                        allEnemies.Add(extendedEnemy.EnemyType);
+                        // CentralConfig.instance.mls.LogMessage($"Added enemy: {extendedEnemy.EnemyType.enemyName} from PatchedContent");
+                    }
                 }
-            }
-            foreach (SpawnableEnemy spawnableEnemy in spawnableEnemies)
-            {
-                if (!allEnemies.Contains(spawnableEnemy.enemy))
+                foreach (LethalLib.Modules.Enemies.SpawnableEnemy spawnableEnemy in LethalLib.Modules.Enemies.spawnableEnemies)
                 {
-                    allEnemies.Add(spawnableEnemy.enemy);
+                    if (!allEnemies.Contains(spawnableEnemy.enemy))
+                    {
+                        allEnemies.Add(spawnableEnemy.enemy);
+                        // CentralConfig.instance.mls.LogMessage($"Added enemy: {spawnableEnemy.enemy.enemyName} from LethalLib");
+                    }
                 }
+                if (LBCompatability.enabled)
+                {
+                    allEnemies = LBCompatability.AddLBEnemies(allEnemies);
+                }
+                if (DiversityCompat.enabled)
+                {
+                    allEnemies = DiversityCompat.AddWalker(allEnemies);
+                }
+                if (FootBallCompat.enabled)
+                {
+                    allEnemies = FootBallCompat.AddFootball(allEnemies);
+                }
+                if (RollingGiantCompat.enabled)
+                {
+                    allEnemies = RollingGiantCompat.AddRollingGiant(allEnemies);
+                }
+                /*foreach (EnemyType enemy in Resources.FindObjectsOfTypeAll<EnemyType>())
+                {
+                    if (!allEnemies.Contains(enemy))
+                    {
+                        allEnemies.Add(enemy);
+                    }
+                }*/
             }
             return allEnemies;
         }
+        public static List<ContentTag> allContentTagsList;
         public static List<ContentTag> GrabFullTagList()
         {
-            List<ContentTag> allContentTagsList = new List<ContentTag>();
-            List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
-
-            foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods.Concat(new List<ExtendedMod>() { PatchedContent.VanillaMod }))
+            if (allContentTagsList == null)
             {
-                foreach (ExtendedContent extendedContent in extendedMod.ExtendedContents)
+                allContentTagsList = new List<ContentTag>();
+                List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
+
+                foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods.Concat(new List<ExtendedMod>() { PatchedContent.VanillaMod }))
                 {
-                    foreach (ContentTag contentTag in extendedContent.ContentTags)
+                    foreach (ExtendedContent extendedContent in extendedMod.ExtendedContents)
                     {
-                        if (allExtendedLevels.Any(level => level.ContentTags.Contains(contentTag)) && !allContentTagsList.Contains(contentTag))
+                        foreach (ContentTag contentTag in extendedContent.ContentTags)
                         {
-                            allContentTagsList.Add(contentTag);
+                            if (allExtendedLevels.Any(level => level.ContentTags.Contains(contentTag)) && !allContentTagsList.Contains(contentTag))
+                            {
+                                allContentTagsList.Add(contentTag);
+                            }
                         }
                     }
                 }
-            }
-            List<string> newTags = SplitStringsByDaComma(CentralConfig.SyncConfig.NewTags);
-            foreach (string tag in newTags)
-            {
-                if (!allContentTagsList.Any(ct => ct.contentTagName == tag))
+                List<string> newTags = SplitStringsByDaComma(CentralConfig.SyncConfig.NewTags);
+                foreach (string tag in newTags)
                 {
-                    ContentTag newTag = ContentTag.Create(tag, MagentaColor);
-                    allContentTagsList.Add(newTag);
+                    if (!allContentTagsList.Any(ct => ct.contentTagName == tag))
+                    {
+                        ContentTag newTag = ContentTag.Create(tag, MagentaColor);
+                        allContentTagsList.Add(newTag);
+                    }
                 }
             }
             return allContentTagsList;
@@ -133,9 +166,16 @@ namespace CentralConfig
 
             foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in sortedEnemiesList)
             {
-                if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
+                if (RollingGiantCompat.enabled)
                 {
-                    returnString += spawnableEnemyWithRarity.enemyType.enemyName + ":" + spawnableEnemyWithRarity.rarity.ToString() + ",";
+                    returnString += RollingGiantCompat.RGSEWRTS(spawnableEnemyWithRarity);
+                }
+                else
+                {
+                    if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
+                    {
+                        returnString += spawnableEnemyWithRarity.enemyType.enemyName + ":" + spawnableEnemyWithRarity.rarity.ToString() + ",";
+                    }
                 }
             }
 
@@ -165,15 +205,23 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var EnemyName = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    EnemyName = CauterizeString(EnemyName);
+                    int Rarity;
                     bool added = false;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after EnemyName entry {EnemyName}");
+                        Rarity = 0;
+                    }
 
                     if (clampRarity != Vector2.zero)
                         Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
                     foreach (EnemyType enemyType in AllEnemies)
                     {
-                        if (enemyType.enemyName.Equals(EnemyName))
+                        string enemyname = CauterizeString(enemyType.enemyName);
+                        if (enemyname == EnemyName)
                         {
                             SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
                             newEnemy.enemyType = enemyType;
@@ -198,7 +246,7 @@ namespace CentralConfig
                                 if (enemyScanNode != null)
                                 {
                                     string headerText = CauterizeString(enemyScanNode.headerText);
-                                    if (headerText.Equals(CauterizeString(EnemyName)))
+                                    if (headerText == EnemyName)
                                     {
                                         SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
                                         newEnemy.enemyType = enemyType;
@@ -235,7 +283,7 @@ namespace CentralConfig
                 {
                     if (group.Any(e => e.rarity == 0))
                     {
-                        result.Add(group.First(e => e.rarity == 0));
+                        result.Add(group.First(e => e.rarity <= 0));
                     }
                     else
                     {
@@ -265,7 +313,14 @@ namespace CentralConfig
         {
             int Glop = 0;
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
-            foreach (SpawnableEnemyWithRarity enemy in enemies)
+            string ignoreList = CauterizeString(CentralConfig.SyncConfig.EnemyShuffleBlacklist.Value);
+            List<SpawnableEnemyWithRarity> WhiteListEnemies = enemies.Where(e => !ignoreList.Split(',').Any(b => e.enemyType.enemyName.Equals(b))).ToList();
+            List<SpawnableEnemyWithRarity> BlackListEnemies = enemies.Where(e => ignoreList.Split(',').Any(b => e.enemyType.enemyName.Equals(b))).ToList();
+            foreach (SpawnableEnemyWithRarity enemy in BlackListEnemies)
+            {
+                returnList.Add(enemy);
+            }
+            foreach (SpawnableEnemyWithRarity enemy in WhiteListEnemies)
             {
                 if (!EnemyShuffler.EnemyAppearances.ContainsKey(enemy.enemyType))
                 {
@@ -280,6 +335,10 @@ namespace CentralConfig
                         ShuffleSaver.EnemyAppearanceString.Add(enemy.enemyType.enemyName, 0);
                         // CentralConfig.instance.mls.LogInfo($"Added new Enemy Key: {enemy.enemyType.enemyName}");
                     }
+                }
+                if (!ShuffleSaver.EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
+                {
+                    ShuffleSaver.EnemyAppearanceString.Add(enemy.enemyType.enemyName, EnemyShuffler.EnemyAppearances[enemy.enemyType]);
                 }
 
                 int LastAppearance = EnemyShuffler.EnemyAppearances[enemy.enemyType];
@@ -374,7 +433,9 @@ namespace CentralConfig
                     for (int i = 0; i < EnemyList.Count; i++)
                     {
                         var enemy = EnemyList[i];
-                        if (enemy.enemyType.enemyName.Equals(originalName)) // if the entry matches an original name
+                        string cauterizedEnemy = CauterizeString(enemy.enemyType.enemyName);
+                        string cauterizedOGName = CauterizeString(originalName);
+                        if (cauterizedEnemy == cauterizedOGName) // if the entry matches an original name
                         {
                             if (random.Next(100) < chanceToReplace) // the enemy is only replaced if the chance to replace is greater than the random synced value from 0 to 99
                             {
@@ -513,7 +574,7 @@ namespace CentralConfig
 
                         if (Type == 0 && ClippedString != "Default Values Were Empty" && ClippedString != "")
                         {
-                            Vector2 clamprarity = new Vector2(0, 99999);
+                            Vector2 clamprarity = new Vector2(-99999, 99999);
                             List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
                             if (EnemyList.Count > 0)
                             {
@@ -522,7 +583,7 @@ namespace CentralConfig
                         }
                         else if (Type == 1 && ClippedString != "Default Values Were Empty" && ClippedString != "")
                         {
-                            Vector2 clamprarity = new Vector2(0, 99999);
+                            Vector2 clamprarity = new Vector2(-99999, 99999);
                             List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
                             if (EnemyList.Count > 0)
                             {
@@ -531,7 +592,7 @@ namespace CentralConfig
                         }
                         else if (Type == 2 && ClippedString != "Default Values Were Empty" && ClippedString != "")
                         {
-                            Vector2 clamprarity = new Vector2(0, 99999);
+                            Vector2 clamprarity = new Vector2(-99999, 99999);
                             List<SpawnableEnemyWithRarity> EnemyList = ConvertStringToEnemyList(ClippedString, clamprarity);
                             if (EnemyList.Count > 0)
                             {
@@ -546,6 +607,19 @@ namespace CentralConfig
                 }
                 // CentralConfig.instance.mls.LogInfo(level.SelectableLevel.levelID + " is linked to " + level.NumberlessPlanetName);
             }
+        }
+        public static List<SpawnableEnemyWithRarity> RemoveZeroRarityEnemies(List<SpawnableEnemyWithRarity> enemylist)
+        {
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
+
+            foreach (SpawnableEnemyWithRarity enemy in enemylist)
+            {
+                if (enemy.rarity != 0)
+                {
+                    returnList.Add(enemy);
+                }
+            }
+            return returnList;
         }
 
         // Scrap
@@ -588,14 +662,23 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var ItemName = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    ItemName = CauterizeString(ItemName);
+                    int Rarity;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after ItemName entry {ItemName}");
+                        Rarity = 0;
+                    }
 
                     if (clampRarity != Vector2.zero)
                         Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
                     foreach (Item item in allItems)
                     {
-                        if (item.itemName.Equals(ItemName))
+                        string cauterizedItemName = CauterizeString(item.itemName);
+
+                        if (cauterizedItemName == ItemName)
                         {
                             SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
                             newItem.spawnableItem = item;
@@ -629,7 +712,14 @@ namespace CentralConfig
         {
             int Glop = 0; // local int to make seed be different through the foreach
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
-            foreach (SpawnableItemWithRarity item in items)
+            string ignoreList = CauterizeString(CentralConfig.SyncConfig.ScrapShuffleBlacklist.Value);
+            List<SpawnableItemWithRarity> WhiteListItems = items.Where(i => !ignoreList.Split(',').Any(b => i.spawnableItem.itemName.Equals(b))).ToList();
+            List<SpawnableItemWithRarity> BlackListItems = items.Where(i => ignoreList.Split(',').Any(b => i.spawnableItem.itemName.Equals(b))).ToList();
+            foreach (SpawnableItemWithRarity item in BlackListItems)
+            {
+                returnList.Add(item);
+            }
+            foreach (SpawnableItemWithRarity item in WhiteListItems)
             {
                 if (!ScrapShuffler.ScrapAppearances.ContainsKey(item.spawnableItem))
                 {
@@ -644,6 +734,10 @@ namespace CentralConfig
                         ShuffleSaver.ScrapAppearanceString.Add(item.spawnableItem.itemName, 0);
                         // CentralConfig.instance.mls.LogInfo($"Added new Item Key: {item.spawnableItem.itemName}");
                     }
+                }
+                if (!ShuffleSaver.ScrapAppearanceString.ContainsKey(item.spawnableItem.itemName))
+                {
+                    ShuffleSaver.ScrapAppearanceString.Add(item.spawnableItem.itemName, ScrapShuffler.ScrapAppearances[item.spawnableItem]);
                 }
 
                 int LastAppearance = ScrapShuffler.ScrapAppearances[item.spawnableItem];
@@ -680,6 +774,19 @@ namespace CentralConfig
                     }
                 }
             }*/
+            return returnList;
+        }
+        public static List<SpawnableItemWithRarity> RemoveZeroRarityItems(List<SpawnableItemWithRarity> itemList)
+        {
+            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
+
+            foreach (SpawnableItemWithRarity item in itemList)
+            {
+                if (item.rarity != 0)
+                {
+                    returnList.Add(item);
+                }
+            }
             return returnList;
         }
 
@@ -778,9 +885,11 @@ namespace CentralConfig
 
             foreach (string tag in tags)
             {
+                string cauterizedConfigTag = CauterizeString(tag);
                 foreach (ContentTag contentTag in allContentTagsList)
                 {
-                    if (CauterizeString(contentTag.contentTagName).Equals(CauterizeString(tag)))
+                    string cauterizedTagName = CauterizeString(contentTag.contentTagName);
+                    if (cauterizedTagName == cauterizedConfigTag)
                     {
                         returnList.Add(contentTag);
                         break;
@@ -832,6 +941,13 @@ namespace CentralConfig
 
         public static string ConvertStringWithRarityToString(List<StringWithRarity> names)
         {
+            /*StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Input List:");
+            foreach (StringWithRarity Inputs in names)
+            {
+                sb.AppendLine($"{Inputs.Name}: {Inputs.Rarity}");
+            }
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
             string returnString = string.Empty;
 
             var sortednames = names.OrderBy(name => name.Name).ToList();
@@ -850,7 +966,7 @@ namespace CentralConfig
             if (returnString == string.Empty)
                 returnString = "Default Values Were Empty";
 
-            return (returnString);
+            return returnString;
         }
         public static List<StringWithRarity> ConvertModStringToStringWithRarityList(string newInputString, Vector2 clampRarity)
         {
@@ -868,7 +984,13 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var ModName = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    int Rarity;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after ModName entry {ModName}");
+                        Rarity = 0;
+                    }
 
                     if (clampRarity != Vector2.zero)
                         Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
@@ -876,6 +998,13 @@ namespace CentralConfig
                     returnList.Add(new StringWithRarity(ModName, Rarity));
                 }
             }
+            /*StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Return ModList:");
+            foreach (StringWithRarity modName in returnList)
+            {
+                sb.AppendLine($"{modName.Name}: {modName.Rarity}");
+            }
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
 
             return returnList;
         }
@@ -895,7 +1024,13 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var TagName = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    int Rarity;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after TagName entry {TagName}");
+                        Rarity = 0;
+                    }
 
                     if (clampRarity != Vector2.zero)
                         Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
@@ -903,6 +1038,13 @@ namespace CentralConfig
                     returnList.Add(new StringWithRarity(TagName, Rarity));
                 }
             }
+            /*StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Return TagList:");
+            foreach (StringWithRarity tagName in returnList)
+            {
+                sb.AppendLine($"{tagName.Name}: {tagName.Rarity}");
+            }
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
 
             return returnList;
         }
@@ -925,14 +1067,22 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var PlanetName = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    PlanetName = CauterizeString(PlanetName);
+                    int Rarity;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after PlanetName entry {PlanetName}");
+                        Rarity = 0;
+                    }
 
                     if (clampRarity != Vector2.zero)
                         Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
 
                     foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
                     {
-                        if (level.NumberlessPlanetName.Equals(PlanetName))
+                        string cauterizedLevelName = CauterizeString(level.NumberlessPlanetName);
+                        if (cauterizedLevelName == PlanetName)
                         {
                             returnList.Add(new StringWithRarity(PlanetName, Rarity));
                             //CentralConfig.instance.mls.LogMessage($"Added level {level.NumberlessPlanetName} with rarity {Rarity} from string {PlanetName}");
@@ -946,7 +1096,7 @@ namespace CentralConfig
                 }
             }
             /*StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Return List:");
+            sb.AppendLine("Return PlanetList:");
             foreach (StringWithRarity planetName in returnList)
             {
                 sb.AppendLine($"{planetName.Name}: {planetName.Rarity}");
@@ -989,13 +1139,30 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var RouteRange = parts[0].Trim();
-                    int Rarity = int.Parse(parts[1].Trim());
+                    int Rarity;
+
+                    if (!int.TryParse(parts[1].Trim(), out Rarity))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Rarity: {parts[1].Trim()} after RouteRange entry {RouteRange}");
+                        Rarity = 0;
+                    }
 
                     var duos = RouteRange.Split('-');
                     if (duos.Length == 2)
                     {
-                        int LowerRange = int.Parse(duos[0].Trim());
-                        int UpperRange = int.Parse(duos[1].Trim());
+                        int LowerRange;
+                        int UpperRange;
+
+                        if (!int.TryParse(duos[0].Trim(), out LowerRange))
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Cannot Parse LowerRange: {parts[1].Trim()} after RouteRange entry {RouteRange}");
+                            LowerRange = 0;
+                        }
+                        if (!int.TryParse(duos[1].Trim(), out UpperRange))
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Cannot Parse UpperRange: {parts[1].Trim()} after RouteRange entry {RouteRange}");
+                            UpperRange = 0;
+                        }
 
                         if (clampRarity != Vector2.zero)
                             Rarity = Mathf.Clamp(Rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
@@ -1004,6 +1171,13 @@ namespace CentralConfig
                     }
                 }
             }
+            /*StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Return Vector2List:");
+            foreach (Vector2WithRarity routerange in returnList)
+            {
+                sb.AppendLine($"{routerange.Min}-{routerange.Max}: {routerange.Rarity}");
+            }
+            CentralConfig.instance.mls.LogInfo(sb.ToString());*/
 
             return returnList;
         }

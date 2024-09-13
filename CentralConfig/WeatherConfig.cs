@@ -61,7 +61,7 @@ namespace CentralConfig
                 {
                     AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
                 }
-                string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
+                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistWeathers.Value);
 
                 if (CentralConfig.SyncConfig.IsWeatherWhiteList)
                 {
@@ -161,7 +161,7 @@ namespace CentralConfig
             {
                 AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
             }
-            string ignoreList = CentralConfig.SyncConfig.BlacklistWeathers.Value;
+            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistWeathers.Value);
 
             if (CentralConfig.SyncConfig.IsWeatherWhiteList)
             {
@@ -180,17 +180,17 @@ namespace CentralConfig
                     if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather.ContainsKey(weatherName))
                     {
                         string IntEneStr = WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather[weatherName];
-                        Vector2 clampIntRarity = new Vector2(0, 99999);
+                        Vector2 clampIntRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                         WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName] = interiorenemyList;
 
                         string DayEneStr = WaitForWeathersToRegister.CreateWeatherConfig.DayTimeEnemyByWeather[weatherName];
-                        Vector2 clampDayRarity = new Vector2(0, 99999);
+                        Vector2 clampDayRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                         WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName] = dayenemyList;
 
                         string NightEneStr = WaitForWeathersToRegister.CreateWeatherConfig.NightTimeEnemyByWeather[weatherName];
-                        Vector2 clampNightRarity = new Vector2(0, 99999);
+                        Vector2 clampNightRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                         WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName] = nightenemyList;
                     }
@@ -201,7 +201,7 @@ namespace CentralConfig
                     if (WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather.ContainsKey(weatherName))
                     {
                         string ScrStr = WaitForWeathersToRegister.CreateWeatherConfig.ScrapByWeather[weatherName];
-                        Vector2 clampScrRarity = new Vector2(0, 99999);
+                        Vector2 clampScrRarity = new Vector2(-99999, 99999);
                         List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                         WaitForWeathersToRegister.CreateWeatherConfig.ScrapW[weatherName] = scraplist;
                     }
@@ -279,38 +279,15 @@ namespace CentralConfig
 
             string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
 
-            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
+            if (!WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) || !WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
                 WeatherScrapData.OriginalMinScrap[LevelManager.CurrentExtendedLevel] = LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap;
                 WeatherScrapData.OriginalMaxScrap[LevelManager.CurrentExtendedLevel] = LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap;
-                if (CentralConfig.SyncConfig.DoScrapOverrides)
-                {
-                    if (WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
-                    {
-                        WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel];
-                    }
-                    else
-                    {
-                        WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = 0.4f;
-                    }
-                }
-                else
-                {
-                    WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel] = 0.4f;
-                }
                 CentralConfig.instance.mls.LogInfo("Saved original Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
 
             if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
             {
-                if (WRCompatibility.enabled)
-                {
-                    __instance.scrapValueMultiplier = WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value * 0.4f;
-                }
-                else
-                {
-                    __instance.scrapValueMultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName].Value;
-                }
                 LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = (int)(LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap * WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapAmountMultiplier[weatherName].Value);
                 CentralConfig.instance.mls.LogInfo("Applied weather Scrap count/value multiplier for: " + LevelManager.CurrentExtendedLevel);
@@ -321,7 +298,6 @@ namespace CentralConfig
     {
         public static Dictionary<ExtendedLevel, int> OriginalMinScrap = new Dictionary<ExtendedLevel, int>();
         public static Dictionary<ExtendedLevel, int> OriginalMaxScrap = new Dictionary<ExtendedLevel, int>();
-        public static Dictionary<ExtendedLevel, float> OriginalScrapValues = new Dictionary<ExtendedLevel, float>();
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
     public class ResetMoonsScrapAfterWeather
@@ -332,11 +308,10 @@ namespace CentralConfig
             {
                 return;
             }
-            if (WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalScrapValues.ContainsKey(LevelManager.CurrentExtendedLevel))
+            if (WeatherScrapData.OriginalMinScrap.ContainsKey(LevelManager.CurrentExtendedLevel) && WeatherScrapData.OriginalMaxScrap.ContainsKey(LevelManager.CurrentExtendedLevel))
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.minScrap = WeatherScrapData.OriginalMinScrap[LevelManager.CurrentExtendedLevel];
                 LevelManager.CurrentExtendedLevel.SelectableLevel.maxScrap = WeatherScrapData.OriginalMaxScrap[LevelManager.CurrentExtendedLevel];
-                WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel] = WeatherScrapData.OriginalScrapValues[LevelManager.CurrentExtendedLevel];
                 CentralConfig.instance.mls.LogInfo("Reverted weather applied Scrap count/value for: " + LevelManager.CurrentExtendedLevel);
             }
         }
@@ -347,7 +322,7 @@ namespace CentralConfig
         static void Postfix(RoundManager __instance)
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
-            float multiplier = __instance.scrapValueMultiplier;
+            float multiplier = __instance.scrapValueMultiplier * 2.5f;
             CentralConfig.instance.mls.LogInfo(PlanetName + " has a current scrap multiplier of: " + multiplier);
         }
     }

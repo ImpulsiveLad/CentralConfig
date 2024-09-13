@@ -145,7 +145,7 @@ namespace CentralConfig
                 CentralConfig.HarmonyTouch = true;
 
                 List<ExtendedLevel> allExtendedLevels;
-                string ignoreList = CentralConfig.SyncConfig.BlacklistMoons.Value;
+                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistMoons.Value);
 
                 if (CentralConfig.SyncConfig.IsWhiteList)
                 {
@@ -598,7 +598,7 @@ namespace CentralConfig
         public void UpdateMoonValues() // This is called on as a postfix on the same method as creating the config stuff so it gets applied here right after the config is intialized
         {
             List<ExtendedLevel> allExtendedLevels;
-            string ignoreList = CentralConfig.SyncConfig.BlacklistMoons.Value;
+            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistMoons.Value);
 
             if (CentralConfig.SyncConfig.IsWhiteList)
             {
@@ -636,7 +636,7 @@ namespace CentralConfig
 
                     // ScrapList
                     string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[level]; // Ok so the lists kinda suck
-                    Vector2 clamprarity = new Vector2(0, 99999);
+                    Vector2 clamprarity = new Vector2(-99999, 99999);
                     List<SpawnableItemWithRarity> scrap = ConfigAider.ConvertStringToItemList(scrapStr, clamprarity); // This method turns the string back into a list
                     if (scrap.Count > 0)
                     {
@@ -690,7 +690,7 @@ namespace CentralConfig
                     level.SelectableLevel.maxEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyPowerCountOverride[level]; // Same as the scrap list but I had to explicitly exclude Lasso since he will fuck up the stuff (pls for the love of god if you bring back Lasso don't make its enemyName = "Lasso" I will cry) ((This mod will ignore it))
                     // InteriorEnemyList
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.InteriorEnemyOverride[level];
-                    Vector2 clampIntRarity = new Vector2(0, 99999);
+                    Vector2 clampIntRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> IntEnemies = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                     if (IntEnemies != level.SelectableLevel.Enemies)
                     {
@@ -700,7 +700,7 @@ namespace CentralConfig
                     level.SelectableLevel.maxDaytimeEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyPowerCountOverride[level];
                     // DaytimeEnemyList
                     string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.DaytimeEnemyOverride[level];
-                    Vector2 clampDayRarity = new Vector2(0, 99999);
+                    Vector2 clampDayRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> DayEnemies = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                     if (DayEnemies != level.SelectableLevel.DaytimeEnemies)
                     {
@@ -710,7 +710,7 @@ namespace CentralConfig
                     level.SelectableLevel.maxOutsideEnemyPowerCount = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyPowerCountOverride[level];
                     // NighttimeEnemyList
                     string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.NighttimeEnemyOverride[level];
-                    Vector2 clampNightRarity = new Vector2(0, 99999);
+                    Vector2 clampNightRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> NightEnemies = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                     if (NightEnemies != level.SelectableLevel.OutsideEnemies)
                     {
@@ -720,22 +720,22 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.GlobalEnemyAndScrap && NetworkManager.Singleton.IsHost)
                 {
                     string IntEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddIndoorEnemiesToAllMoons;
-                    Vector2 clampIntRarity = new Vector2(0, 99999);
+                    Vector2 clampIntRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                     WaitForMoonsToRegister.IEnemies = interiorenemyList;
 
                     string DayEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddDayEnemiesToAllMoons;
-                    Vector2 clampDayRarity = new Vector2(0, 99999);
+                    Vector2 clampDayRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                     WaitForMoonsToRegister.DEnemies = dayenemyList;
 
                     string NightEneStr = WaitForMoonsToRegister.CreateMoonConfig.AddNightEnemiesToAllMoons;
-                    Vector2 clampNightRarity = new Vector2(0, 99999);
+                    Vector2 clampNightRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                     WaitForMoonsToRegister.NEnemies = nightenemyList;
 
                     string ScrStr = WaitForMoonsToRegister.CreateMoonConfig.AddScrapToAllMoons;
-                    Vector2 clampScrRarity = new Vector2(0, 99999);
+                    Vector2 clampScrRarity = new Vector2(-99999, 99999);
                     List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                     WaitForMoonsToRegister.Scrap = scraplist;
 
@@ -947,7 +947,7 @@ namespace CentralConfig
         }
     }
     [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
-    public class ApplyScrapValueMultiplier
+    public class FreeEnemies
     {
         static void Prefix(RoundManager __instance)
         {
@@ -959,23 +959,6 @@ namespace CentralConfig
             if (CentralConfig.SyncConfig.FreeEnemies)
             {
                 __instance.hourTimeBetweenEnemySpawnBatches = 1;
-            }
-
-            if (CentralConfig.SyncConfig.DoScrapOverrides)
-            {
-                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
-                {
-                    if (!WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
-                    {
-                        float newMultiplier = __instance.scrapValueMultiplier * WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[LevelManager.CurrentExtendedLevel].Value;
-                        WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel] = newMultiplier;
-                        __instance.scrapValueMultiplier = newMultiplier;
-                    }
-                    else
-                    {
-                        __instance.scrapValueMultiplier = WaitForMoonsToRegister.CreateMoonConfig.MoonsNewScrapMultiplier[LevelManager.CurrentExtendedLevel];
-                    }
-                }
             }
         }
     }

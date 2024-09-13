@@ -80,7 +80,7 @@ namespace CentralConfig
                 ScrapD = new Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>>();
 
                 List<ExtendedDungeonFlow> AllExtendedDungeons;
-                string ignoreList = CentralConfig.SyncConfig.BlackListDungeons.Value;
+                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlackListDungeons.Value);
 
                 if (CentralConfig.SyncConfig.IsWhiteList)
                 {
@@ -258,7 +258,7 @@ namespace CentralConfig
         public void UpdateDungeonValues() // This is called on as a postfix on the same method as creating the config stuff so it gets applied here right after the config is intialized
         {
             List<ExtendedDungeonFlow> AllExtendedDungeons;
-            string ignoreList = CentralConfig.SyncConfig.BlackListDungeons.Value;
+            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlackListDungeons.Value);
 
             if (CentralConfig.SyncConfig.IsWhiteList)
             {
@@ -302,7 +302,7 @@ namespace CentralConfig
 
                     // PlanetName
                     string PlanetNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonPlanetNameList[dungeon];
-                    Vector2 planetNameRarity = new Vector2(0, 99999);
+                    Vector2 planetNameRarity = new Vector2(-99999, 99999);
                     List<StringWithRarity> InjectionPlanets = ConfigAider.ConvertPlanetNameStringToStringWithRarityList(PlanetNameStr, planetNameRarity);
                     if (InjectionPlanets.Count > 0)
                     {
@@ -311,7 +311,7 @@ namespace CentralConfig
 
                     // Tags
                     string TagStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonTagList[dungeon];
-                    Vector2 tagRarity = new Vector2(0, 99999);
+                    Vector2 tagRarity = new Vector2(-99999, 99999);
                     List<StringWithRarity> InjectionTags = ConfigAider.ConvertTagStringToStringWithRarityList(TagStr, tagRarity);
                     if (InjectionTags.Count > 0)
                     {
@@ -320,7 +320,7 @@ namespace CentralConfig
 
                     // ModName
                     string ModNameStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonModNameList[dungeon];
-                    Vector2 modNameRarity = new Vector2(0, 99999);
+                    Vector2 modNameRarity = new Vector2(-99999, 99999);
                     List<StringWithRarity> InjectionMods = ConfigAider.ConvertModStringToStringWithRarityList(ModNameStr, modNameRarity);
                     if (InjectionMods.Count > 0)
                     {
@@ -329,7 +329,7 @@ namespace CentralConfig
 
                     // RoutePrice
                     string RoutePriceStr = WaitForDungeonsToRegister.CreateDungeonConfig.DungeonRoutePriceList[dungeon];
-                    Vector2 RoutePriceRarity = new Vector2(0, 99999);
+                    Vector2 RoutePriceRarity = new Vector2(-99999, 99999);
                     List<Vector2WithRarity> InjectionPrices = ConfigAider.ConvertStringToVector2WithRarityList(RoutePriceStr, RoutePriceRarity);
                     if (InjectionPrices.Count > 0)
                     {
@@ -342,17 +342,17 @@ namespace CentralConfig
                     if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(dungeon))
                     {
                         string IntEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon[dungeon];
-                        Vector2 clampIntRarity = new Vector2(0, 99999);
+                        Vector2 clampIntRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                         WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[dungeon] = interiorenemyList;
 
                         string DayEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.DayTimeEnemyByDungeon[dungeon];
-                        Vector2 clampDayRarity = new Vector2(0, 99999);
+                        Vector2 clampDayRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                         WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[dungeon] = dayenemyList;
 
                         string NightEneStr = WaitForDungeonsToRegister.CreateDungeonConfig.NightTimeEnemyByDungeon[dungeon];
-                        Vector2 clampNightRarity = new Vector2(0, 99999);
+                        Vector2 clampNightRarity = new Vector2(-99999, 99999);
                         List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                         WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[dungeon] = nightenemyList;
                     }
@@ -363,7 +363,7 @@ namespace CentralConfig
                     if (WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon.ContainsKey(dungeon))
                     {
                         string ScrStr = WaitForDungeonsToRegister.CreateDungeonConfig.ScrapByDungeon[dungeon];
-                        Vector2 clampScrRarity = new Vector2(0, 99999);
+                        Vector2 clampScrRarity = new Vector2(-99999, 99999);
                         List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                         WaitForDungeonsToRegister.CreateDungeonConfig.ScrapD[dungeon] = scraplist;
                     }
@@ -856,6 +856,8 @@ namespace CentralConfig
                 return;
             }
 
+            string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
+
             if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
@@ -904,6 +906,13 @@ namespace CentralConfig
             }
             LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
 
+            if (CentralConfig.SyncConfig.RemoveZeros)
+            {
+                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveZeroRarityItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
+            }
             if (CentralConfig.SyncConfig.ScrapShuffle)
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap, StartOfRound.Instance.randomMapSeed);
@@ -914,6 +923,35 @@ namespace CentralConfig
                 LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, StartOfRound.Instance.randomMapSeed);
             }
+
+            float scrapvaluemultiplier = 0.4f;
+            if (CentralConfig.SyncConfig.DoScrapOverrides)
+            {
+                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
+                {
+                    scrapvaluemultiplier *= WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[LevelManager.CurrentExtendedLevel];
+                }
+                else
+                {
+                    scrapvaluemultiplier *= 1f;
+                }
+            }
+            if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
+            {
+                if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
+                {
+                    scrapvaluemultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName];
+                }
+                else
+                {
+                    scrapvaluemultiplier *= 1f;
+                }
+            }
+            else if (WRCompatibility.enabled)
+            {
+                scrapvaluemultiplier *= WRCompatibility.GetWRWeatherMultiplier(LevelManager.CurrentExtendedLevel.SelectableLevel);
+            }
+            RoundManager.Instance.scrapValueMultiplier = scrapvaluemultiplier;
 
             if (CentralConfig.SyncConfig.LogEnemies && NetworkManager.Singleton.IsHost)
             {

@@ -59,7 +59,7 @@ namespace CentralConfig
 
                 List<ContentTag> AllContentTags;
                 List<ContentTag> allcontenttagslist = ConfigAider.GrabFullTagList();
-                string ignoreList = CentralConfig.SyncConfig.BlacklistTags.Value;
+                string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistTags.Value);
                 List<string> SplitIgnoreList = ConfigAider.SplitStringsByDaComma(ignoreList);
                 List<string> CauterizedIgnoreList = SplitIgnoreList.Select(tag => ConfigAider.CauterizeString(tag)).ToList();
 
@@ -148,7 +148,7 @@ namespace CentralConfig
         {
             List<ContentTag> AllContentTags;
             List<ContentTag> allcontenttagslist = ConfigAider.GrabFullTagList();
-            string ignoreList = CentralConfig.SyncConfig.BlacklistTags.Value;
+            string ignoreList = ConfigAider.CauterizeString(CentralConfig.SyncConfig.BlacklistTags.Value);
             List<string> SplitIgnoreList = ConfigAider.SplitStringsByDaComma(ignoreList);
             List<string> CauterizedIgnoreList = SplitIgnoreList.Select(tag => ConfigAider.CauterizeString(tag)).ToList();
 
@@ -167,17 +167,17 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections && NetworkManager.Singleton.IsHost)
                 {
                     string IntEneStr = WaitForTagsToRegister.CreateTagConfig.InteriorEnemyByTag[TagName];
-                    Vector2 clampIntRarity = new Vector2(0, 99999);
+                    Vector2 clampIntRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> interiorenemyList = ConfigAider.ConvertStringToEnemyList(IntEneStr, clampIntRarity);
                     WaitForTagsToRegister.CreateTagConfig.InteriorEnemies[TagName] = interiorenemyList;
 
                     string DayEneStr = WaitForTagsToRegister.CreateTagConfig.DayTimeEnemyByTag[TagName];
-                    Vector2 clampDayRarity = new Vector2(0, 99999);
+                    Vector2 clampDayRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> dayenemyList = ConfigAider.ConvertStringToEnemyList(DayEneStr, clampDayRarity);
                     WaitForTagsToRegister.CreateTagConfig.DayEnemies[TagName] = dayenemyList;
 
                     string NightEneStr = WaitForTagsToRegister.CreateTagConfig.NightTimeEnemyByTag[TagName];
-                    Vector2 clampNightRarity = new Vector2(0, 99999);
+                    Vector2 clampNightRarity = new Vector2(-99999, 99999);
                     List<SpawnableEnemyWithRarity> nightenemyList = ConfigAider.ConvertStringToEnemyList(NightEneStr, clampNightRarity);
                     WaitForTagsToRegister.CreateTagConfig.NightEnemies[TagName] = nightenemyList;
                 }
@@ -185,7 +185,7 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoScrapTagInjections && NetworkManager.Singleton.IsHost)
                 {
                     string ScrStr = WaitForTagsToRegister.CreateTagConfig.ScrapByTag[TagName];
-                    Vector2 clampScrRarity = new Vector2(0, 99999);
+                    Vector2 clampScrRarity = new Vector2(-99999, 99999);
                     List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                     WaitForTagsToRegister.CreateTagConfig.Scrap[TagName] = scraplist;
                 }
