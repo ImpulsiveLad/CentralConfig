@@ -377,7 +377,7 @@ namespace CentralConfig
                 }
                 Glop++;
             }
-            foreach (SpawnableEnemyWithRarity Old in enemies)
+            /*foreach (SpawnableEnemyWithRarity Old in enemies)
             {
                 foreach (SpawnableEnemyWithRarity New in returnList)
                 {
@@ -389,7 +389,7 @@ namespace CentralConfig
                         }
                     }
                 }
-            }
+            }*/
             return returnList;
         }
         public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig)
@@ -790,7 +790,7 @@ namespace CentralConfig
                 }
                 Glop++;
             }
-            foreach (SpawnableItemWithRarity Old in items)
+            /*foreach (SpawnableItemWithRarity Old in items)
             {
                 foreach (SpawnableItemWithRarity New in returnList)
                 {
@@ -802,7 +802,7 @@ namespace CentralConfig
                         }
                     }
                 }
-            }
+            }*/
             return returnList;
         }
         public static List<SpawnableItemWithRarity> RemoveZeroRarityItems(List<SpawnableItemWithRarity> itemList)
@@ -1026,7 +1026,7 @@ namespace CentralConfig
                 }
                 Glop++;
             }
-            foreach (StringWithRarity Old in strings)
+            /*foreach (StringWithRarity Old in strings)
             {
                 foreach (StringWithRarity New in returnList)
                 {
@@ -1038,7 +1038,7 @@ namespace CentralConfig
                         }
                     }
                 }
-            }
+            }*/
             return returnList;
         }
         public static List<Vector2WithRarity> IncreaseDungeonRaritiesVector2(List<Vector2WithRarity> vectors, ExtendedDungeonFlow dungeonflow, string flowName, int seed)
