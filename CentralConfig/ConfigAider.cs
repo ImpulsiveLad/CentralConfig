@@ -329,7 +329,7 @@ namespace CentralConfig
                     if (ShuffleSaver.EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
                     {
                         EnemyShuffler.EnemyAppearances.Add(enemy.enemyType, ShuffleSaver.EnemyAppearanceString[enemy.enemyType.enemyName]);
-                        // CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyShuffler.EnemyAppearances[enemy.enemyType]}");
+                        CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyShuffler.EnemyAppearances[enemy.enemyType]}");
                     }
                     else
                     {
@@ -361,7 +361,7 @@ namespace CentralConfig
                     newEnemy.enemyType = enemy.enemyType;
                     if (CentralConfig.SyncConfig.EnemyShufflerPercent && !(enemy.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
                     {
-                        newEnemy.rarity = (int)Math.Round(enemy.rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newEnemy.rarity = (int)Math.Round((LastAppearance * (enemy.rarity * (multiplier / 100f))) + enemy.rarity);
                         newEnemy.rarity = Mathf.Clamp(newEnemy.rarity, 0, 99999);
                     }
                     else
@@ -741,7 +741,7 @@ namespace CentralConfig
                     if (ShuffleSaver.ScrapAppearanceString.ContainsKey(item.spawnableItem.itemName))
                     {
                         ScrapShuffler.ScrapAppearances.Add(item.spawnableItem, ShuffleSaver.ScrapAppearanceString[item.spawnableItem.itemName]);
-                        // CentralConfig.instance.mls.LogInfo($"Remembered saved Item Key: {item.spawnableItem.itemName}, Days: {ScrapShuffler.ScrapAppearances[item.spawnableItem]}");
+                        CentralConfig.instance.mls.LogInfo($"Remembered saved Item Key: {item.spawnableItem.itemName}, Days: {ScrapShuffler.ScrapAppearances[item.spawnableItem]}");
                     }
                     else
                     {
@@ -773,7 +773,7 @@ namespace CentralConfig
                     newItem.spawnableItem = item.spawnableItem;
                     if (CentralConfig.SyncConfig.ScrapShufflerPercent && !(item.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
                     {
-                        newItem.rarity = (int)Math.Round(item.rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newItem.rarity = (int)Math.Round((LastAppearance * (item.rarity * (multiplier / 100f))) + item.rarity);
                         newItem.rarity = Mathf.Clamp(newItem.rarity, 0, 99999);
                     }
                     else
@@ -984,7 +984,7 @@ namespace CentralConfig
                 {
                     DungeonShuffler.DungeonAppearances.Add(dungeonflow, 0);
                     ShuffleSaver.DungeonAppearanceString.Add(flowName, 0);
-                    CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
+                    // CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
                 }
             }
             if (!ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
@@ -1010,7 +1010,7 @@ namespace CentralConfig
                     newflow.Name = String.Name;
                     if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(String.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
                     {
-                        newflow.Rarity = (int)Math.Round(String.Rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newflow.Rarity = (int)Math.Round((LastAppearance * (String.Rarity * (multiplier / 100f))) + String.Rarity);
                         newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
                     }
                     else
@@ -1057,7 +1057,7 @@ namespace CentralConfig
                 {
                     DungeonShuffler.DungeonAppearances.Add(dungeonflow, 0);
                     ShuffleSaver.DungeonAppearanceString.Add(flowName, 0);
-                    CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
+                    // CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
                 }
             }
             if (!ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
@@ -1084,7 +1084,7 @@ namespace CentralConfig
                     newflow.Max = Vector.Max;
                     if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(Vector.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
                     {
-                        newflow.Rarity = (int)Math.Round(Vector.Rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newflow.Rarity = (int)Math.Round((LastAppearance * (Vector.Rarity * (multiplier / 100f))) + Vector.Rarity);
                         newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
                     }
                     else

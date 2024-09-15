@@ -138,7 +138,7 @@ namespace CentralConfig
                         if (ScrapAppearanceString.ContainsKey(item.itemName))
                         {
                             ScrapAppearances.Add(item, ScrapAppearanceString[item.itemName]);
-                            // CentralConfig.instance.mls.LogInfo($"Remembered saved Item Key: {item.itemName}, Days: {ScrapAppearances[item]}");
+                            CentralConfig.instance.mls.LogInfo($"Remembered saved Item Key: {item.itemName}, Days: {ScrapAppearances[item]}");
                         }
                         else
                         {
@@ -196,7 +196,7 @@ namespace CentralConfig
                         if (EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName))
                         {
                             EnemyAppearances.Add(enemy.enemyType, EnemyAppearanceString[enemy.enemyType.enemyName]);
-                            // CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyAppearances[enemy.enemyType]}");
+                            CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyAppearances[enemy.enemyType]}");
                         }
                         else
                         {
@@ -240,7 +240,7 @@ namespace CentralConfig
                         if (EnemyAppearanceString.ContainsKey(enemy.enemyType.enemyName)) // the string version has it (save data)
                         {
                             EnemyAppearances.Add(enemy.enemyType, EnemyAppearanceString[enemy.enemyType.enemyName]); // creates the dict from the saved data
-                            // CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyAppearances[enemy.enemyType]}");
+                            CentralConfig.instance.mls.LogInfo($"Remembered saved Enemy Key: {enemy.enemyType.enemyName}, Days: {EnemyAppearances[enemy.enemyType]}");
                         }
                         else // not in the string version (no save data)
                         {
@@ -301,7 +301,7 @@ namespace CentralConfig
                             if (DungeonAppearanceString.ContainsKey(DungeonName))
                             {
                                 DungeonAppearances.Add(flow.extendedDungeonFlow, DungeonAppearanceString[DungeonName]);
-                                // CentralConfig.instance.mls.LogInfo($"Remembered saved Dungeon Key: {DungeonName}, Days: {DungeonAppearances[flow.extendedDungeonFlow]}");
+                                CentralConfig.instance.mls.LogInfo($"Remembered saved Dungeon Key: {DungeonName}, Days: {DungeonAppearances[flow.extendedDungeonFlow]}");
                             }
                             else
                             {
