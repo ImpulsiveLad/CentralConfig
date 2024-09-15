@@ -112,7 +112,11 @@ Allows you to set the min/max ranges for the scan nodes on the ship, main entran
 ## Shufflers (Host Only)
 Several settings to boost the chances of spawning a specific scrap or enemy compounded for every day they could have, but did not spawn. Boosts reset whenever any amount of that scrap/enemy is spawned.
 
+This feature allows for interior shuffle as well.
+
 The min/max multiplier for the rarity boost is configurable (It is the # of days since it last appearanced * random value, this gets added to the rarity for that scrap/enemy in all current pools).
+
+Alternatively the multiplier can act as an increase by percent.
 
 You can also choose whether or not the boosts are reset when leaving a session or remain commit to the save file (picks up when you rejoin).
 
