@@ -33,6 +33,11 @@ namespace CentralConfig
             string cleanedString = new string(inputString.Where(c => char.IsLetterOrDigit(c)).ToArray());
             return cleanedString.ToLower();
         }
+        public static string LightlyToastString(string inputString)
+        {
+            string cleanedString = new string(inputString.Where(c => c != ':' && c != '-' && c != ',' && c != '~').ToArray());
+            return cleanedString;
+        }
 
         public static List<Item> GrabFullItemList()
         {
@@ -176,7 +181,7 @@ namespace CentralConfig
                 {
                     if (spawnableEnemyWithRarity.enemyType.enemyName != "Lasso" && spawnableEnemyWithRarity.rarity > 0)
                     {
-                        returnString += spawnableEnemyWithRarity.enemyType.enemyName + ":" + spawnableEnemyWithRarity.rarity.ToString() + ",";
+                        returnString += LightlyToastString(spawnableEnemyWithRarity.enemyType.enemyName) + ":" + spawnableEnemyWithRarity.rarity.ToString() + ",";
                     }
                 }
             }
@@ -311,9 +316,8 @@ namespace CentralConfig
                 return result.GroupBy(e => e.enemyType.enemyName).Select(g => g.OrderByDescending(e => e.rarity).Last()).ToList();
             }
         }
-        public static List<SpawnableEnemyWithRarity> IncreaseEnemyRarities(List<SpawnableEnemyWithRarity> enemies, int seed)
+        public static List<SpawnableEnemyWithRarity> IncreaseEnemyRarities(List<SpawnableEnemyWithRarity> enemies)
         {
-            int Glop = 0;
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
             List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.EnemyShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
             List<SpawnableEnemyWithRarity> WhiteListEnemies = enemies.Where(e => !ignoreListEntries.Any(b => CauterizeString(e.enemyType.enemyName).Equals(b))).ToList();
@@ -344,9 +348,7 @@ namespace CentralConfig
                 }
 
                 int LastAppearance = EnemyShuffler.EnemyAppearances[enemy.enemyType];
-                seed += Glop;
-                System.Random random = new System.Random(seed);
-                int multiplier = random.Next(CentralConfig.SyncConfig.EnemyShuffleRandomMin, CentralConfig.SyncConfig.EnemyShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.enemyrandom.Next(CentralConfig.SyncConfig.EnemyShuffleRandomMin, CentralConfig.SyncConfig.EnemyShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -375,7 +377,6 @@ namespace CentralConfig
                     }
                     returnList.Add(newEnemy);
                 }
-                Glop++;
             }
             /*foreach (SpawnableEnemyWithRarity Old in enemies)
             {
@@ -649,7 +650,7 @@ namespace CentralConfig
             {
                 if (spawnableItemWithRarity.rarity > 0)
                 {
-                    returnString += spawnableItemWithRarity.spawnableItem.itemName + ":" + spawnableItemWithRarity.rarity.ToString() + ",";
+                    returnString += LightlyToastString(spawnableItemWithRarity.spawnableItem.itemName) + ":" + spawnableItemWithRarity.rarity.ToString() + ",";
                 }
             }
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
@@ -723,9 +724,8 @@ namespace CentralConfig
         {
             return items.GroupBy(e => e.spawnableItem.itemName).Select(g => g.OrderByDescending(e => e.rarity).First()).ToList();
         }
-        public static List<SpawnableItemWithRarity> IncreaseScrapRarities(List<SpawnableItemWithRarity> items, int seed)
+        public static List<SpawnableItemWithRarity> IncreaseScrapRarities(List<SpawnableItemWithRarity> items)
         {
-            int Glop = 0; // local int to make seed be different through the foreach
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
             List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.ScrapShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
             List<SpawnableItemWithRarity> WhiteListItems = items.Where(i => !ignoreListEntries.Any(b => CauterizeString(i.spawnableItem.itemName).Equals(b))).ToList();
@@ -756,9 +756,7 @@ namespace CentralConfig
                 }
 
                 int LastAppearance = ScrapShuffler.ScrapAppearances[item.spawnableItem];
-                seed += Glop;
-                System.Random random = new System.Random(seed); // local generator to use the slightly different seed (seed starts synced)
-                int multiplier = random.Next(CentralConfig.SyncConfig.ScrapShuffleRandomMin, CentralConfig.SyncConfig.ScrapShuffleRandomMax + 1); // not just '+ x' but + 'x * (config min/max)' 
+                int multiplier = ShuffleSaver.scraprandom.Next(CentralConfig.SyncConfig.ScrapShuffleRandomMin, CentralConfig.SyncConfig.ScrapShuffleRandomMax + 1); // not just '+ x' but + 'x * (config min/max)' 
 
                 if (LastAppearance == 0) // appearred last game
                 {
@@ -788,7 +786,6 @@ namespace CentralConfig
                     }
                     returnList.Add(newItem);
                 }
-                Glop++;
             }
             /*foreach (SpawnableItemWithRarity Old in items)
             {
@@ -968,9 +965,8 @@ namespace CentralConfig
 
         // Misc String
 
-        public static List<StringWithRarity> IncreaseDungeonRarities(List<StringWithRarity> strings, ExtendedDungeonFlow dungeonflow, string flowName, int seed)
+        public static List<StringWithRarity> IncreaseDungeonRarities(List<StringWithRarity> strings, ExtendedDungeonFlow dungeonflow, string flowName)
         {
-            int Glop = 0;
             List<StringWithRarity> returnList = new List<StringWithRarity>();
 
             if (!DungeonShuffler.DungeonAppearances.ContainsKey(dungeonflow))
@@ -995,9 +991,7 @@ namespace CentralConfig
             int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
             foreach (StringWithRarity String in strings)
             {
-                seed += Glop;
-                System.Random random = new System.Random(seed);
-                int multiplier = random.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.dungeonrandom.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -1024,7 +1018,6 @@ namespace CentralConfig
                     }
                     returnList.Add(newflow);
                 }
-                Glop++;
             }
             /*foreach (StringWithRarity Old in strings)
             {
@@ -1041,9 +1034,8 @@ namespace CentralConfig
             }*/
             return returnList;
         }
-        public static List<Vector2WithRarity> IncreaseDungeonRaritiesVector2(List<Vector2WithRarity> vectors, ExtendedDungeonFlow dungeonflow, string flowName, int seed)
+        public static List<Vector2WithRarity> IncreaseDungeonRaritiesVector2(List<Vector2WithRarity> vectors, ExtendedDungeonFlow dungeonflow, string flowName)
         {
-            int Glop = 0;
             List<Vector2WithRarity> returnList = new List<Vector2WithRarity>();
 
             if (!DungeonShuffler.DungeonAppearances.ContainsKey(dungeonflow))
@@ -1068,9 +1060,7 @@ namespace CentralConfig
             int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
             foreach (Vector2WithRarity Vector in vectors)
             {
-                seed += Glop;
-                System.Random random = new System.Random(seed);
-                int multiplier = random.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.dungeonrandom.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -1098,7 +1088,6 @@ namespace CentralConfig
                     }
                     returnList.Add(newflow);
                 }
-                Glop++;
             }
             /*foreach (Vector2WithRarity Old in vectors)
             {
@@ -1132,7 +1121,7 @@ namespace CentralConfig
             {
                 if (name.Rarity > 0)
                 {
-                    returnString += name.Name + ":" + name.Rarity.ToString() + ",";
+                    returnString += LightlyToastString(name.Name) + ":" + name.Rarity.ToString() + ",";
                 }
             }
 

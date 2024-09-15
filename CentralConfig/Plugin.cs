@@ -28,7 +28,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.13.7";
+        private const string modVersion = "0.13.8";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -132,6 +132,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> IsWhiteList { get; private set; }
         [DataMember] public SyncedEntry<bool> DoGenOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoScrapOverrides { get; private set; }
+        [DataMember] public SyncedEntry<bool> DoScraplistOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoEnemyOverrides { get; private set; }
         [DataMember] public SyncedEntry<bool> DoTrapOverrides { get; private set; }
         // [DataMember] public SyncedEntry<bool> DoMoonWeatherOverrides { get; private set; }
@@ -219,7 +220,12 @@ namespace CentralConfig
             DoScrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Scrap Overrides? (Host Only)",
                 false,
-                "If set to true, allows altering of the min/max scrap count, the list of scrap objects on each moon, and a multiplier for the individual scrap item's values.");
+                "If set to true, allows altering of the min/max scrap count and a multiplier for the individual scrap item's values.");
+
+            DoScraplistOverrides = cfg.BindSyncedEntry("_Moons_",
+                "Enable Scrap List Overrides? (Host Only)",
+                false,
+                "If set to true, allows altering of the scrap list for each moon.");
 
             DoEnemyOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Enemy Overrides? (Host Only)",

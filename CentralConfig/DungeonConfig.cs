@@ -379,10 +379,12 @@ namespace CentralConfig
                 if (ES3.KeyExists("LastGlorp", GameNetworkManager.Instance.currentSaveFileName))
                 {
                     seed = ES3.Load<int>("LastGlorp", GameNetworkManager.Instance.currentSaveFileName);
+                    ShuffleSaver.dungeonrandom = new System.Random(seed);
                 }
                 else
                 {
                     seed = StartOfRound.Instance.randomMapSeed;
+                    ShuffleSaver.dungeonrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 }
 
                 foreach (ExtendedDungeonFlow flow in PatchedContent.ExtendedDungeonFlows)
@@ -397,10 +399,10 @@ namespace CentralConfig
                     gen = gen.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
                     string FlowName = gen.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
 
-                    flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName, seed);
-                    flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName, seed);
-                    flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName, seed);
-                    flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName, seed);
+                    flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName);
+                    flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName);
+                    flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName);
+                    flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName);
                 }
                 ShuffleSaver.LastGlorp = seed;
             }
@@ -952,13 +954,15 @@ namespace CentralConfig
             }
             if (CentralConfig.SyncConfig.ScrapShuffle)
             {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap, StartOfRound.Instance.randomMapSeed);
+                ShuffleSaver.scraprandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
             }
             if (CentralConfig.SyncConfig.EnemyShuffle)
             {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, StartOfRound.Instance.randomMapSeed);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, StartOfRound.Instance.randomMapSeed);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, StartOfRound.Instance.randomMapSeed);
+                ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
             }
 
             float scrapvaluemultiplier = 0.4f;

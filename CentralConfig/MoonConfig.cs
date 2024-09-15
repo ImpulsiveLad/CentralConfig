@@ -202,7 +202,9 @@ namespace CentralConfig
                             PlanetName + " -  Scrap Value Multiplier",
                             1f,
                             "Each scrap object on this moon will have its personal min/max values multiplied by this amount.");
-
+                    }
+                    if (CentralConfig.SyncConfig.DoScraplistOverrides)
+                    {
                         string ScrapList = ConfigAider.ConvertItemListToString(level.SelectableLevel.spawnableScrap); // Method turns the scrap list into string (check postfix)
 
                         ScrapListOverrides[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
@@ -638,8 +640,10 @@ namespace CentralConfig
                 {
                     level.SelectableLevel.minScrap = WaitForMoonsToRegister.CreateMoonConfig.MinScrapOverrides[level];
                     level.SelectableLevel.maxScrap = WaitForMoonsToRegister.CreateMoonConfig.MaxScrapOverrides[level];
-
-                    // ScrapList
+                }
+                // ScrapList
+                if (CentralConfig.SyncConfig.DoScraplistOverrides)
+                {
                     string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[level]; // Ok so the lists kinda suck
                     Vector2 clamprarity = new Vector2(-99999, 99999);
                     List<SpawnableItemWithRarity> scrap = ConfigAider.ConvertStringToItemList(scrapStr, clamprarity); // This method turns the string back into a list

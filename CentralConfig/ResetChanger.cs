@@ -341,10 +341,12 @@ namespace CentralConfig
                         gen = gen.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
                         string FlowName = gen.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
 
-                        flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName, StartOfRound.Instance.randomMapSeed);
-                        flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName, StartOfRound.Instance.randomMapSeed);
-                        flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName, StartOfRound.Instance.randomMapSeed);
-                        flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName, StartOfRound.Instance.randomMapSeed);
+                        dungeonrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+
+                        flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName);
+                        flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName);
+                        flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName);
+                        flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName);
                     }
                     LastGlorp = StartOfRound.Instance.randomMapSeed;
                 }
@@ -365,6 +367,9 @@ namespace CentralConfig
         public static Dictionary<ExtendedDungeonFlow, List<StringWithRarity>> DungeonTagMatches = new Dictionary<ExtendedDungeonFlow, List<StringWithRarity>>();
         public static Dictionary<ExtendedDungeonFlow, List<Vector2WithRarity>> DungeonRouteMatches = new Dictionary<ExtendedDungeonFlow, List<Vector2WithRarity>>();
         public static int LastGlorp = -1;
+        public static System.Random dungeonrandom;
+        public static System.Random enemyrandom;
+        public static System.Random scraprandom;
 
         [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
         public static class SaveShuffleDataStrings
