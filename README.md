@@ -54,7 +54,10 @@ Any enemies with that have an entry of 0 rarity will be kept regardless, use thi
 Allows altering basic properties like route price, risk level, and description for each moon.
 
 **Enable Scrap Overrides? (Host Only)** -
-Allows altering the min/max scrap count, the list of scrap objects on each moon, and a multiplier for individual scrap item values.
+Allows altering the min/max scrap count and a multiplier for individual scrap item values.
+
+**Enable Scrap List Overrides? (Host Only)** -
+Allows altering of the scrap list for each moon.
 
 **Enable Enemy Overrides? (Host Only)** -
 Allows altering the max power counts and lists for enemies on each moon (Interior, Nighttime, and Daytime).
