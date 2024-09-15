@@ -140,6 +140,11 @@ namespace CentralConfig
                             ShuffleSaver.EnemyAppearanceString = ES3.Load<Dictionary<string, int>>("EnemyAppearanceString", GameNetworkManager.Instance.currentSaveFileName);
                             CentralConfig.instance.mls.LogInfo("Loaded Enemy Shuffle Data");
                         }
+                        if (CentralConfig.SyncConfig.DungeonShuffler && ES3.KeyExists("DungeonAppearanceString", GameNetworkManager.Instance.currentSaveFileName))
+                        {
+                            ShuffleSaver.DungeonAppearanceString = ES3.Load<Dictionary<string, int>>("DungeonAppearanceString", GameNetworkManager.Instance.currentSaveFileName);
+                            CentralConfig.instance.mls.LogInfo("Loaded Dungeon Shuffle Data");
+                        }
                     }
                 }
                 CentralConfig.HarmonyTouch = true;
@@ -907,6 +912,10 @@ namespace CentralConfig
             }
             CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
             ConfigAider.Instance.StartCoroutine(LogSeed());
+            foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
+            {
+                ResetChanger.ResetOnDisconnect.AllLevels.Add(level);
+            }
             Ready = true;
         }
         static IEnumerator LogSeed()

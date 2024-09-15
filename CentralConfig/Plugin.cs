@@ -14,6 +14,7 @@ using static CentralConfig.ResetChanger;
 using static CentralConfig.ScrapShuffler;
 using static CentralConfig.EnemyShuffler;
 using static CentralConfig.ShuffleSaver;
+using static CentralConfig.DungeonShuffler;
 
 namespace CentralConfig
 {
@@ -27,7 +28,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.13.1";
+        private const string modVersion = "0.13.5";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -104,6 +105,7 @@ namespace CentralConfig
             harmony.PatchAll(typeof(IncreaseScrapAppearances));
             harmony.PatchAll(typeof(CheckForEnemySpawns));
             harmony.PatchAll(typeof(UpdateEnemyDictionary));
+            harmony.PatchAll(typeof(UpdateDungeonDictionary));
             harmony.PatchAll(typeof(SaveShuffleDataStrings));
 
             harmony.PatchAll(typeof(ResetEnemyAndScrapLists));
@@ -178,6 +180,13 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<string> ScrapShuffleBlacklist { get; private set; }
         [DataMember] public SyncedEntry<string> EnemyShuffleBlacklist { get; private set; }
         [DataMember] public SyncedEntry<bool> RemoveZeros { get; private set; }
+        [DataMember] public SyncedEntry<bool> DungeonShuffler { get; private set; }
+        [DataMember] public SyncedEntry<int> DungeonShuffleRandomMin { get; private set; }
+        [DataMember] public SyncedEntry<int> DungeonShuffleRandomMax { get; private set; }
+        [DataMember] public SyncedEntry<bool> DungeonShufflerPercent { get; private set; }
+        [DataMember] public SyncedEntry<bool> EnemyShufflerPercent { get; private set; }
+        [DataMember] public SyncedEntry<bool> ScrapShufflerPercent { get; private set; }
+        [DataMember] public SyncedEntry<bool> RolloverNegatives { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -412,6 +421,11 @@ namespace CentralConfig
                 2,
                 "The number of days since the last appearance of this scrap is multiplied by a random value before being applied added to the scrap's rarity in the current scrap pool. If it is (1, 1) then it will increase the scrap's rarity by exactly 1 per day since it last spawned.\nBy default, the scrap's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
+            ScrapShufflerPercent = cfg.BindSyncedEntry("~Shufflers~",
+                "Scrap Shuffler Percent? (Host Only)",
+                false,
+                "If set to true, the random value from above will be a percent of the rarity times the days since it last appeared.\nFalse: Rarity += DayCount * RandomValue\nTrue: Rarity *= (DayCount * (Randomvalue/100))");
+
             ScrapShuffleBlacklist = cfg.BindSyncedEntry("~Shufflers~",
                 "Blacklisted Scrap (Host Only)",
                 "Default Values Are Empty",
@@ -432,10 +446,35 @@ namespace CentralConfig
                 2,
                 "The number of days since the last appearance of this enemy is multiplied by a random value before being applied added to the enemy's rarity in all the current enemy pools. If it is (1, 1) then it will increase the enemy's rarity by exactly 1 per day since it last spawned.\nBy default, the enemy's rarity will be increased by 0, 1 or 2 * the number of days since it last spawned.");
 
+            EnemyShufflerPercent = cfg.BindSyncedEntry("~Shufflers~",
+                "Enemy Shuffler Percent? (Host Only)",
+                false,
+                "If set to true, the random value from above will be a percent of the rarity times the days since it last appeared.\nFalse: Rarity += DayCount * RandomValue\nTrue: Rarity *= (DayCount * (Randomvalue/100))");
+
             EnemyShuffleBlacklist = cfg.BindSyncedEntry("~Shufflers~",
                 "Blacklisted Enemies (Host Only)",
                 "Default Values Are Empty",
                 "Enemies listed here in 'EnemyName,EnemyName' format will be ignored by the shuffle.");
+
+            DungeonShuffler = cfg.BindSyncedEntry("~Shufflers~",
+                "Dungeon Shuffler (Host Only)",
+                false,
+                "If set to true, dungeons that are not selected after a given day will be more likely to be selected the next day, provided that the dungeon is possible to be selected by the next level.\nThis temporary selection chance boost increases every day that dungeon was selectable but was not chosen. The boost returns to 0 when the dungeon is selected.");
+
+            DungeonShuffleRandomMin = cfg.BindSyncedEntry("~Shufflers~",
+                "Dungeon Shuffler Random Min (Host Only)",
+                 0,
+                "The number of days since the last selection of this interior is multiplied by a random value before being applied added to the dungeon's rarity in all matches. If it is (1, 1) then it will increase the dungeon's rarity by exactly 1 per day since it was last selected.\nBy default, the dungeon's rarity will be increased by 0-20% * the number of days since it last spawned.");
+
+            DungeonShuffleRandomMax = cfg.BindSyncedEntry("~Shufflers~",
+                "Dungeon Shuffler Random Max (Host Only)",
+                20,
+                "The number of days since the last selection of this interior is multiplied by a random value before being applied added to the dungeon's rarity in all matches. If it is (1, 1) then it will increase the dungeon's rarity by exactly 1 per day since it was last selected.\nBy default, the dungeon's rarity will be increased by 0-20% * the number of days since it last spawned.");
+
+            DungeonShufflerPercent = cfg.BindSyncedEntry("~Shufflers~",
+                "Dungeon Shuffler Percent? (Host Only)",
+                true,
+                "If set to true, the random value from above will be a percent of the rarity times the days since it last appeared.\nFalse: Rarity += DayCount * RandomValue\nTrue: Rarity *= (DayCount * (Randomvalue/100))");
 
             ShuffleSave = cfg.BindSyncedEntry("~Shufflers~",
                 "Save Shuffle Data (Host Only)",
@@ -446,6 +485,11 @@ namespace CentralConfig
                 "Remove Zero Rarity Scrap and Enemies? (Host Only)",
                 true,
                 "If set to true, the shuffler will remove all scrap/enemies with a rarity of 0 before boosting rarities. This ensures they won’t gain days when they may have a rarity of 0 to prevent them from spawning on specific moons, during certain weather conditions, or in particular dungeons.");
+
+            RolloverNegatives = cfg.BindSyncedEntry("~Shufflers~",
+                "Rollover Zero or Less (Host Only)",
+                false,
+                "If set to true, entries with a rarity of 0 or less will always increase linearly instead of by percent.\nThis setting has a very specific use, enemies or scrap with a negative rarity will gradually increase until they become positive, effectively creating a minimum number of days between their appearances on that level.");
         }
     }
 }

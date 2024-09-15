@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using static CentralConfig.ScrapShuffler;
 using static CentralConfig.EnemyShuffler;
+using static CentralConfig.DungeonShuffler;
 using static CentralConfig.ShuffleSaver;
 using System.Linq;
 using Unity.Netcode;
@@ -34,9 +35,10 @@ namespace CentralConfig
         [HarmonyPatch(typeof(GameNetworkManager), "Disconnect")]
         public static class ResetOnDisconnect
         {
+            public static List<ExtendedDungeonFlow> AllDungeons = new List<ExtendedDungeonFlow>();
+            public static List<ExtendedLevel> AllLevels = new List<ExtendedLevel>();
             static void Postfix()
             {
-                List<ExtendedLevel> AllLevels = PatchedContent.ExtendedLevels;
                 foreach (ExtendedLevel level in AllLevels)
                 {
                     level.SelectableLevel.Enemies = OGIndoorEnemies[level];
@@ -48,9 +50,14 @@ namespace CentralConfig
                 OGDayEnemies.Clear();
                 OGNightEnemies.Clear();
                 OGNightEnemies.Clear();
+                AllLevels.Clear();
+
                 ScrapAppearances.Clear();
                 EnemyAppearances.Clear();
                 DidSpawnYet.Clear();
+                lastdungeon = null;
+                DungeonAppearances.Clear();
+                lastpossibledungeons.Clear();
                 if (NetworkManager.Singleton.IsHost && CentralConfig.SyncConfig.ShuffleSave) // save data again on dc
                 {
                     if (CentralConfig.SyncConfig.ScrapShuffle)
@@ -61,9 +68,36 @@ namespace CentralConfig
                     {
                         ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
                     }
+                    if (CentralConfig.SyncConfig.DungeonShuffler)
+                    {
+                        ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        if (LastGlorp != -1)
+                        {
+                            ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                        }
+                    }
                 }
+
+                if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
+                {
+                    foreach (ExtendedDungeonFlow flow in AllDungeons)
+                    {
+                        flow.LevelMatchingProperties.planetNames = DungeonMoonMatches[flow];
+                        flow.LevelMatchingProperties.modNames = DungeonModMatches[flow];
+                        flow.LevelMatchingProperties.levelTags = DungeonTagMatches[flow];
+                        flow.LevelMatchingProperties.currentRoutePrice = DungeonRouteMatches[flow];
+                    }
+                    DungeonMoonMatches.Clear();
+                    DungeonModMatches.Clear();
+                    DungeonTagMatches.Clear();
+                    DungeonRouteMatches.Clear();
+                    AllDungeons.Clear();
+                }
+
                 ScrapAppearanceString.Clear();
                 EnemyAppearanceString.Clear();
+                DungeonAppearanceString.Clear();
+                LastGlorp = -1;
                 IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
                 CentralConfig.instance.mls.LogInfo("Reset enemy/scrap lists for all moons.");
             }
@@ -189,13 +223,13 @@ namespace CentralConfig
         {
             static void Postfix()
             {
+                if (!CentralConfig.SyncConfig.EnemyShuffle)
+                {
+                    return;
+                }
+
                 foreach (SpawnableEnemyWithRarity enemy in LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies)))
                 {
-                    if (!CentralConfig.SyncConfig.EnemyShuffle)
-                    {
-                        return;
-                    }
-
                     if (!DidSpawnYet.ContainsKey(enemy.enemyType))
                     {
                         DidSpawnYet.Add(enemy.enemyType, false);
@@ -237,10 +271,101 @@ namespace CentralConfig
             }
         }
     }
+    public static class DungeonShuffler
+    {
+        public static Dictionary<ExtendedDungeonFlow, int> DungeonAppearances = new Dictionary<ExtendedDungeonFlow, int>();
+        public static Dictionary<ExtendedDungeonFlow, int> IncreaseIterations = new Dictionary<ExtendedDungeonFlow, int>();
+        public static ExtendedDungeonFlow lastdungeon = null;
+        public static List<ExtendedDungeonFlowWithRarity> lastpossibledungeons = new List<ExtendedDungeonFlowWithRarity>();
+
+        [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
+        public static class UpdateDungeonDictionary
+        {
+            static void Postfix()
+            {
+                if (!CentralConfig.SyncConfig.DungeonShuffler)
+                {
+                    return;
+                }
+
+                if (lastdungeon != null && lastpossibledungeons.Count != 0)
+                {
+                    foreach (ExtendedDungeonFlowWithRarity flow in lastpossibledungeons)
+                    {
+                        string Dun = flow.extendedDungeonFlow.DungeonName + " (" + flow.extendedDungeonFlow.name + ")";
+                        Dun = Dun.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
+                        string DungeonName = Dun.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
+
+                        if (!DungeonAppearances.ContainsKey(flow.extendedDungeonFlow))
+                        {
+                            if (DungeonAppearanceString.ContainsKey(DungeonName))
+                            {
+                                DungeonAppearances.Add(flow.extendedDungeonFlow, DungeonAppearanceString[DungeonName]);
+                                // CentralConfig.instance.mls.LogInfo($"Remembered saved Dungeon Key: {DungeonName}, Days: {DungeonAppearances[flow.extendedDungeonFlow]}");
+                            }
+                            else
+                            {
+                                DungeonAppearances.Add(flow.extendedDungeonFlow, 0);
+                                DungeonAppearanceString.Add(DungeonName, 0);
+                                // CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {DungeonName}");
+                            }
+                        }
+                        if (!DungeonAppearanceString.ContainsKey(DungeonName))
+                        {
+                            DungeonAppearanceString.Add(DungeonName, DungeonAppearances[flow.extendedDungeonFlow]);
+                        }
+
+                        if (flow.extendedDungeonFlow == lastdungeon)
+                        {
+                            DungeonAppearances[flow.extendedDungeonFlow] = 0;
+                            DungeonAppearanceString[DungeonName] = 0;
+                            // CentralConfig.instance.mls.LogInfo($"Dungeon: {DungeonName} was selected, resetting days since last appearance to 0.");
+                        }
+                        else
+                        {
+                            DungeonAppearances[flow.extendedDungeonFlow]++;
+                            DungeonAppearanceString[DungeonName]++;
+                            // CentralConfig.instance.mls.LogInfo($"Dungeon: {DungeonName} was not selected, increasing days since last appearance to {DungeonAppearances[flow.extendedDungeonFlow]}.");
+                        }
+                    }
+                    lastdungeon = null;
+                    lastpossibledungeons.Clear();
+                    foreach (ExtendedDungeonFlow flow in PatchedContent.ExtendedDungeonFlows)
+                    {
+                        flow.LevelMatchingProperties.planetNames = DungeonMoonMatches[flow];
+                        flow.LevelMatchingProperties.modNames = DungeonModMatches[flow];
+                        flow.LevelMatchingProperties.levelTags = DungeonTagMatches[flow];
+                        flow.LevelMatchingProperties.currentRoutePrice = DungeonRouteMatches[flow];
+
+                        string gen = flow.DungeonName + " (" + flow.name + ")";
+                        gen = gen.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
+                        string FlowName = gen.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
+
+                        flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName, StartOfRound.Instance.randomMapSeed);
+                        flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName, StartOfRound.Instance.randomMapSeed);
+                        flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName, StartOfRound.Instance.randomMapSeed);
+                        flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName, StartOfRound.Instance.randomMapSeed);
+                    }
+                    LastGlorp = StartOfRound.Instance.randomMapSeed;
+                }
+                else
+                {
+                    CentralConfig.instance.mls.LogInfo("LastMatchDungeonData is null");
+                }
+            }
+        }
+    }
     public static class ShuffleSaver
     {
         public static Dictionary<string, int> ScrapAppearanceString = new Dictionary<string, int>();
         public static Dictionary<string, int> EnemyAppearanceString = new Dictionary<string, int>();
+        public static Dictionary<string, int> DungeonAppearanceString = new Dictionary<string, int>();
+        public static Dictionary<ExtendedDungeonFlow, List<StringWithRarity>> DungeonMoonMatches = new Dictionary<ExtendedDungeonFlow, List<StringWithRarity>>();
+        public static Dictionary<ExtendedDungeonFlow, List<StringWithRarity>> DungeonModMatches = new Dictionary<ExtendedDungeonFlow, List<StringWithRarity>>();
+        public static Dictionary<ExtendedDungeonFlow, List<StringWithRarity>> DungeonTagMatches = new Dictionary<ExtendedDungeonFlow, List<StringWithRarity>>();
+        public static Dictionary<ExtendedDungeonFlow, List<Vector2WithRarity>> DungeonRouteMatches = new Dictionary<ExtendedDungeonFlow, List<Vector2WithRarity>>();
+        public static int LastGlorp = -1;
+
         [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
         public static class SaveShuffleDataStrings
         {
@@ -261,6 +386,15 @@ namespace CentralConfig
                     {
                         ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
                         CentralConfig.instance.mls.LogInfo("Saved Enemy Shuffle Data");
+                    }
+                    if (CentralConfig.SyncConfig.DungeonShuffler)
+                    {
+                        ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        if (LastGlorp != -1)
+                        {
+                            ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                        }
+                        CentralConfig.instance.mls.LogInfo("Saved Dungeon Shuffle Data");
                     }
                 }
             }

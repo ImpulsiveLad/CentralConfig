@@ -1,6 +1,8 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using LethalLevelLoader;
+using LethalLib.Modules;
+using Steamworks.Ugc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -357,12 +359,25 @@ namespace CentralConfig
                 {
                     SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
                     newEnemy.enemyType = enemy.enemyType;
-                    newEnemy.rarity = enemy.rarity + (LastAppearance * multiplier);
+                    if (CentralConfig.SyncConfig.EnemyShufflerPercent && !(enemy.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    {
+                        newEnemy.rarity = (int)Math.Round(enemy.rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newEnemy.rarity = Mathf.Clamp(newEnemy.rarity, 0, 99999);
+                    }
+                    else
+                    {
+                        if (enemy.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        {
+                            enemy.rarity = LastAppearance;
+                        }
+                        newEnemy.rarity = enemy.rarity + LastAppearance * multiplier;
+                        newEnemy.rarity = Mathf.Clamp(newEnemy.rarity, -99999, 99999);
+                    }
                     returnList.Add(newEnemy);
                 }
                 Glop++;
             }
-            /*foreach (SpawnableEnemyWithRarity Old in enemies)
+            foreach (SpawnableEnemyWithRarity Old in enemies)
             {
                 foreach (SpawnableEnemyWithRarity New in returnList)
                 {
@@ -374,7 +389,7 @@ namespace CentralConfig
                         }
                     }
                 }
-            }*/
+            }
             return returnList;
         }
         public static List<SpawnableEnemyWithRarity> ReplaceEnemies(List<SpawnableEnemyWithRarity> EnemyList, string ReplaceConfig)
@@ -756,12 +771,26 @@ namespace CentralConfig
                 {
                     SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
                     newItem.spawnableItem = item.spawnableItem;
-                    newItem.rarity = item.rarity + (LastAppearance * multiplier);
+                    if (CentralConfig.SyncConfig.ScrapShufflerPercent && !(item.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    {
+                        newItem.rarity = (int)Math.Round(item.rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newItem.rarity = Mathf.Clamp(newItem.rarity, 0, 99999);
+                    }
+                    else
+                    {
+                        if (item.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        {
+                            item.rarity = LastAppearance;
+                        }
+                        newItem.rarity = item.rarity + LastAppearance * multiplier;
+                        newItem.rarity = Mathf.Clamp(newItem.rarity, -99999, 99999);
+
+                    }
                     returnList.Add(newItem);
                 }
                 Glop++;
             }
-            /*foreach (SpawnableItemWithRarity Old in items)
+            foreach (SpawnableItemWithRarity Old in items)
             {
                 foreach (SpawnableItemWithRarity New in returnList)
                 {
@@ -773,7 +802,7 @@ namespace CentralConfig
                         }
                     }
                 }
-            }*/
+            }
             return returnList;
         }
         public static List<SpawnableItemWithRarity> RemoveZeroRarityItems(List<SpawnableItemWithRarity> itemList)
@@ -939,6 +968,153 @@ namespace CentralConfig
 
         // Misc String
 
+        public static List<StringWithRarity> IncreaseDungeonRarities(List<StringWithRarity> strings, ExtendedDungeonFlow dungeonflow, string flowName, int seed)
+        {
+            int Glop = 0;
+            List<StringWithRarity> returnList = new List<StringWithRarity>();
+
+            if (!DungeonShuffler.DungeonAppearances.ContainsKey(dungeonflow))
+            {
+                if (ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
+                {
+                    DungeonShuffler.DungeonAppearances.Add(dungeonflow, ShuffleSaver.DungeonAppearanceString[flowName]);
+                    CentralConfig.instance.mls.LogInfo($"Remembered saved Dungeon Key: {flowName}, Days: {DungeonShuffler.DungeonAppearances[dungeonflow]}");
+                }
+                else
+                {
+                    DungeonShuffler.DungeonAppearances.Add(dungeonflow, 0);
+                    ShuffleSaver.DungeonAppearanceString.Add(flowName, 0);
+                    CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
+                }
+            }
+            if (!ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
+            {
+                ShuffleSaver.DungeonAppearanceString.Add(flowName, DungeonShuffler.DungeonAppearances[dungeonflow]);
+            }
+
+            int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
+            foreach (StringWithRarity String in strings)
+            {
+                seed += Glop;
+                System.Random random = new System.Random(seed);
+                int multiplier = random.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+
+                if (LastAppearance == 0)
+                {
+                    StringWithRarity newflow = new StringWithRarity(String.Name, String.Rarity);
+                    returnList.Add(newflow);
+                }
+                else
+                {
+                    StringWithRarity newflow = new StringWithRarity(null, 0);
+                    newflow.Name = String.Name;
+                    if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(String.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    {
+                        newflow.Rarity = (int)Math.Round(String.Rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
+                    }
+                    else
+                    {
+                        if (String.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        {
+                            String.Rarity = LastAppearance;
+                        }
+                        newflow.Rarity = String.Rarity + LastAppearance * multiplier;
+                        newflow.Rarity = Mathf.Clamp(newflow.Rarity, -99999, 99999);
+                    }
+                    returnList.Add(newflow);
+                }
+                Glop++;
+            }
+            foreach (StringWithRarity Old in strings)
+            {
+                foreach (StringWithRarity New in returnList)
+                {
+                    if (New.Name == Old.Name)
+                    {
+                        if (New.Rarity != Old.Rarity)
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Dungeon: {flowName} Match: {Old.Name} rarity increased from {Old.Rarity} to {New.Rarity}");
+                        }
+                    }
+                }
+            }
+            return returnList;
+        }
+        public static List<Vector2WithRarity> IncreaseDungeonRaritiesVector2(List<Vector2WithRarity> vectors, ExtendedDungeonFlow dungeonflow, string flowName, int seed)
+        {
+            int Glop = 0;
+            List<Vector2WithRarity> returnList = new List<Vector2WithRarity>();
+
+            if (!DungeonShuffler.DungeonAppearances.ContainsKey(dungeonflow))
+            {
+                if (ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
+                {
+                    DungeonShuffler.DungeonAppearances.Add(dungeonflow, ShuffleSaver.DungeonAppearanceString[flowName]);
+                    CentralConfig.instance.mls.LogInfo($"Remembered saved Dungeon Key: {flowName}, Days: {DungeonShuffler.DungeonAppearances[dungeonflow]}");
+                }
+                else
+                {
+                    DungeonShuffler.DungeonAppearances.Add(dungeonflow, 0);
+                    ShuffleSaver.DungeonAppearanceString.Add(flowName, 0);
+                    CentralConfig.instance.mls.LogInfo($"Added new Dungeon Key: {flowName}");
+                }
+            }
+            if (!ShuffleSaver.DungeonAppearanceString.ContainsKey(flowName))
+            {
+                ShuffleSaver.DungeonAppearanceString.Add(flowName, DungeonShuffler.DungeonAppearances[dungeonflow]);
+            }
+
+            int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
+            foreach (Vector2WithRarity Vector in vectors)
+            {
+                seed += Glop;
+                System.Random random = new System.Random(seed);
+                int multiplier = random.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+
+                if (LastAppearance == 0)
+                {
+                    Vector2WithRarity newflow = new Vector2WithRarity(Vector.Min, Vector.Max, Vector.Rarity);
+                    returnList.Add(newflow);
+                }
+                else
+                {
+                    Vector2WithRarity newflow = new Vector2WithRarity(0, 0, 0);
+                    newflow.Min = Vector.Min;
+                    newflow.Max = Vector.Max;
+                    if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(Vector.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    {
+                        newflow.Rarity = (int)Math.Round(Vector.Rarity * (LastAppearance + 1) * (multiplier / 100f));
+                        newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
+                    }
+                    else
+                    {
+                        if (Vector.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        {
+                            Vector.Rarity = LastAppearance;
+                        }
+                        newflow.Rarity = Vector.Rarity + LastAppearance * multiplier;
+                        newflow.Rarity = Mathf.Clamp(newflow.Rarity, -99999, 99999);
+                    }
+                    returnList.Add(newflow);
+                }
+                Glop++;
+            }
+            /*foreach (Vector2WithRarity Old in vectors)
+            {
+                foreach (Vector2WithRarity New in returnList)
+                {
+                    if (New.Min == Old.Min && New.Max == Old.Max)
+                    {
+                        if (New.Rarity != Old.Rarity)
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Dungeon: {flowName} Match: {Old.Min}-{Old.Max} rarity increased from {Old.Rarity} to {New.Rarity}");
+                        }
+                    }
+                }
+            }*/
+            return returnList;
+        }
         public static string ConvertStringWithRarityToString(List<StringWithRarity> names)
         {
             /*StringBuilder sb = new StringBuilder();

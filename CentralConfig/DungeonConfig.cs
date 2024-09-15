@@ -373,6 +373,37 @@ namespace CentralConfig
             {
                 CentralConfig.instance.mls.LogInfo("Dungeon config Values Applied.");
             }
+            if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
+            {
+                int seed;
+                if (ES3.KeyExists("LastGlorp", GameNetworkManager.Instance.currentSaveFileName))
+                {
+                    seed = ES3.Load<int>("LastGlorp", GameNetworkManager.Instance.currentSaveFileName);
+                }
+                else
+                {
+                    seed = StartOfRound.Instance.randomMapSeed;
+                }
+
+                foreach (ExtendedDungeonFlow flow in PatchedContent.ExtendedDungeonFlows)
+                {
+                    ResetChanger.ResetOnDisconnect.AllDungeons.Add(flow);
+                    ShuffleSaver.DungeonMoonMatches[flow] = flow.LevelMatchingProperties.planetNames;
+                    ShuffleSaver.DungeonModMatches[flow] = flow.LevelMatchingProperties.modNames;
+                    ShuffleSaver.DungeonTagMatches[flow] = flow.LevelMatchingProperties.levelTags;
+                    ShuffleSaver.DungeonRouteMatches[flow] = flow.LevelMatchingProperties.currentRoutePrice;
+
+                    string gen = flow.DungeonName + " (" + flow.name + ")";
+                    gen = gen.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
+                    string FlowName = gen.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
+
+                    flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName, seed);
+                    flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName, seed);
+                    flow.LevelMatchingProperties.levelTags = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.levelTags, flow, FlowName, seed);
+                    flow.LevelMatchingProperties.currentRoutePrice = ConfigAider.IncreaseDungeonRaritiesVector2(flow.LevelMatchingProperties.currentRoutePrice, flow, FlowName, seed);
+                }
+                ShuffleSaver.LastGlorp = seed;
+            }
             Ready = true;
         }
     }
@@ -425,6 +456,12 @@ namespace CentralConfig
             if (NetworkManager.Singleton.IsHost)
             {
                 CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
+            }
+
+            if (CentralConfig.SyncConfig.DungeonShuffler)
+            {
+                DungeonShuffler.lastpossibledungeons = DungeonManager.GetValidExtendedDungeonFlows(LevelManager.CurrentExtendedLevel, false);
+                DungeonShuffler.lastdungeon = dungeon;
             }
 
             __instance.dungeonGenerator.Generator.ShouldRandomizeSeed = false;
