@@ -567,7 +567,7 @@ namespace CentralConfig
                         "Scrap in the 'ScrapName:Rarity; format will be added to the scrap pool on every moon.");
                 }
                 ConfigAider.Instance.CleanConfig(cfg); // Cleans out orphaned config entries (ones that you don't want to use anymore)
-                if (CentralConfig.HarmonyTouch6)
+                if (CentralConfig.HarmonyTouch6 && NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoGenOverrides || CentralConfig.SyncConfig.DoScrapOverrides || CentralConfig.SyncConfig.DoScraplistOverrides || CentralConfig.SyncConfig.DoEnemyOverrides || CentralConfig.SyncConfig.DoTrapOverrides || CentralConfig.SyncConfig.DoDangerBools || CentralConfig.SyncConfig.TimeSettings))
                 {
                     CentralConfig.instance.mls.LogInfo("Moon config has been registered.");
                 }
@@ -618,8 +618,6 @@ namespace CentralConfig
             foreach (ExtendedLevel level in allExtendedLevels)
             {
 
-                string PlanetName = level.NumberlessPlanetName;
-
                 // General
 
                 if (CentralConfig.SyncConfig.DoGenOverrides)
@@ -642,7 +640,7 @@ namespace CentralConfig
                     level.SelectableLevel.maxScrap = WaitForMoonsToRegister.CreateMoonConfig.MaxScrapOverrides[level];
                 }
                 // ScrapList
-                if (CentralConfig.SyncConfig.DoScraplistOverrides)
+                if (CentralConfig.SyncConfig.DoScraplistOverrides && NetworkManager.Singleton.IsHost)
                 {
                     string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[level]; // Ok so the lists kinda suck
                     Vector2 clamprarity = new Vector2(-99999, 99999);
@@ -914,7 +912,10 @@ namespace CentralConfig
                 ConfigAider.SetBigList(1, WaitForMoonsToRegister.CreateMoonConfig.BigDayTimeList);
                 ConfigAider.SetBigList(2, WaitForMoonsToRegister.CreateMoonConfig.BigNightTimeList);
             }
-            CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoGenOverrides || CentralConfig.SyncConfig.DoScrapOverrides || CentralConfig.SyncConfig.DoScraplistOverrides || CentralConfig.SyncConfig.DoEnemyOverrides || CentralConfig.SyncConfig.DoTrapOverrides || CentralConfig.SyncConfig.DoDangerBools || CentralConfig.SyncConfig.TimeSettings))
+            {
+                CentralConfig.instance.mls.LogInfo("Moon config Values Applied.");
+            }
             ConfigAider.Instance.StartCoroutine(LogSeed());
             foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
             {

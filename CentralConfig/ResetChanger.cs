@@ -52,28 +52,43 @@ namespace CentralConfig
                 OGNightEnemies.Clear();
                 AllLevels.Clear();
 
-                ScrapAppearances.Clear();
-                EnemyAppearances.Clear();
-                DidSpawnYet.Clear();
-                lastdungeon = null;
-                DungeonAppearances.Clear();
-                lastpossibledungeons.Clear();
+                if (CentralConfig.SyncConfig.ScrapShuffle)
+                {
+                    ScrapAppearances.Clear();
+                    IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
+                }
+                if (CentralConfig.SyncConfig.EnemyShuffle)
+                {
+                    EnemyAppearances.Clear();
+                    DidSpawnYet.Clear();
+                }
+                if (CentralConfig.SyncConfig.DungeonShuffler)
+                {
+                    lastdungeon = null;
+                    DungeonAppearances.Clear();
+                    lastpossibledungeons.Clear();
+                }
+
                 if (NetworkManager.Singleton.IsHost && CentralConfig.SyncConfig.ShuffleSave) // save data again on dc
                 {
                     if (CentralConfig.SyncConfig.ScrapShuffle)
                     {
                         ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        ScrapAppearanceString.Clear();
                     }
                     if (CentralConfig.SyncConfig.EnemyShuffle)
                     {
                         ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        EnemyAppearanceString.Clear();
                     }
                     if (CentralConfig.SyncConfig.DungeonShuffler)
                     {
                         ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        DungeonAppearanceString.Clear();
                         if (LastGlorp != -1)
                         {
                             ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                            LastGlorp = -1;
                         }
                     }
                 }
@@ -94,11 +109,6 @@ namespace CentralConfig
                     AllDungeons.Clear();
                 }
 
-                ScrapAppearanceString.Clear();
-                EnemyAppearanceString.Clear();
-                DungeonAppearanceString.Clear();
-                LastGlorp = -1;
-                IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
                 CentralConfig.instance.mls.LogInfo("Reset enemy/scrap lists for all moons.");
             }
         }
@@ -113,7 +123,7 @@ namespace CentralConfig
             public static List<Item> CapturedScrapToSpawn = new List<Item>();
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.ScrapShuffle)
+                if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }
@@ -178,7 +188,7 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.EnemyShuffle)
+                if (!CentralConfig.SyncConfig.EnemyShuffle || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }
@@ -223,7 +233,7 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.EnemyShuffle)
+                if (!CentralConfig.SyncConfig.EnemyShuffle || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }
@@ -283,7 +293,7 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.DungeonShuffler)
+                if (!CentralConfig.SyncConfig.DungeonShuffler || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }
@@ -376,31 +386,29 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.ShuffleSave)
+                if (!CentralConfig.SyncConfig.ShuffleSave || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }
-                if (NetworkManager.Singleton.IsHost)
+
+                if (CentralConfig.SyncConfig.ScrapShuffle)
                 {
-                    if (CentralConfig.SyncConfig.ScrapShuffle)
+                    ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                    CentralConfig.instance.mls.LogInfo("Saved Scrap Shuffle Data");
+                }
+                if (CentralConfig.SyncConfig.EnemyShuffle)
+                {
+                    ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                    CentralConfig.instance.mls.LogInfo("Saved Enemy Shuffle Data");
+                }
+                if (CentralConfig.SyncConfig.DungeonShuffler)
+                {
+                    ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                    if (LastGlorp != -1)
                     {
-                        ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        CentralConfig.instance.mls.LogInfo("Saved Scrap Shuffle Data");
+                        ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
                     }
-                    if (CentralConfig.SyncConfig.EnemyShuffle)
-                    {
-                        ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        CentralConfig.instance.mls.LogInfo("Saved Enemy Shuffle Data");
-                    }
-                    if (CentralConfig.SyncConfig.DungeonShuffler)
-                    {
-                        ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        if (LastGlorp != -1)
-                        {
-                            ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
-                        }
-                        CentralConfig.instance.mls.LogInfo("Saved Dungeon Shuffle Data");
-                    }
+                    CentralConfig.instance.mls.LogInfo("Saved Dungeon Shuffle Data");
                 }
             }
         }

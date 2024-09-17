@@ -460,7 +460,7 @@ namespace CentralConfig
                 CentralConfig.instance.mls.LogInfo("Dungeon Selected: " + DungeonName);
             }
 
-            if (CentralConfig.SyncConfig.DungeonShuffler)
+            if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
             {
                 DungeonShuffler.lastpossibledungeons = DungeonManager.GetValidExtendedDungeonFlows(LevelManager.CurrentExtendedLevel, false);
                 DungeonShuffler.lastdungeon = dungeon;

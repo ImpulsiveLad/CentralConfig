@@ -28,7 +28,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.13.8";
+        private const string modVersion = "0.13.9";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -195,7 +195,7 @@ namespace CentralConfig
             Important = cfg.BindSyncedEntry("!READ THIS!",
                 "Important Info !!!",
                 "This does nothing btw.",
-                "The bulk of settings are created and applied individually foreach different entry in a group. They are not generated until after enabling the main true/false toggle for the related setting then rebooting the game.\nEach intial entry is marked with either 'Host Only' or 'All Players'. 'Host Only' settings are only set by the host and do not run on clients. They do not need to be synced.\n'All Players' settings MUST BE SYNCED and set on all players in the lobby.\nIf in doubt just send the config file to everyone.");
+                "The bulk of settings are created and applied individually foreach different entry in a group. They are not generated until after enabling the main true/false toggle for the related setting then rebooting the game.\nEach initial entry is marked with either 'Host Only' or 'All Players'. 'Host Only' settings are only set by the host and do not run on clients. They do not need to be synced.\n'All Players' settings MUST BE SYNCED and set on all players in the lobby.\nIf in doubt just send the config file to everyone.");
 
             BlacklistMoons = cfg.BindSyncedEntry("_MoonLists_", // These are used to decide what more in-depth config values should be made
                 "Blacklisted Moons (All Players (for general, time, and/or misc settings)",

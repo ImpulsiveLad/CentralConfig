@@ -1,8 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using LethalLevelLoader;
-using LethalLib.Modules;
-using Steamworks.Ugc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -539,19 +537,19 @@ namespace CentralConfig
                     {
                         string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.Enemies);
 
-                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                        returnString += LightlyToastString(level.NumberlessPlanetName) + "-" + ThisLevelEnemies + "~";
                     }
                     else if (Type == 1)
                     {
                         string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.DaytimeEnemies);
 
-                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                        returnString += LightlyToastString(level.NumberlessPlanetName) + "-" + ThisLevelEnemies + "~";
                     }
                     else if (Type == 2)
                     {
                         string ThisLevelEnemies = ConvertEnemyListToString(level.SelectableLevel.OutsideEnemies);
 
-                        returnString += level.NumberlessPlanetName + "-" + ThisLevelEnemies + "~";
+                        returnString += LightlyToastString(level.NumberlessPlanetName) + "-" + ThisLevelEnemies + "~";
                     }
                 }
             }
@@ -573,7 +571,7 @@ namespace CentralConfig
             {
                 if (level.NumberlessPlanetName != "Gordion" && level.NumberlessPlanetName != "Liquidation")
                 {
-                    string levelName = level.NumberlessPlanetName + "-";
+                    string levelName = LightlyToastString(level.NumberlessPlanetName) + "-";
                     int startIndex = BigString.IndexOf(levelName);
 
                     if (startIndex != -1)
@@ -1121,7 +1119,7 @@ namespace CentralConfig
             {
                 if (name.Rarity > 0)
                 {
-                    returnString += LightlyToastString(name.Name) + ":" + name.Rarity.ToString() + ",";
+                    returnString += name.Name + ":" + name.Rarity.ToString() + ",";
                 }
             }
 
@@ -1232,7 +1230,6 @@ namespace CentralConfig
                 if (parts.Length == 2)
                 {
                     var PlanetName = parts[0].Trim();
-                    PlanetName = CauterizeString(PlanetName);
                     int Rarity;
 
                     if (!int.TryParse(parts[1].Trim(), out Rarity))
@@ -1246,8 +1243,7 @@ namespace CentralConfig
 
                     foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
                     {
-                        string cauterizedLevelName = CauterizeString(level.NumberlessPlanetName);
-                        if (cauterizedLevelName == PlanetName)
+                        if (level.NumberlessPlanetName == PlanetName)
                         {
                             returnList.Add(new StringWithRarity(PlanetName, Rarity));
                             //CentralConfig.instance.mls.LogMessage($"Added level {level.NumberlessPlanetName} with rarity {Rarity} from string {PlanetName}");
