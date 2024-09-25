@@ -29,9 +29,12 @@ Allows altering the dungeon selection pool tied to the dungeon by moon name, lev
 **Enable Enemy Injection by Current Dungeon? (Host Only)** - 
 Allows adding/replacing enemies on moons based on the current dungeon (inside, day, and night).
 
-**Enable Scrap Injectiom by Current Dungeon? (Host Only)** -
+**Enable Scrap Injection by Current Dungeon? (Host Only)** -
 Allows adding scrap to moons based on the current dungeon.
 ## Enemies
+**Order of Operations (Host Only)** -
+Determines the order that adding enemies, multiplying enemy rarities, and replacing enemies occurs in (for use by other settings).
+
 **Free Them? (Host Only)** -
 Extends the 20 inside/day/night enemy caps to the maximum and sets the interior enemy spawn waves to be hourly instead of every other hour.
 
@@ -40,6 +43,9 @@ This setting adjusts the enemy spawn rate to match the moon's new max enemy coun
 
 **Accelerate Enemy Spawning? (Host Only)** -
 Allows you to set a new value per moon that tweaks the enemy spawn timing.
+
+**Flatten Enemy Curves? (Host Only)** -
+This setting flattens all personal enemy probability curves to a constant value of 1. This ensures that enemy spawning is based solely on their rarity, making the enemy spawn pool rarities accurate.
 
 **Remove Duplicate Enemies? (Host Only)** - 
 Only keeps the highest rarity of a specific enemy in a spawnlist. This runs after tags, the current dungeon, and the current weather adds/replaces enemies.
