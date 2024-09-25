@@ -1,17 +1,17 @@
-﻿using LethalLevelLoader;
-using System.Collections.Generic;
-using System.Linq;
+﻿using BepInEx.Configuration;
 using CSync.Extensions;
 using CSync.Lib;
-using BepInEx.Configuration;
-using System.Runtime.Serialization;
-using HarmonyLib;
-using LethalLevelLoader.Tools;
-using UnityEngine;
-using System;
 using DunGen;
+using HarmonyLib;
+using LethalLevelLoader;
+using LethalLevelLoader.Tools;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace CentralConfig
 {
@@ -40,12 +40,18 @@ namespace CentralConfig
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> InteriorEnemyByDungeon;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> InteriorEnemiesD;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> InteriorEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> InteriorEnemyMultiplierD;
+
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DayTimeEnemyByDungeon;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> DayEnemiesD;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DayEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> DayEnemyMultiplierD;
+
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> NightTimeEnemyByDungeon;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>> NightEnemiesD;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> NightEnemyReplacementD;
+            [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> NightEnemyMultiplierD;
+
 
             [DataMember] public static Dictionary<ExtendedDungeonFlow, SyncedEntry<string>> ScrapByDungeon;
             [DataMember] public static Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>> ScrapD;
@@ -69,12 +75,17 @@ namespace CentralConfig
                 InteriorEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
                 InteriorEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
                 InteriorEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                InteriorEnemyMultiplierD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+
                 DayTimeEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
                 DayEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
                 DayEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                DayEnemyMultiplierD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+
                 NightTimeEnemyByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
                 NightEnemiesD = new Dictionary<ExtendedDungeonFlow, List<SpawnableEnemyWithRarity>>();
                 NightEnemyReplacementD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
+                NightEnemyMultiplierD = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
 
                 ScrapByDungeon = new Dictionary<ExtendedDungeonFlow, SyncedEntry<string>>();
                 ScrapD = new Dictionary<ExtendedDungeonFlow, List<SpawnableItemWithRarity>>();
@@ -82,7 +93,7 @@ namespace CentralConfig
                 List<ExtendedDungeonFlow> AllExtendedDungeons;
                 List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlackListDungeons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
-                if (CentralConfig.SyncConfig.IsWhiteList)
+                if (CentralConfig.SyncConfig.IsDunWhiteList)
                 {
                     AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
                 }
@@ -164,7 +175,7 @@ namespace CentralConfig
                             "The maximum random size multiplier applied to this dungeon's overall size AFTER all previous settings (inclusive).");
                     }
 
-                    // Injection
+                    // Selection
 
                     if (CentralConfig.SyncConfig.DoDungeonSelectionOverrides)
                     {
@@ -197,6 +208,8 @@ namespace CentralConfig
                             "The dungeon will be added to all moons of any mod listed here. This doesn't have to be an exact match, \"Rosie\" works for \"Rosie's Moons\".");
                     }
 
+                    // Injection
+
                     if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
                     {
                         InteriorEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
@@ -209,6 +222,11 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently featuring this dungeon, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
+                        InteriorEnemyMultiplierD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Multiply Interior Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current dungeon. \"Maneater:1.7,Jester:0.4\" will multiply the Maneater's rarity by 1.7 and the Jester's rarity by 0.4 when this dungeon is selected.");
+
                         DayTimeEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Day Enemies",
                             "Default Values Were Empty",
@@ -219,6 +237,11 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently featuring this dungeon, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
 
+                        DayEnemyMultiplierD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Multiply Day Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current dungeon. \"Red Locust Bees:2.4,Docile Locust Bees:0.8\" will multiply the Bee's rarity by 2.4 and the locust's rarity by 0.8 when this dungeon is selected.");
+
                         NightTimeEnemyByDungeon[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
                             DungeonName + " - Add Night Enemies",
                             "Default Values Were Empty",
@@ -228,6 +251,11 @@ namespace CentralConfig
                             DungeonName + " - Replace Night Enemies",
                             "Default Values Were Empty",
                             "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently featuring this dungeon, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis runs before the above entry adds new enemies, and after the weather and tag adds enemies.");
+
+                        NightEnemyMultiplierD[dungeon] = cfg.BindSyncedEntry("Dungeon: " + DungeonName,
+                            DungeonName + " - Multiply Night Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current dungeon. \"MouthDog:0.33,ForestGiant:1.1\" will multiply the Dog's rarity by 0.33 and the giant's rarity by 1.1 when this dungeon is selected.");
                     }
                     if (CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
                     {
@@ -260,7 +288,7 @@ namespace CentralConfig
             List<ExtendedDungeonFlow> AllExtendedDungeons;
             List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlackListDungeons.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
-            if (CentralConfig.SyncConfig.IsWhiteList)
+            if (CentralConfig.SyncConfig.IsDunWhiteList)
             {
                 AllExtendedDungeons = PatchedContent.ExtendedDungeonFlows.Where(dungeon => ignoreListEntries.Any(b => ConfigAider.CauterizeString(dungeon.DungeonName).Equals(b))).ToList();
             }
@@ -526,6 +554,10 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
                 }
             }
+            /*if (DungeonName == "MineComplex (MineComplex)")
+            {
+                NewMultiplier = 0.15f;
+            }*/
 
             if (NewMultiplier < 0)
             {
@@ -901,20 +933,42 @@ namespace CentralConfig
             {
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
                 {
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
+                    string OoO = CentralConfig.SyncConfig.OoO;
+                    var pairs = OoO.Split(',');
+
+                    foreach (var pair in pairs)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
-                    }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
-                    {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
-                    }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
-                    if (WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
-                    {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
+                        if (ConfigAider.CauterizeString(pair) == "add")
+                        {
+                            if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
+                            }
+                            if (WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
+                            }
+                            if (WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemiesD[DungeonManager.CurrentExtendedDungeonFlow]).ToList();
+                            }
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "multiply")
+                        {
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyMultiplierD[DungeonManager.CurrentExtendedDungeonFlow]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemyMultiplierD[DungeonManager.CurrentExtendedDungeonFlow]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemyMultiplierD[DungeonManager.CurrentExtendedDungeonFlow]);
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "replace")
+                        {
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.DayEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForDungeonsToRegister.CreateDungeonConfig.NightEnemyReplacementD[DungeonManager.CurrentExtendedDungeonFlow]);
+                        }
+                        else
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Order of Operation: {pair} cannot be understood");
+                        }
                     }
                 }
             }
@@ -1025,6 +1079,7 @@ namespace CentralConfig
             {
                 EnemyTables += $"\n{enemy.enemyType.enemyName},{enemy.rarity}";
             }
+            EnemyTables += "\n";
 
             CentralConfig.instance.mls.LogInfo(EnemyTables);
 

@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using BepInEx.Configuration;
+using CSync.Extensions;
 using CSync.Lib;
 using HarmonyLib;
-using LethalLevelLoader.Tools;
-using BepInEx.Configuration;
 using LethalLevelLoader;
-using System.Linq;
-using CSync.Extensions;
-using UnityEngine;
+using LethalLevelLoader.Tools;
 using System;
-using Unity.Netcode;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Runtime.Serialization;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace CentralConfig
 {
@@ -25,12 +25,17 @@ namespace CentralConfig
             [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyByWeather;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> InteriorEnemiesW;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyReplacementW;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> InteriorEnemyMultiplierW;
+
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DayTimeEnemyByWeather;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> DayEnemiesW;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> DayEnemyReplacementW;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> DayEnemyMultiplierW;
+
             [DataMember] public static Dictionary<string, SyncedEntry<string>> NightTimeEnemyByWeather;
             [DataMember] public static Dictionary<string, List<SpawnableEnemyWithRarity>> NightEnemiesW;
             [DataMember] public static Dictionary<string, SyncedEntry<string>> NightEnemyReplacementW;
+            [DataMember] public static Dictionary<string, SyncedEntry<string>> NightEnemyMultiplierW;
 
             [DataMember] public static Dictionary<string, SyncedEntry<string>> ScrapByWeather;
             [DataMember] public static Dictionary<string, List<SpawnableItemWithRarity>> ScrapW;
@@ -43,12 +48,17 @@ namespace CentralConfig
                 InteriorEnemyByWeather = new Dictionary<string, SyncedEntry<string>>();
                 InteriorEnemiesW = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
                 InteriorEnemyReplacementW = new Dictionary<string, SyncedEntry<string>>();
+                InteriorEnemyMultiplierW = new Dictionary<string, SyncedEntry<string>>();
+
                 DayTimeEnemyByWeather = new Dictionary<string, SyncedEntry<string>>();
                 DayEnemiesW = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
                 DayEnemyReplacementW = new Dictionary<string, SyncedEntry<string>>();
+                DayEnemyMultiplierW = new Dictionary<string, SyncedEntry<string>>();
+
                 NightTimeEnemyByWeather = new Dictionary<string, SyncedEntry<string>>();
                 NightEnemiesW = new Dictionary<string, List<SpawnableEnemyWithRarity>>();
                 NightEnemyReplacementW = new Dictionary<string, SyncedEntry<string>>();
+                NightEnemyMultiplierW = new Dictionary<string, SyncedEntry<string>>();
 
                 ScrapByWeather = new Dictionary<string, SyncedEntry<string>>();
                 ScrapW = new Dictionary<string, List<SpawnableItemWithRarity>>();
@@ -87,6 +97,11 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn any moons currently experiencing this weather, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
+                        InteriorEnemyMultiplierW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
+                            weatherName + " - Multiply Interior Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current weather. \"Maneater:1.7,Jester:0.4\" will multiply the Maneater's rarity by 1.7 and the Jester's rarity by 0.4 when this weather is selected.");
+
                         DayTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Day Enemies",
                             "Default Values Were Empty",
@@ -97,6 +112,11 @@ namespace CentralConfig
                             "Default Values Were Empty",
                             "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn any moons currently experiencing this weather, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
 
+                        DayEnemyMultiplierW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
+                            weatherName + " - Multiply Day Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current weather. \"Red Locust Bees:2.4,Docile Locust Bees:0.8\" will multiply the Bee's rarity by 2.4 and the locust's rarity by 0.8 when this weather is selected.");
+
                         NightTimeEnemyByWeather[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
                             weatherName + " - Add Night Enemies",
                             "Default Values Were Empty",
@@ -106,6 +126,11 @@ namespace CentralConfig
                             weatherName + " - Replace Night Enemies",
                             "Default Values Were Empty",
                             "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn any moons currently experiencing this weather, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis runs before the above entry adds new enemies, and before the tags and dungeons add enemies.");
+
+                        NightEnemyMultiplierW[weatherName] = cfg.BindSyncedEntry("Weather: " + weatherName,
+                            weatherName + " - Multiply Night Enemies",
+                            "Default Values Were Empty",
+                            "Enemies listed here will be multiplied by the assigned value while this is the current weather. \"MouthDog:0.33,ForestGiant:1.1\" will multiply the Dog's rarity by 0.33 and the giant's rarity by 1.1 when this weather is selected.");
                     }
 
                     if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
@@ -232,20 +257,42 @@ namespace CentralConfig
             {
                 if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyByWeather.ContainsKey(weatherName))
                 {
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyReplacementW[weatherName]);
-                    if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName].Count > 0)
+                    string OoO = CentralConfig.SyncConfig.OoO;
+                    var pairs = OoO.Split(',');
+
+                    foreach (var pair in pairs)
                     {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName]).ToList();
-                    }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForWeathersToRegister.CreateWeatherConfig.DayEnemyReplacementW[weatherName]);
-                    if (WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName].Count > 0)
-                    {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName]).ToList();
-                    }
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForWeathersToRegister.CreateWeatherConfig.NightEnemyReplacementW[weatherName]);
-                    if (WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName].Count > 0)
-                    {
-                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName]).ToList();
+                        if (ConfigAider.CauterizeString(pair) == "add")
+                        {
+                            if (WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemiesW[weatherName]).ToList();
+                            }
+                            if (WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.DayEnemiesW[weatherName]).ToList();
+                            }
+                            if (WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName].Count > 0)
+                            {
+                                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies.Concat(WaitForWeathersToRegister.CreateWeatherConfig.NightEnemiesW[weatherName]).ToList();
+                            }
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "multiply")
+                        {
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyMultiplierW[weatherName]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForWeathersToRegister.CreateWeatherConfig.DayEnemyMultiplierW[weatherName]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.MultiplyEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForWeathersToRegister.CreateWeatherConfig.NightEnemyMultiplierW[weatherName]);
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "replace")
+                        {
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies, WaitForWeathersToRegister.CreateWeatherConfig.InteriorEnemyReplacementW[weatherName]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies, WaitForWeathersToRegister.CreateWeatherConfig.DayEnemyReplacementW[weatherName]);
+                            LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies, WaitForWeathersToRegister.CreateWeatherConfig.NightEnemyReplacementW[weatherName]);
+                        }
+                        else
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Order of Operation: {pair} cannot be understood");
+                        }
                     }
                 }
             }

@@ -1,20 +1,21 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using CSync.Lib;
 using CSync.Extensions;
+using CSync.Lib;
 using HarmonyLib;
 using System.Runtime.Serialization;
-using static CentralConfig.WaitForMoonsToRegister;
-using static CentralConfig.WaitForDungeonsToRegister;
+using static CentralConfig.ConfigAider;
+using static CentralConfig.DungeonShuffler;
+using static CentralConfig.EnemyShuffler;
 using static CentralConfig.MiscConfig;
-using static CentralConfig.WaitForTagsToRegister;
-using static CentralConfig.WaitForWeathersToRegister;
 using static CentralConfig.ResetChanger;
 using static CentralConfig.ScrapShuffler;
-using static CentralConfig.EnemyShuffler;
 using static CentralConfig.ShuffleSaver;
-using static CentralConfig.DungeonShuffler;
+using static CentralConfig.WaitForDungeonsToRegister;
+using static CentralConfig.WaitForMoonsToRegister;
+using static CentralConfig.WaitForTagsToRegister;
+using static CentralConfig.WaitForWeathersToRegister;
 
 namespace CentralConfig
 {
@@ -28,7 +29,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.13.9";
+        private const string modVersion = "0.14.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -45,6 +46,7 @@ namespace CentralConfig
         public static bool HarmonyTouch4 = false;
         public static bool HarmonyTouch5 = false;
         public static bool HarmonyTouch6 = false;
+        public static bool HarmonyTouch7 = false;
 
         public static CreateMoonConfig ConfigFile;
 
@@ -76,47 +78,63 @@ namespace CentralConfig
 
             ConfigFile5 = new CreateWeatherConfig(base.Config);
 
-            harmony.PatchAll(typeof(RenameCelest));
-            harmony.PatchAll(typeof(ResetOnDisconnect));
-            harmony.PatchAll(typeof(WaitForMoonsToRegister));
-            harmony.PatchAll(typeof(FrApplyMoon));
-            harmony.PatchAll(typeof(FreeEnemies));
-            harmony.PatchAll(typeof(TimeFix));
-            harmony.PatchAll(typeof(DayTimePassFix));
-            harmony.PatchAll(typeof(RandomNextPatch));
-            harmony.PatchAll(typeof(UpdateTimeFaster));
-            harmony.PatchAll(typeof(WaitForDungeonsToRegister));
-            harmony.PatchAll(typeof(FrApplyDungeon));
-            harmony.PatchAll(typeof(NewDungeonGenerator));
-            harmony.PatchAll(typeof(InnerGenerateWithRetries));
-            harmony.PatchAll(typeof(MiscConfig));
-            harmony.PatchAll(typeof(ChangeFineAmount));
-            harmony.PatchAll(typeof(IncreaseNodeDistanceOnShipAndMain));
-            harmony.PatchAll(typeof(IncreaseNodeDistanceOnFE));
-            harmony.PatchAll(typeof(ExtendScan));
-            harmony.PatchAll(typeof(UpdateScanNodes));
-            harmony.PatchAll(typeof(AddPlayerToDict));
-            harmony.PatchAll(typeof(WaitForWeathersToRegister));
-            harmony.PatchAll(typeof(FrApplyWeather));
-            harmony.PatchAll(typeof(ResetMoonsScrapAfterWeather));
-            harmony.PatchAll(typeof(ApplyWeatherScrapMultipliers));
-            harmony.PatchAll(typeof(WaitForTagsToRegister));
-            harmony.PatchAll(typeof(FrApplyTag));
-            harmony.PatchAll(typeof(IncreaseScrapAppearances));
-            harmony.PatchAll(typeof(CheckForEnemySpawns));
-            harmony.PatchAll(typeof(UpdateEnemyDictionary));
-            harmony.PatchAll(typeof(UpdateDungeonDictionary));
-            harmony.PatchAll(typeof(SaveShuffleDataStrings));
+            // Main Configs
+            harmony.PatchAll(typeof(WaitForMoonsToRegister)); // HangerShipDoor Start() (Prefix)
+            harmony.PatchAll(typeof(WaitForDungeonsToRegister)); // HangerShipDoor Start() (Prefix)
+            harmony.PatchAll(typeof(MiscConfig)); // HangerShipDoor Start() (Prefix)
+            harmony.PatchAll(typeof(WaitForWeathersToRegister)); // HangerShipDoor Start() (Prefix)
+            harmony.PatchAll(typeof(WaitForTagsToRegister)); // HangerShipDoor Start() (Prefix)
+            harmony.PatchAll(typeof(FrApplyMoon)); // HangerShipDoor Start() (Postfix)
+            harmony.PatchAll(typeof(FrApplyDungeon)); // HangerShipDoor Start() (Postfix)
+            harmony.PatchAll(typeof(FrApplyWeather)); // HangerShipDoor Start() (Postfix)
+            harmony.PatchAll(typeof(FrApplyTag)); // HangerShipDoor Start() (Postfix)
 
-            harmony.PatchAll(typeof(ResetEnemyAndScrapLists));
-            harmony.PatchAll(typeof(FetchEnemyAndScrapLists));
-            harmony.PatchAll(typeof(EnactWeatherInjections));
-            harmony.PatchAll(typeof(EnactTagInjections));
-            harmony.PatchAll(typeof(EnactDungeonInjections));
+            // Time Settings
+            harmony.PatchAll(typeof(TimeFix)); // MoveGlobalTime (Prefix)
+            harmony.PatchAll(typeof(DayTimePassFix)); // PassTimeToNextDay (Prefix)
+            harmony.PatchAll(typeof(UpdateTimeFaster)); // MoveGlobalTime (Postfix)
 
-            harmony.PatchAll(typeof(MoarEnemies1));
-            harmony.PatchAll(typeof(MoarEnemies2));
-            harmony.PatchAll(typeof(MoarEnemies3));
+            // Dungeon Generation
+            harmony.PatchAll(typeof(NewDungeonGenerator)); // GenerateNewFloor (Prefix)
+            harmony.PatchAll(typeof(InnerGenerateWithRetries)); // InnerGenerate (Prefix)
+
+            // Scan Nodes
+            harmony.PatchAll(typeof(IncreaseNodeDistanceOnShipAndMain)); // GenerateNewFloor (Postfix)
+            harmony.PatchAll(typeof(IncreaseNodeDistanceOnFE)); // MoveGlobalTime (Postfix)
+            harmony.PatchAll(typeof(ExtendScan)); // AssignNewNodes (Transplier)
+            harmony.PatchAll(typeof(UpdateScanNodes)); // TeleportPlayerServerRpc (Postfix)
+            harmony.PatchAll(typeof(AddPlayerToDict)); // PlayerControllerB Start() (Postfix)
+
+            // Shufflers
+            harmony.PatchAll(typeof(CatchItemsInShip)); // PassTimeToNextDay (Postfix)
+            harmony.PatchAll(typeof(IncreaseScrapAppearances)); // SpawnScrapInLevel (Postfix)
+            harmony.PatchAll(typeof(CheckForEnemySpawns)); // AdvanceHourAndSpawnNewBatchOfEnemies (Postfix)
+            harmony.PatchAll(typeof(UpdateEnemyDictionary)); // PassTimeToNextDay (Postfix)
+            harmony.PatchAll(typeof(UpdateDungeonDictionary)); // PassTimeToNextDay (Postfix)
+            harmony.PatchAll(typeof(SaveShuffleDataStrings)); // PassTimeToNextDay (Postfix)
+
+            // Temp Enemy/Scrap stuff
+            harmony.PatchAll(typeof(ResetMoonsScrapAfterWeather)); // SpawnScrapInLevel (Prefix)
+            harmony.PatchAll(typeof(ApplyWeatherScrapMultipliers)); // SpawnScrapInLevel (Prefix)
+            harmony.PatchAll(typeof(ResetEnemyAndScrapLists)); // GenerateNewFloor (Prefix)
+            harmony.PatchAll(typeof(FetchEnemyAndScrapLists)); // GenerateNewFloor (Prefix)
+            harmony.PatchAll(typeof(EnactTagInjections)); // GenerateNewFloor (Prefix)
+            harmony.PatchAll(typeof(EnactWeatherInjections)); // GenerateNewFloor (Prefix)
+            harmony.PatchAll(typeof(EnactDungeonInjections)); // GenerateNewFloor (Prefix)
+
+            // Enemies
+            harmony.PatchAll(typeof(FreeEnemies)); // SpawnScrapInLevel (Prefix)
+            harmony.PatchAll(typeof(FlattenCurves)); // HangarShipDoor (Start) (Postfix)
+            harmony.PatchAll(typeof(MoarEnemies1)); // PlotOutEnemiesForNextHour (Transplier)
+            harmony.PatchAll(typeof(MoarEnemies2)); // SpawnDaytimeEnemiesOutside (Transplier)
+            harmony.PatchAll(typeof(MoarEnemies3)); // SpawnEnemiesOutside(Transplier)
+
+            // Other
+            harmony.PatchAll(typeof(RandomNextPatch)); // System.Random Next() (min < max) (Prefix)
+            harmony.PatchAll(typeof(RenameCelest)); // GetNumberlessPlanetName (Prefix)
+            harmony.PatchAll(typeof(ResetOnDisconnect)); // Disconnect (Postfix)
+            harmony.PatchAll(typeof(ChangeFineAmount)); // ApplyPenalty (Prefix)
+
             // Logging stuff
             // harmony.PatchAll(typeof(ShowIntEnemyCount));
             // harmony.PatchAll(typeof(CountTraps));
@@ -188,6 +206,8 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> EnemyShufflerPercent { get; private set; }
         [DataMember] public SyncedEntry<bool> ScrapShufflerPercent { get; private set; }
         [DataMember] public SyncedEntry<bool> RolloverNegatives { get; private set; }
+        [DataMember] public SyncedEntry<bool> FlattenCurves { get; private set; }
+        [DataMember] public SyncedEntry<string> OoO {  get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -237,10 +257,15 @@ namespace CentralConfig
                 false,
                 "If set to true, you will be able to set the enemy lists for every moon with just three strings. This is helpful if you want to copy-paste from a spreadsheet.\nIf you set enemy lists per moon with the setting above, they will contribute to the default value but be overridden by the big lists given the specific moon is found in the big list string.");
 
+            OoO = cfg.BindSyncedEntry("_Enemies_",
+                "Order of Operations (Host Only)",
+                "add,multiply,replace",
+                "Determines the order that adding enemies, multiplying enemy rarities, and replacing enemies occurs in.\nUsed for global, tag, current weather, and current dungeon enemy injections.\nAcceptable values include \"replace,multiply,add\",\"Multiply,Replace,Add\",\"MULTIPLY,ADD,REPLACE\" etc. Do not put other stuff in it like \"glipglorp\".");
+
             FreeEnemies = cfg.BindSyncedEntry("_Enemies_",
                 "Free Them? (Host Only)",
                 false,
-                "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be hourly instead of every other hour.");
+                "If set to true, extends the 20 inside/day/night enemy caps to the maximum (127) and sets the interior enemy spawn waves to be hourly instead of every other hour.\nA *small* third effect of this setting is that enemies will instantly emerge from their vent when spawned.");
 
             ScaleEnemySpawnRate = cfg.BindSyncedEntry("_Enemies_",
                 "Scale Enemy Spawn Rate? (Host Only)",
@@ -251,6 +276,11 @@ namespace CentralConfig
                 "Accelerate Enemy Spawning? (Host Only)",
                 false,
                 "If set to true, allows you to set a new value per moon that tweaks the enemy spawn timing.");
+
+            FlattenCurves = cfg.BindSyncedEntry("_Enemies_",
+                "Flatten Enemy Curves? (Host Only)",
+                false,
+                "If set to true, this setting flattens all personal enemy probability curves to a constant value of 1. This ensures that enemy spawning is based solely on their rarity, making the enemy spawn pool rarities accurate.");
 
             DoTrapOverrides = cfg.BindSyncedEntry("_Moons_",
                 "Enable Trap Overrides? (Host Only)",

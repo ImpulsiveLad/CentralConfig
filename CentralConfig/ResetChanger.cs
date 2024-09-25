@@ -1,12 +1,12 @@
-﻿using LethalLevelLoader;
+﻿using HarmonyLib;
+using LethalLevelLoader;
 using System.Collections.Generic;
-using HarmonyLib;
-using static CentralConfig.ScrapShuffler;
-using static CentralConfig.EnemyShuffler;
-using static CentralConfig.DungeonShuffler;
-using static CentralConfig.ShuffleSaver;
 using System.Linq;
 using Unity.Netcode;
+using static CentralConfig.DungeonShuffler;
+using static CentralConfig.EnemyShuffler;
+using static CentralConfig.ScrapShuffler;
+using static CentralConfig.ShuffleSaver;
 
 namespace CentralConfig
 {
@@ -56,6 +56,7 @@ namespace CentralConfig
                 {
                     ScrapAppearances.Clear();
                     IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
+                    CatchItemsInShip.ItemsInShip.Clear();
                 }
                 if (CentralConfig.SyncConfig.EnemyShuffle)
                 {
@@ -133,9 +134,14 @@ namespace CentralConfig
                 List<GrabbableObject> ScrapInLevel = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
                 foreach (GrabbableObject obj in ScrapInLevel)
                 {
-                    if (obj.isInFactory && !obj.isInShipRoom && !obj.hasBeenHeld)
+                    if (!CatchItemsInShip.ItemsInShip.Contains(obj))
                     {
                         CapturedScrapToSpawn.Add(obj.itemProperties);
+                        // CentralConfig.instance.mls.LogInfo($"Item: {obj.itemProperties.itemName} was only found in the level");
+                    }
+                    else
+                    {
+                        // CentralConfig.instance.mls.LogInfo($"Item: {obj.itemProperties.itemName} was in the ship, not in the level");
                     }
                 }
 
@@ -178,6 +184,22 @@ namespace CentralConfig
             }
         }
     }
+    [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
+    public static class CatchItemsInShip
+    {
+        public static List<GrabbableObject> ItemsInShip = new List<GrabbableObject>();
+        static void Postfix()
+        {
+            if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
+            ItemsInShip.Clear();
+            ItemsInShip = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
+        }
+    }
+
     public static class EnemyShuffler
     {
         public static Dictionary<EnemyType, int> EnemyAppearances = new Dictionary<EnemyType, int>();

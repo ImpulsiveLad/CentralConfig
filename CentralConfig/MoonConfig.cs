@@ -1,18 +1,18 @@
-﻿using LethalLevelLoader;
-using System.Collections.Generic;
-using System.Linq;
+﻿using BepInEx.Configuration;
 using CSync.Extensions;
 using CSync.Lib;
-using BepInEx.Configuration;
-using System.Runtime.Serialization;
 using HarmonyLib;
+using LethalLevelLoader;
 using LethalLevelLoader.Tools;
-using UnityEngine;
 using System;
-using Unity.Netcode;
 using System.Collections;
-using System.Reflection.Emit;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Reflection.Emit;
+using System.Runtime.Serialization;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace CentralConfig
 {
@@ -80,10 +80,13 @@ namespace CentralConfig
             [DataMember] public static SyncedEntry<string> AddIndoorEnemiesToAllMoons { get; set; }
             [DataMember] public static SyncedEntry<string> AddDayEnemiesToAllMoons { get; set; }
             [DataMember] public static SyncedEntry<string> AddNightEnemiesToAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> AddScrapToAllMoons { get; set; }
             [DataMember] public static SyncedEntry<string> ReplaceIndoorEnemiesOnAllMoons { get; set; }
             [DataMember] public static SyncedEntry<string> ReplaceDayEnemiesOnAllMoons { get; set; }
             [DataMember] public static SyncedEntry<string> ReplaceNightEnemiesOnAllMoons { get; set; }
-            [DataMember] public static SyncedEntry<string> AddScrapToAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> MultiplyIndoorEnemiesOnAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> MultiplyDayEnemiesOnAllMoons { get; set; }
+            [DataMember] public static SyncedEntry<string> MultiplyNightEnemiesOnAllMoons { get; set; }
             public CreateMoonConfig(ConfigFile cfg) : base(cfg, "CentralConfig", 0)
             {
                 _cfg = cfg;
@@ -124,7 +127,14 @@ namespace CentralConfig
 
                 FaciltySizeOverride = new Dictionary<ExtendedLevel, SyncedEntry<float>>();
 
-                ResetChanger.SavePlanetData();
+                if (CentralConfig.HarmonyTouch7)
+                {
+                    if (NetworkManager.Singleton.IsHost)
+                    {
+                        ResetChanger.SavePlanetData();
+                    }
+                }
+                CentralConfig.HarmonyTouch7 = true;
 
                 if (CentralConfig.HarmonyTouch)
                 {
@@ -541,6 +551,11 @@ namespace CentralConfig
                         "Default Values Were Empty",
                         "In the example, \"Flowerman:Plantman,Crawler:Mauler\",\nOn all moons, Brackens will be replaced with hypothetical Plantmen, and Crawlers with hypothetical Maulers.\nYou could also use inputs such as \"Flowerman-15:Plantman~50\", this will give the Plantman a rarity of 15 instead of using the Bracken's and it will only have a 50% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
 
+                    MultiplyIndoorEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Multiply Interior Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "Enemies listed here will be multiplied by the assigned value on all moons. \"Maneater:1.7,Jester:0.4\" will multiply the Maneater's rarity by 1.7 and the Jester's rarity by 0.4 on all moons.");
+
                     AddDayEnemiesToAllMoons = cfg.BindSyncedEntry("~Global~",
                         "Add Day Enemies To All Moons",
                         "Default Values Were Empty",
@@ -551,6 +566,11 @@ namespace CentralConfig
                         "Default Values Were Empty",
                         "In the example, \"Manticoil:Mantisoil,Docile Locust Bees:Angry Moth Wasps\",\nOn all moons, Manticoils will be replaced with hypothetical Mantisoils, and docile locust bees with hypothetical angry moth wasps.\nYou could also use inputs such as \"Manticoil-90:Mantisoil\", this will give the Mantisoil a rarity of 90 instead of using the Manticoil's and it will still have a 100% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
 
+                    MultiplyDayEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Multiply Day Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "Enemies listed here will be multiplied by the assigned value on all moons. \"Red Locust Bees:2.4,Docile Locust Bees:0.8\" will multiply the Bee's rarity by 2.4 and the locust's rarity by 0.8 on all moons.");
+
                     AddNightEnemiesToAllMoons = cfg.BindSyncedEntry("~Global~",
                         "Add Night Enemies To All Moons",
                         "Default Values Were Empty",
@@ -560,6 +580,11 @@ namespace CentralConfig
                         "Replace Night Enemies On All Moons",
                         "Default Values Were Empty",
                         "In the example, \"MouthDog:OceanDog,ForestGiant:FireGiant\",\nOn all moons, Mouthdogs will be replaced with hypothetical Oceandogs, and Forest giants with hypothetical Fire giants.\nYou could also use inputs such as \"MouthDog:OceanDog~75\", the OceanDog will still inherit the rarity from the MouthDog but it will only have a 75% chance to replace.\nThis is done before enemies are added by the setting above and before manipulation by tags, current weather, and current dungeon.");
+
+                    MultiplyNightEnemiesOnAllMoons = cfg.BindSyncedEntry("~Global~",
+                        "Multiply Night Enemies On All Moons",
+                        "Default Values Were Empty",
+                        "Enemies listed here will be multiplied by the assigned value on all moons. \"MouthDog:0.33,ForestGiant:1.1\" will multiply the Dog's rarity by 0.33 and the giant's rarity by 1.1 on all moons.");
 
                     AddScrapToAllMoons = cfg.BindSyncedEntry("~Global~",
                         "Add Scrap To All Moons",
@@ -746,24 +771,46 @@ namespace CentralConfig
                     List<SpawnableItemWithRarity> scraplist = ConfigAider.ConvertStringToItemList(ScrStr, clampScrRarity);
                     WaitForMoonsToRegister.Scrap = scraplist;
 
-                    level.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.Enemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceIndoorEnemiesOnAllMoons);
-                    if (WaitForMoonsToRegister.IEnemies.Count > 0)
+                    string OoO = CentralConfig.SyncConfig.OoO;
+                    var pairs = OoO.Split(',');
+
+                    foreach (var pair in pairs)
                     {
-                        level.SelectableLevel.Enemies = level.SelectableLevel.Enemies.Concat(WaitForMoonsToRegister.IEnemies).ToList();
-                    }
-                    level.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.DaytimeEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceDayEnemiesOnAllMoons);
-                    if (WaitForMoonsToRegister.DEnemies.Count > 0)
-                    {
-                        level.SelectableLevel.DaytimeEnemies = level.SelectableLevel.DaytimeEnemies.Concat(WaitForMoonsToRegister.DEnemies).ToList();
-                    }
-                    level.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.OutsideEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceNightEnemiesOnAllMoons);
-                    if (WaitForMoonsToRegister.NEnemies.Count > 0)
-                    {
-                        level.SelectableLevel.OutsideEnemies = level.SelectableLevel.OutsideEnemies.Concat(WaitForMoonsToRegister.NEnemies).ToList();
-                    }
-                    if (WaitForMoonsToRegister.Scrap.Count > 0)
-                    {
-                        level.SelectableLevel.spawnableScrap = level.SelectableLevel.spawnableScrap.Concat(WaitForMoonsToRegister.Scrap).ToList();
+                        if (ConfigAider.CauterizeString(pair) == "add")
+                        {
+                            if (WaitForMoonsToRegister.IEnemies.Count > 0)
+                            {
+                                level.SelectableLevel.Enemies = level.SelectableLevel.Enemies.Concat(WaitForMoonsToRegister.IEnemies).ToList();
+                            }
+                            if (WaitForMoonsToRegister.DEnemies.Count > 0)
+                            {
+                                level.SelectableLevel.DaytimeEnemies = level.SelectableLevel.DaytimeEnemies.Concat(WaitForMoonsToRegister.DEnemies).ToList();
+                            }
+                            if (WaitForMoonsToRegister.NEnemies.Count > 0)
+                            {
+                                level.SelectableLevel.OutsideEnemies = level.SelectableLevel.OutsideEnemies.Concat(WaitForMoonsToRegister.NEnemies).ToList();
+                            }
+                            if (WaitForMoonsToRegister.Scrap.Count > 0)
+                            {
+                                level.SelectableLevel.spawnableScrap = level.SelectableLevel.spawnableScrap.Concat(WaitForMoonsToRegister.Scrap).ToList();
+                            }
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "multiply")
+                        {
+                            level.SelectableLevel.Enemies = ConfigAider.MultiplyEnemyRarities(level.SelectableLevel.Enemies, WaitForMoonsToRegister.CreateMoonConfig.MultiplyIndoorEnemiesOnAllMoons);
+                            level.SelectableLevel.DaytimeEnemies = ConfigAider.MultiplyEnemyRarities(level.SelectableLevel.DaytimeEnemies, WaitForMoonsToRegister.CreateMoonConfig.MultiplyDayEnemiesOnAllMoons);
+                            level.SelectableLevel.OutsideEnemies = ConfigAider.MultiplyEnemyRarities(level.SelectableLevel.OutsideEnemies, WaitForMoonsToRegister.CreateMoonConfig.MultiplyNightEnemiesOnAllMoons);
+                        }
+                        else if (ConfigAider.CauterizeString(pair) == "replace")
+                        {
+                            level.SelectableLevel.Enemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.Enemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceIndoorEnemiesOnAllMoons);
+                            level.SelectableLevel.DaytimeEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.DaytimeEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceDayEnemiesOnAllMoons);
+                            level.SelectableLevel.OutsideEnemies = ConfigAider.ReplaceEnemies(level.SelectableLevel.OutsideEnemies, WaitForMoonsToRegister.CreateMoonConfig.ReplaceNightEnemiesOnAllMoons);
+                        }
+                        else
+                        {
+                            CentralConfig.instance.mls.LogInfo($"Order of Operation: {pair} cannot be understood");
+                        }
                     }
                 }
                 if (CentralConfig.SyncConfig.EnemySpawnTimes && NetworkManager.Singleton.IsHost)
@@ -852,18 +899,6 @@ namespace CentralConfig
                     Ororo Ororo = new Ororo();
                     Ororo.SetSinglePlanetWeather(level);
                 }*/
-
-                // Tags
-
-                if ((CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections) && NetworkManager.Singleton.IsHost)
-                {
-                    string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[level];
-                    List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
-                    if (MoonTags.Count > 0)
-                    {
-                        level.ContentTags.AddRange(MoonTags);
-                    }
-                }
 
                 // Misc
 

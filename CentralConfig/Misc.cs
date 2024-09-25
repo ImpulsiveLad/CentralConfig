@@ -43,7 +43,7 @@ namespace CentralConfig
                         "This is the percentage of current credits that will be deducted for each fallen player.");
 
                     InsuranceReduction = cfg.BindSyncedEntry("~Misc~",
-                        "Penalty reduction for player retrievalretrieval",
+                        "Penalty reduction for player retrieval",
                         40f,
                         "This value determines the reduction in penalty if a fallen player's body is retrived. For instance, setting this to 0 means no penalty will be applied for having successfully retrived players, 50 means half the penalty is applied upon retrival, and 100 means the penalty remains the same regardless of retrival. It can be any value between 0 and 100.");
 
@@ -394,7 +394,7 @@ namespace CentralConfig
                 ShipMaxScan = MiscConfig.CreateMiscConfig.ShipMaxScan,
                 FEMinScan = MiscConfig.CreateMiscConfig.FEMinScan,
                 FEMaxScan = MiscConfig.CreateMiscConfig.FEMaxScan
-                
+
             };
 
             UpdateScanNodes.PlayerScanNodeProperties.playerScanNodeProperties[__instance] = scanNodeProperties;

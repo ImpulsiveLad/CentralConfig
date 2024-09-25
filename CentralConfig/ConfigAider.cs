@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace CentralConfig
@@ -99,24 +100,22 @@ namespace CentralConfig
             }
             return allEnemies;
         }
-        public static List<ContentTag> allContentTagsList;
-        public static List<ContentTag> GrabFullTagList()
+        public List<ContentTag> allContentTagsList;
+        public List<ContentTag> GrabFullTagList()
         {
             if (allContentTagsList == null)
             {
                 allContentTagsList = new List<ContentTag>();
-                List<ExtendedLevel> allExtendedLevels = PatchedContent.ExtendedLevels;
 
-                foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods.Concat(new List<ExtendedMod>() { PatchedContent.VanillaMod }))
+                foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
                 {
-                    foreach (ExtendedContent extendedContent in extendedMod.ExtendedContents)
+                    // CentralConfig.instance.mls.LogInfo($"Extended Level: {level.NumberlessPlanetName}");
+                    foreach (ContentTag tag in level.ContentTags)
                     {
-                        foreach (ContentTag contentTag in extendedContent.ContentTags)
+                        // CentralConfig.instance.mls.LogInfo($"Content Tag: {tag.contentTagName}");
+                        if (!allContentTagsList.Contains(tag))
                         {
-                            if (allExtendedLevels.Any(level => level.ContentTags.Contains(contentTag)) && !allContentTagsList.Contains(contentTag))
-                            {
-                                allContentTagsList.Add(contentTag);
-                            }
+                            allContentTagsList.Add(tag);
                         }
                     }
                 }
@@ -470,7 +469,7 @@ namespace CentralConfig
                                 }
 
                                 returnList.Add(newEnemy); // adds this new enemy to the returnList
-                                replacedEnemies.Add(originalName); // adds the replacement to the string list I made
+                                replacedEnemies.Add(CauterizeString(originalName)); // adds the replacement to the string list I made
                                 SuccessReplacementLogMessage += $"\nChance to replace was: {chanceToReplace}%";
                                 // CentralConfig.instance.mls.LogInfo(SuccessReplacementLogMessage);
 
@@ -499,7 +498,7 @@ namespace CentralConfig
             backupList = backupList.OrderBy(e => e.enemyType.enemyName).ToList();
             foreach (var enemy in backupList) // goes through the enemy list again
             {
-                if (!replacedEnemies.Contains(enemy.enemyType.enemyName)) // if it wasn't replaced by another enemy
+                if (!replacedEnemies.Contains(CauterizeString(enemy.enemyType.enemyName))) // if it wasn't replaced by another enemy
                 {
                     SpawnableEnemyWithRarity oldEnemy = new SpawnableEnemyWithRarity();
                     oldEnemy.enemyType = enemy.enemyType; // add it as is
@@ -514,12 +513,82 @@ namespace CentralConfig
         {
             foreach (var enemyType in GrabFullEnemyList())
             {
-                if (enemyType.enemyName == enemyName)
+                if (CauterizeString(enemyType.enemyName) == CauterizeString(enemyName))
                 {
                     return enemyType;
                 }
             }
             return null;
+        }
+        public static List<SpawnableEnemyWithRarity> MultiplyEnemyRarities(List<SpawnableEnemyWithRarity> enemies, string ConfigString)
+        {
+            if (string.IsNullOrEmpty(ConfigString) || ConfigString == "Default Values Were Empty")
+            {
+                return enemies; // if the config is unused just returns the list untouched
+            }
+
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(); // makes a new list of enemies
+            List<string> handledEnemies = new List<string>(); // To remember what was already handled
+            List<SpawnableEnemyWithRarity> backupList = new List<SpawnableEnemyWithRarity>(enemies); // clone the list to keep a backup
+
+            var pairs = ConfigString.Split(','); // breaks the string by comma to get each argument of x enemy replacing y
+
+            foreach (var pair in pairs) // foreach part between the commas
+            {
+                var parts = pair.Split(':');
+                if (parts.Length == 2)
+                {
+                    var EnemyName = parts[0].Trim();
+                    float multiplier;
+
+                    if (!float.TryParse(parts[1].Trim(), out multiplier))
+                    {
+                        CentralConfig.instance.mls.LogInfo($"Cannot Parse Multiplier: {parts[1].Trim()} after EnemyName entry {EnemyName}");
+                        multiplier = 1f;
+                    }
+
+                    bool handled = false;
+
+                    enemies = enemies.OrderBy(e => e.enemyType.enemyName).ToList();
+                    for (int i = 0; i < enemies.Count; i++)
+                    {
+                        var enemy = enemies[i];
+                        string cauterizedEnemy = CauterizeString(enemy.enemyType.enemyName);
+                        string cauterizedOGName = CauterizeString(EnemyName);
+                        if (cauterizedEnemy == cauterizedOGName) // if the entry matches an original name
+                        {
+                            SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
+                            newEnemy.enemyType = GetEnemyTypeByName(EnemyName); // method to check all enemyTypes and get the one with the name of the replacement, then sets the new enemies' enemyType to the replacements
+                            newEnemy.rarity = (int)(enemy.rarity * multiplier);
+                            returnList.Add(newEnemy); // adds this new enemy to the returnList
+                            handledEnemies.Add(CauterizeString(EnemyName));
+                            handled = true;
+
+                            enemies.Remove(enemy);
+                            // CentralConfig.instance.mls.LogInfo($"Enemy: {EnemyName} was multiplied by {multiplier}x for a new rarity of {(int)(enemy.rarity * multiplier)} and added to the returnlist");
+                            break;
+                        }
+                    }
+
+                    if (handled)
+                    {
+                        continue; // move on to the next pair if a replacement was made
+                    }
+                }
+            }
+            backupList = backupList.OrderBy(e => e.enemyType.enemyName).ToList();
+            foreach (var enemy in backupList) // goes through the enemy list again
+            {
+                if (!handledEnemies.Contains(CauterizeString(enemy.enemyType.enemyName))) // if it wasn't handled already
+                {
+                    SpawnableEnemyWithRarity oldEnemy = new SpawnableEnemyWithRarity();
+                    oldEnemy.enemyType = enemy.enemyType;
+                    oldEnemy.rarity = enemy.rarity;
+                    returnList.Add(oldEnemy);
+                    // CentralConfig.instance.mls.LogInfo($"Enemy: {enemy.enemyType.enemyName} was added to the returnlist with no multiplier");
+                }
+            }
+            return returnList; // and gets the list back
         }
         public static string GetBigList(int Type)
         {
@@ -903,7 +972,7 @@ namespace CentralConfig
             }
             List<ContentTag> returnList = new List<ContentTag>();
 
-            List<ContentTag> allContentTagsList = GrabFullTagList();
+            List<ContentTag> allContentTagsList = Instance.GrabFullTagList();
 
             var tags = newInputString.Split(',');
 
@@ -959,6 +1028,25 @@ namespace CentralConfig
             // CentralConfig.instance.mls.LogInfo("Tag:" + CauterizeString(contentTag.contentTagName) + " has " + TagNumber + " moons associated with it.");
 
             return returnString;
+        }
+
+        public static void RemoveDuplicateTags(List<ContentTag> tags)
+        {
+            List<string> stringlist = new List<string>();
+
+            foreach (ContentTag tag in tags)
+            {
+                if (!stringlist.Contains(tag.contentTagName))
+                {
+                    // CentralConfig.instance.mls.LogInfo($"New Tag found: {tag.contentTagName}");
+                    stringlist.Add(tag.contentTagName);
+                }
+                else
+                {
+                    // CentralConfig.instance.mls.LogInfo($"Repeat Tag found: {tag.contentTagName}");
+                    LevelManager.CurrentExtendedLevel.ContentTags.Remove(tag);
+                }
+            }
         }
 
         // Misc String
@@ -1470,6 +1558,38 @@ namespace CentralConfig
 
             return new AnimationCurve(keyframes);
         }
+        public static void LogCurve(AnimationCurve curve, EnemyType enemy)
+        {
+            foreach (var key in curve.keys)
+            {
+                CentralConfig.instance.mls.LogInfo($"Enemy: {enemy.enemyName}, Time: {key.time}, Value: {key.value}");
+            }
+        }
+        [HarmonyPatch(typeof(HangarShipDoor), "Start")]
+        public static class FlattenCurves
+        {
+            static void Postfix()
+            {
+                if (!NetworkManager.Singleton.IsHost || !CentralConfig.SyncConfig.FlattenCurves)
+                {
+                    return;
+                }
+
+                AnimationCurve flatCurve = new AnimationCurve();
+                flatCurve.AddKey(0f, 1f);
+                flatCurve.AddKey(1f, 1f);
+                flatCurve.keys[0].inTangent = 0f;
+                flatCurve.keys[0].outTangent = 0f;
+                flatCurve.keys[1].inTangent = 0f;
+                flatCurve.keys[1].outTangent = 0f;
+
+                foreach (EnemyType enemy in allEnemies)
+                {
+                    enemy.probabilityCurve = flatCurve;
+                    // LogCurve(enemy.probabilityCurve, enemy);
+                }
+            }
+        }
 
         // Modified cfg cleaner from Kitten :3
 
@@ -1512,7 +1632,7 @@ namespace CentralConfig
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon))
             {
                 if (OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) && OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
                 {
@@ -1522,7 +1642,7 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Reverted Enemy lists for: " + PlanetName);
                 }
             }
-            if (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon))
             {
                 if (OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
                 {
@@ -1540,7 +1660,7 @@ namespace CentralConfig
         {
             string PlanetName = LevelManager.CurrentExtendedLevel.NumberlessPlanetName;
 
-            if (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.EnemyShuffle || CentralConfig.SyncConfig.DoEnemyWeatherInjections || CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon))
             {
                 if (!OriginalEnemyAndScrapLists.OriginalIntLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalDayLists.ContainsKey(PlanetName) || !OriginalEnemyAndScrapLists.OriginalNoxLists.ContainsKey(PlanetName))
                 {
@@ -1550,7 +1670,7 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Saved Enemy lists for: " + PlanetName);
                 }
             }
-            if (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon)
+            if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.ScrapShuffle || CentralConfig.SyncConfig.DoScrapWeatherInjections || CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoScrapInjectionsByDungeon))
             {
                 if (!OriginalEnemyAndScrapLists.OriginalItemLists.ContainsKey(PlanetName))
                 {
