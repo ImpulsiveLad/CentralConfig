@@ -257,6 +257,14 @@ namespace CentralConfig
             {
                 string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
+                if (CentralConfig.SyncConfig.EnemyShuffle && CentralConfig.SyncConfig.ShuffleFirst)
+                {
+                    ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                }
+
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                 {
                     if (WaitForTagsToRegister.CreateTagConfig.InteriorEnemyReplacement.ContainsKey(TagName))

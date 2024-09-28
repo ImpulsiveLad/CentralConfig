@@ -619,6 +619,8 @@ namespace CentralConfig
                 return false;
             }
 
+            __instance.dungeonGenerator.Generator.GenerateAsynchronously = false;
+
             try
             {
                 __instance.dungeonGenerator.Generate();
@@ -662,7 +664,6 @@ namespace CentralConfig
                     }
 
                     InnerGenerateWithRetries.Defaulted = true;
-                    __instance.dungeonGenerator.Generator.Cancel();
                     __instance.dungeonGenerator.Generate();
                     if (NetworkManager.Singleton.IsHost)
                     {
@@ -818,6 +819,7 @@ namespace CentralConfig
                 }
                 GenFailed = true;
                 isRetry = false;
+                __instance.Cancel();
                 throw new Exception("Dungeon Generation failed.");
             }
             if (__instance.LengthMultiplier <= 0 && TryBig == false)
@@ -1011,7 +1013,7 @@ namespace CentralConfig
                 ShuffleSaver.scraprandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
             }
-            if (CentralConfig.SyncConfig.EnemyShuffle)
+            if (CentralConfig.SyncConfig.EnemyShuffle && !CentralConfig.SyncConfig.ShuffleFirst)
             {
                 ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);

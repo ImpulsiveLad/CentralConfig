@@ -29,7 +29,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.14.0";
+        private const string modVersion = "0.14.1";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -207,7 +207,8 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> ScrapShufflerPercent { get; private set; }
         [DataMember] public SyncedEntry<bool> RolloverNegatives { get; private set; }
         [DataMember] public SyncedEntry<bool> FlattenCurves { get; private set; }
-        [DataMember] public SyncedEntry<string> OoO {  get; private set; }
+        [DataMember] public SyncedEntry<string> OoO { get; private set; }
+        [DataMember] public SyncedEntry<bool> ShuffleFirst { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -218,7 +219,7 @@ namespace CentralConfig
                 "The bulk of settings are created and applied individually foreach different entry in a group. They are not generated until after enabling the main true/false toggle for the related setting then rebooting the game.\nEach initial entry is marked with either 'Host Only' or 'All Players'. 'Host Only' settings are only set by the host and do not run on clients. They do not need to be synced.\n'All Players' settings MUST BE SYNCED and set on all players in the lobby.\nIf in doubt just send the config file to everyone.");
 
             BlacklistMoons = cfg.BindSyncedEntry("_MoonLists_", // These are used to decide what more in-depth config values should be made
-                "Blacklisted Moons (All Players (for general, time, and/or misc settings)",
+                "Blacklisted Moons (All Players (for general, time, and/or misc settings))",
                 "Liquidation,Gordion",
                 "Excludes the listed moons from the config. If they are already created, they will be removed on config regeneration.");
 
@@ -350,7 +351,7 @@ namespace CentralConfig
             DoEnemyInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Enemy Injection by Current Dungeon? (Host Only)",
                 false,
-                "If set to true, allows adding/replacing enemies on levels based on the current dungeon (inside, day, and night.");
+                "If set to true, allows adding/replacing enemies on levels based on the current dungeon (inside, day, and night).");
 
             DoScrapInjectionsByDungeon = cfg.BindSyncedEntry("_Dungeons_",
                 "Enable Scrap Injection by Current Dungeon? (Host Only)",
@@ -526,6 +527,11 @@ namespace CentralConfig
                 "Rollover Zero or Less (Host Only)",
                 false,
                 "If set to true, entries with a rarity of 0 or less will always increase linearly instead of by percent.\nThis setting has a very specific use, enemies or scrap with a negative rarity will gradually increase until they become positive, effectively creating a minimum number of days between their appearances on that level.");
+
+            ShuffleFirst = cfg.BindSyncedEntry("~Shufflers~",
+                "Shuffle Enemies First? (Host Only)",
+                false,
+                "If set to true, the shuffler will increase enemy rarities before the add,multiply,replace enemy injections.");
         }
     }
 }
