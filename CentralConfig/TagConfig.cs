@@ -1,7 +1,6 @@
 ﻿using BepInEx.Configuration;
 using CSync.Extensions;
 using CSync.Lib;
-using DunGen.Tags;
 using HarmonyLib;
 using LethalLevelLoader;
 using LethalLevelLoader.Tools;
@@ -220,18 +219,6 @@ namespace CentralConfig
                         "The current default value of this represents which moons have this tag. CHANGING THIS SETTING DOESN'T CHANGE ANYTHING!");
                 }
             }
-            foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
-            {
-                if ((CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections) && NetworkManager.Singleton.IsHost)
-                {
-                    string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[level];
-                    List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
-                    if (MoonTags.Count > 0)
-                    {
-                        level.ContentTags.AddRange(MoonTags);
-                    }
-                }
-            }
             if (NetworkManager.Singleton.IsHost && (CentralConfig.SyncConfig.DoScrapTagInjections || CentralConfig.SyncConfig.DoEnemyTagInjections))
             {
                 CentralConfig.instance.mls.LogInfo("Tag config Values Applied.");
@@ -257,8 +244,12 @@ namespace CentralConfig
             {
                 string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
-                if (CentralConfig.SyncConfig.EnemyShuffle && CentralConfig.SyncConfig.ShuffleFirst)
+                if (CentralConfig.SyncConfig.EnemyShuffle && MiscConfig.CreateMiscConfig.ShuffleFirst)
                 {
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+
                     ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                     LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
                     LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);

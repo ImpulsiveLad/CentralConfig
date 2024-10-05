@@ -39,38 +39,41 @@ namespace CentralConfig
             public static List<ExtendedLevel> AllLevels = new List<ExtendedLevel>();
             static void Postfix()
             {
-                foreach (ExtendedLevel level in AllLevels)
+                if (NetworkManager.Singleton.IsHost)
                 {
-                    level.SelectableLevel.Enemies = OGIndoorEnemies[level];
-                    level.SelectableLevel.DaytimeEnemies = OGDayEnemies[level];
-                    level.SelectableLevel.OutsideEnemies = OGNightEnemies[level];
-                    level.SelectableLevel.spawnableScrap = OGScrapPool[level];
+                    foreach (ExtendedLevel level in AllLevels)
+                    {
+                        level.SelectableLevel.Enemies = OGIndoorEnemies[level];
+                        level.SelectableLevel.DaytimeEnemies = OGDayEnemies[level];
+                        level.SelectableLevel.OutsideEnemies = OGNightEnemies[level];
+                        level.SelectableLevel.spawnableScrap = OGScrapPool[level];
+                    }
+                    OGIndoorEnemies.Clear();
+                    OGDayEnemies.Clear();
+                    OGNightEnemies.Clear();
+                    OGNightEnemies.Clear();
+                    AllLevels.Clear();
                 }
-                OGIndoorEnemies.Clear();
-                OGDayEnemies.Clear();
-                OGNightEnemies.Clear();
-                OGNightEnemies.Clear();
-                AllLevels.Clear();
 
-                if (CentralConfig.SyncConfig.ScrapShuffle)
+                if (CentralConfig.SyncConfig.ScrapShuffle && NetworkManager.Singleton.IsHost)
                 {
                     ScrapAppearances.Clear();
                     IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
                     CatchItemsInShip.ItemsInShip.Clear();
                 }
-                if (CentralConfig.SyncConfig.EnemyShuffle)
+                if (CentralConfig.SyncConfig.EnemyShuffle && NetworkManager.Singleton.IsHost)
                 {
                     EnemyAppearances.Clear();
                     DidSpawnYet.Clear();
                 }
-                if (CentralConfig.SyncConfig.DungeonShuffler)
+                if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
                 {
                     lastdungeon = null;
                     DungeonAppearances.Clear();
                     lastpossibledungeons.Clear();
                 }
 
-                if (NetworkManager.Singleton.IsHost && CentralConfig.SyncConfig.ShuffleSave) // save data again on dc
+                if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // save data again on dc
                 {
                     if (CentralConfig.SyncConfig.ScrapShuffle)
                     {
@@ -109,6 +112,7 @@ namespace CentralConfig
                     DungeonRouteMatches.Clear();
                     AllDungeons.Clear();
                 }
+                IncreaseHiveValue.Counter = 0;
 
                 CentralConfig.instance.mls.LogInfo("Reset enemy/scrap lists for all moons.");
             }
@@ -122,6 +126,7 @@ namespace CentralConfig
         public static class IncreaseScrapAppearances
         {
             public static List<Item> CapturedScrapToSpawn = new List<Item>();
+            public static string LogScrapUpdate = "\n";
             static void Postfix()
             {
                 if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
@@ -130,6 +135,7 @@ namespace CentralConfig
                 }
 
                 CapturedScrapToSpawn.Clear();
+                LogScrapUpdate = "\n";
 
                 List<GrabbableObject> ScrapInLevel = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
                 foreach (GrabbableObject obj in ScrapInLevel)
@@ -172,15 +178,16 @@ namespace CentralConfig
                     {
                         ScrapAppearances[item] = 0;
                         ScrapAppearanceString[item.itemName] = 0;
-                        // CentralConfig.instance.mls.LogInfo($"Scrap: {item.itemName} was spawned, resetting days since last appearance to 0.");
+                        // LogScrapUpdate += $"Scrap: {item.itemName} was spawned, resetting days since last appearance to 0.\n";
                     }
                     else
                     {
                         ScrapAppearances[item]++;
                         ScrapAppearanceString[item.itemName]++;
-                        // CentralConfig.instance.mls.LogInfo($"Scrap: {item.itemName} did not spawn, increasing days since last appearance to {ScrapAppearances[item]}.");
+                        // LogScrapUpdate += $"Scrap: {item.itemName} did not spawn, increasing days since last appearance to {ScrapAppearances[item]}.\n";
                     }
                 }
+                // CentralConfig.instance.mls.LogInfo(LogScrapUpdate);
             }
         }
     }
@@ -190,7 +197,7 @@ namespace CentralConfig
         public static List<GrabbableObject> ItemsInShip = new List<GrabbableObject>();
         static void Postfix()
         {
-            if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
+            if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost || LevelManager.CurrentExtendedLevel.NumberlessPlanetName == "Gordion")
             {
                 return;
             }
@@ -253,12 +260,15 @@ namespace CentralConfig
         [HarmonyPatch(typeof(StartOfRound), "PassTimeToNextDay")]
         public static class UpdateEnemyDictionary
         {
+            public static string LogEnemyUpdate = "\n";
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.EnemyShuffle || !NetworkManager.Singleton.IsHost)
+                IncreaseHiveValue.Counter = 0;
+                if (!CentralConfig.SyncConfig.EnemyShuffle || !NetworkManager.Singleton.IsHost || LevelManager.CurrentExtendedLevel.NumberlessPlanetName == "Gordion")
                 {
                     return;
                 }
+                LogEnemyUpdate = "\n";
 
                 foreach (SpawnableEnemyWithRarity enemy in LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies.Concat(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies.Concat(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies)))
                 {
@@ -290,15 +300,16 @@ namespace CentralConfig
                     {
                         EnemyAppearances[enemy.enemyType]++; // when this updates
                         EnemyAppearanceString[enemy.enemyType.enemyName]++; // this does
-                        // CentralConfig.instance.mls.LogInfo($"Enemy: {enemy.enemyType.enemyName} did not spawn, increasing days since last appearance to {EnemyAppearances[enemy.enemyType]}.");
+                        // LogEnemyUpdate += $"Enemy: {enemy.enemyType.enemyName} did not spawn, increasing days since last appearance to {EnemyAppearances[enemy.enemyType]}.\n";
                     }
                     else
                     {
                         EnemyAppearances[enemy.enemyType] = 0;
                         EnemyAppearanceString[enemy.enemyType.enemyName] = 0;
-                        // CentralConfig.instance.mls.LogInfo($"Enemy: {enemy.enemyType.enemyName} was spawned, resetting days since last appearance to 0.");
+                        // LogEnemyUpdate += $"Enemy: {enemy.enemyType.enemyName} was spawned, resetting days since last appearance to 0.\n";
                     }
                 }
+                // CentralConfig.instance.mls.LogInfo(LogEnemyUpdate);
                 DidSpawnYet.Clear();
             }
         }
@@ -315,7 +326,7 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.DungeonShuffler || !NetworkManager.Singleton.IsHost)
+                if (!CentralConfig.SyncConfig.DungeonShuffler || !NetworkManager.Singleton.IsHost || LevelManager.CurrentExtendedLevel.NumberlessPlanetName == "Gordion")
                 {
                     return;
                 }
@@ -408,7 +419,7 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!CentralConfig.SyncConfig.ShuffleSave || !NetworkManager.Singleton.IsHost)
+                if (!MiscConfig.CreateMiscConfig.ShuffleSave || !NetworkManager.Singleton.IsHost)
                 {
                     return;
                 }

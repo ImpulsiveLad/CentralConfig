@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using LethalUtilities;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using WeatherRegistry;
@@ -41,6 +43,125 @@ namespace CentralConfig
             else
             {
                 return 1f;
+            }
+        }
+    }
+    public static class NPLCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("LCNoPropsLost");
+                }
+                return (bool)_enabled;
+            }
+        }
+    }
+    public static class KirSSIODCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Kirpichyov.SaveShipItemsOnDeath");
+                }
+                return (bool)_enabled;
+            }
+        }
+    }
+    public static class BobKSCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Bob123.LCM_KeepScrap");
+                }
+                return (bool)_enabled;
+            }
+        }
+    }
+    public static class NDDCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("NoDeathDespawn");
+                }
+                return (bool)_enabled;
+            }
+        }
+    }
+    public static class KSCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("KeepScrap");
+                }
+                return (bool)_enabled;
+            }
+        }
+    }
+    public static class LUCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Kyxino.LethalUtils");
+                }
+                return (bool)_enabled;
+            }
+        }
+        public static bool ReturnLUScrapKeeper()
+        {
+            if (RoundSettings.LoseUponDeath.Value == UponDeathShipLoses.Nothing)
+                return true;
+            else
+                return false;
+        }
+    }
+    public static class FMCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("me.loaforc.facilitymeltdown");
+                }
+                return (bool)_enabled;
             }
         }
     }
@@ -98,6 +219,47 @@ namespace CentralConfig
                 // CentralConfig.instance.mls.LogMessage($"Added enemy: {Walker.enemyName} from Diversity");
             }
             return enemies;
+        }
+    }
+    public static class PintoBoyCompat
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("Pinta.PintoBoy");
+                }
+                return (bool)_enabled;
+            }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static void RenamePintoBois()
+        {
+            PintoMod.Pinto_ModBase.itemPintoBoyLJ.itemName = "PintoBoyLJ";
+            PintoMod.Pinto_ModBase.itemPintoBoyFD.itemName = "PintoBoyFD";
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static string PBSIWRTS(SpawnableItemWithRarity item)
+        {
+            string returnString = string.Empty;
+            if (item.spawnableItem == PintoMod.Pinto_ModBase.itemPintoBoyLJ && item.rarity > 0)
+            {
+                returnString = "PintoBoyLJ:" + item.rarity.ToString() + ",";
+            }
+            else if (item.spawnableItem == PintoMod.Pinto_ModBase.itemPintoBoyFD && item.rarity > 0)
+            {
+                returnString = "PintoBoyFD:" + item.rarity.ToString() + ",";
+            }
+            else
+            {
+                if (item.rarity > 0)
+                    returnString = ConfigAider.LightlyToastString(item.spawnableItem.itemName) + ":" + item.rarity.ToString() + ",";
+            }
+            return returnString;
         }
     }
     public static class FootBallCompat
@@ -188,10 +350,44 @@ namespace CentralConfig
             {
                 if (enemy.enemyType.enemyName != "Lasso" && enemy.rarity > 0)
                 {
-                    returnString = enemy.enemyType.enemyName + ":" + enemy.rarity.ToString() + ",";
+                    returnString = ConfigAider.LightlyToastString(enemy.enemyType.enemyName) + ":" + enemy.rarity.ToString() + ",";
                 }
             }
             return returnString;
+        }
+    }
+    [HarmonyPatch(typeof(StartOfRound), "ShipLeave")]
+    public class ShipleaveCalc
+    {
+        public static int RemainingScrapInLevel;
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
+            RemainingScrapInLevel = CalculateRemainingScrapInLevel();
+        }
+
+        public static int CalculateRemainingScrapInLevel()
+        {
+            GrabbableObject[] array = UnityEngine.Object.FindObjectsOfType<GrabbableObject>();
+            int num = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i].itemProperties.isScrap && !array[i].isInShipRoom && !array[i].isInElevator && !array[i].scrapPersistedThroughRounds)
+                {
+                    num += array[i].scrapValue;
+                }
+            }
+            return num;
+        }
+    }
+    [HarmonyPatch(typeof(HUDManager), "FillEndGameStats")]
+    public class HUDManagerPatch
+    {
+        [HarmonyPostfix]
+        public static void FillEndGameStatsPostfix(HUDManager __instance, int scrapCollected)
+        {
+            float num = scrapCollected + ShipleaveCalc.RemainingScrapInLevel;
+            __instance.statsUIElements.quotaDenominator.text = num.ToString();
         }
     }
 }

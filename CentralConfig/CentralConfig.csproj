@@ -72,6 +72,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\LethalLib.dll</HintPath>
     </Reference>
+    <Reference Include="LethalUtilities-publicized">
+      <HintPath>..\..\..\..\Downloads\LethalUtilities-publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="PintoBoy">
+      <HintPath>..\..\..\..\Downloads\PintoBoy.dll</HintPath>
+    </Reference>
     <Reference Include="RollingGiant">
       <HintPath>..\..\..\..\Downloads\RollingGiant.dll</HintPath>
     </Reference>
@@ -105,6 +111,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
     <Reference Include="WeatherRegistry">
       <HintPath>..\..\..\..\Downloads\WeatherRegistry.dll</HintPath>
     </Reference>
@@ -115,6 +125,7 @@
     <Compile Include="Misc.cs" />
     <Compile Include="MoonConfig.cs" />
     <Compile Include="ConfigAider.cs" />
+    <Compile Include="NetworkingStuff.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResetChanger.cs" />

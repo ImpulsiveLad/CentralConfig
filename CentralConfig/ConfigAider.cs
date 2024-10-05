@@ -40,6 +40,9 @@ namespace CentralConfig
 
         public static List<Item> GrabFullItemList()
         {
+            if (PintoBoyCompat.enabled)
+                PintoBoyCompat.RenamePintoBois();
+
             return StartOfRound.Instance.allItemsList.itemsList;
         }
 
@@ -316,7 +319,7 @@ namespace CentralConfig
         public static List<SpawnableEnemyWithRarity> IncreaseEnemyRarities(List<SpawnableEnemyWithRarity> enemies)
         {
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
-            List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.EnemyShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
+            List<string> ignoreListEntries = SplitStringsByDaComma(MiscConfig.CreateMiscConfig.EnemyShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
             List<SpawnableEnemyWithRarity> WhiteListEnemies = enemies.Where(e => !ignoreListEntries.Any(b => CauterizeString(e.enemyType.enemyName).Equals(b))).ToList();
             List<SpawnableEnemyWithRarity> BlackListEnemies = enemies.Where(e => ignoreListEntries.Any(b => CauterizeString(e.enemyType.enemyName).Equals(b))).ToList();
             foreach (SpawnableEnemyWithRarity enemy in BlackListEnemies)
@@ -345,7 +348,7 @@ namespace CentralConfig
                 }
 
                 int LastAppearance = EnemyShuffler.EnemyAppearances[enemy.enemyType];
-                int multiplier = ShuffleSaver.enemyrandom.Next(CentralConfig.SyncConfig.EnemyShuffleRandomMin, CentralConfig.SyncConfig.EnemyShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.enemyrandom.Next(MiscConfig.CreateMiscConfig.EnemyShuffleRandomMin, MiscConfig.CreateMiscConfig.EnemyShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -358,14 +361,14 @@ namespace CentralConfig
                 {
                     SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
                     newEnemy.enemyType = enemy.enemyType;
-                    if (CentralConfig.SyncConfig.EnemyShufflerPercent && !(enemy.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    if (MiscConfig.CreateMiscConfig.EnemyShufflerPercent && !(enemy.rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives))
                     {
                         newEnemy.rarity = (int)Math.Round((LastAppearance * (enemy.rarity * (multiplier / 100f))) + enemy.rarity);
                         newEnemy.rarity = Mathf.Clamp(newEnemy.rarity, 0, 99999);
                     }
                     else
                     {
-                        if (enemy.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        if (enemy.rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives)
                         {
                             enemy.rarity = LastAppearance;
                         }
@@ -715,9 +718,14 @@ namespace CentralConfig
 
             foreach (SpawnableItemWithRarity spawnableItemWithRarity in sortedItemsList)
             {
-                if (spawnableItemWithRarity.rarity > 0)
+                if (PintoBoyCompat.enabled)
                 {
-                    returnString += LightlyToastString(spawnableItemWithRarity.spawnableItem.itemName) + ":" + spawnableItemWithRarity.rarity.ToString() + ",";
+                    returnString += PintoBoyCompat.PBSIWRTS(spawnableItemWithRarity);
+                }
+                else
+                {
+                    if (spawnableItemWithRarity.rarity > 0)
+                        returnString += LightlyToastString(spawnableItemWithRarity.spawnableItem.itemName) + ":" + spawnableItemWithRarity.rarity.ToString() + ",";
                 }
             }
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
@@ -794,7 +802,7 @@ namespace CentralConfig
         public static List<SpawnableItemWithRarity> IncreaseScrapRarities(List<SpawnableItemWithRarity> items)
         {
             List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
-            List<string> ignoreListEntries = SplitStringsByDaComma(CentralConfig.SyncConfig.ScrapShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
+            List<string> ignoreListEntries = SplitStringsByDaComma(MiscConfig.CreateMiscConfig.ScrapShuffleBlacklist.Value).Select(entry => CauterizeString(entry)).ToList();
             List<SpawnableItemWithRarity> WhiteListItems = items.Where(i => !ignoreListEntries.Any(b => CauterizeString(i.spawnableItem.itemName).Equals(b))).ToList();
             List<SpawnableItemWithRarity> BlackListItems = items.Where(i => ignoreListEntries.Any(b => CauterizeString(i.spawnableItem.itemName).Equals(b))).ToList();
             foreach (SpawnableItemWithRarity item in BlackListItems)
@@ -823,7 +831,7 @@ namespace CentralConfig
                 }
 
                 int LastAppearance = ScrapShuffler.ScrapAppearances[item.spawnableItem];
-                int multiplier = ShuffleSaver.scraprandom.Next(CentralConfig.SyncConfig.ScrapShuffleRandomMin, CentralConfig.SyncConfig.ScrapShuffleRandomMax + 1); // not just '+ x' but + 'x * (config min/max)' 
+                int multiplier = ShuffleSaver.scraprandom.Next(MiscConfig.CreateMiscConfig.ScrapShuffleRandomMin, MiscConfig.CreateMiscConfig.ScrapShuffleRandomMax + 1); // not just '+ x' but + 'x * (config min/max)' 
 
                 if (LastAppearance == 0) // appearred last game
                 {
@@ -836,14 +844,14 @@ namespace CentralConfig
                 {
                     SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
                     newItem.spawnableItem = item.spawnableItem;
-                    if (CentralConfig.SyncConfig.ScrapShufflerPercent && !(item.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    if (MiscConfig.CreateMiscConfig.ScrapShufflerPercent && !(item.rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives))
                     {
                         newItem.rarity = (int)Math.Round((LastAppearance * (item.rarity * (multiplier / 100f))) + item.rarity);
                         newItem.rarity = Mathf.Clamp(newItem.rarity, 0, 99999);
                     }
                     else
                     {
-                        if (item.rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        if (item.rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives)
                         {
                             item.rarity = LastAppearance;
                         }
@@ -1077,7 +1085,7 @@ namespace CentralConfig
             int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
             foreach (StringWithRarity String in strings)
             {
-                int multiplier = ShuffleSaver.dungeonrandom.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.dungeonrandom.Next(MiscConfig.CreateMiscConfig.DungeonShuffleRandomMin, MiscConfig.CreateMiscConfig.DungeonShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -1088,14 +1096,14 @@ namespace CentralConfig
                 {
                     StringWithRarity newflow = new StringWithRarity(null, 0);
                     newflow.Name = String.Name;
-                    if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(String.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    if (MiscConfig.CreateMiscConfig.DungeonShufflerPercent && !(String.Rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives))
                     {
                         newflow.Rarity = (int)Math.Round((LastAppearance * (String.Rarity * (multiplier / 100f))) + String.Rarity);
                         newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
                     }
                     else
                     {
-                        if (String.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        if (String.Rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives)
                         {
                             String.Rarity = LastAppearance;
                         }
@@ -1146,7 +1154,7 @@ namespace CentralConfig
             int LastAppearance = DungeonShuffler.DungeonAppearances[dungeonflow];
             foreach (Vector2WithRarity Vector in vectors)
             {
-                int multiplier = ShuffleSaver.dungeonrandom.Next(CentralConfig.SyncConfig.DungeonShuffleRandomMin, CentralConfig.SyncConfig.DungeonShuffleRandomMax + 1);
+                int multiplier = ShuffleSaver.dungeonrandom.Next(MiscConfig.CreateMiscConfig.DungeonShuffleRandomMin, MiscConfig.CreateMiscConfig.DungeonShuffleRandomMax + 1);
 
                 if (LastAppearance == 0)
                 {
@@ -1158,14 +1166,14 @@ namespace CentralConfig
                     Vector2WithRarity newflow = new Vector2WithRarity(0, 0, 0);
                     newflow.Min = Vector.Min;
                     newflow.Max = Vector.Max;
-                    if (CentralConfig.SyncConfig.DungeonShufflerPercent && !(Vector.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives))
+                    if (MiscConfig.CreateMiscConfig.DungeonShufflerPercent && !(Vector.Rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives))
                     {
                         newflow.Rarity = (int)Math.Round((LastAppearance * (Vector.Rarity * (multiplier / 100f))) + Vector.Rarity);
                         newflow.Rarity = Mathf.Clamp(newflow.Rarity, 0, 99999);
                     }
                     else
                     {
-                        if (Vector.Rarity < 0 && CentralConfig.SyncConfig.RolloverNegatives)
+                        if (Vector.Rarity < 0 && MiscConfig.CreateMiscConfig.RolloverNegatives)
                         {
                             Vector.Rarity = LastAppearance;
                         }

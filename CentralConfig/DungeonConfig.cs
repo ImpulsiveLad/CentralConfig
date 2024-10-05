@@ -929,8 +929,6 @@ namespace CentralConfig
                 return;
             }
 
-            string weatherName = LevelManager.CurrentExtendedLevel.SelectableLevel.currentWeather.ToString();
-
             if (CentralConfig.SyncConfig.DoEnemyInjectionsByDungeon)
             {
                 if (WaitForDungeonsToRegister.CreateDungeonConfig.InteriorEnemyByDungeon.ContainsKey(DungeonManager.CurrentExtendedDungeonFlow))
@@ -1001,7 +999,7 @@ namespace CentralConfig
             }
             LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
 
-            if (CentralConfig.SyncConfig.RemoveZeros)
+            if (MiscConfig.CreateMiscConfig.RemoveZeros)
             {
                 LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
@@ -1013,7 +1011,7 @@ namespace CentralConfig
                 ShuffleSaver.scraprandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
             }
-            if (CentralConfig.SyncConfig.EnemyShuffle && !CentralConfig.SyncConfig.ShuffleFirst)
+            if (CentralConfig.SyncConfig.EnemyShuffle && !MiscConfig.CreateMiscConfig.ShuffleFirst)
             {
                 ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
@@ -1021,34 +1019,7 @@ namespace CentralConfig
                 LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
             }
 
-            float scrapvaluemultiplier = 0.4f;
-            if (CentralConfig.SyncConfig.DoScrapOverrides)
-            {
-                if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
-                {
-                    scrapvaluemultiplier *= WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[LevelManager.CurrentExtendedLevel];
-                }
-                else
-                {
-                    scrapvaluemultiplier *= 1f;
-                }
-            }
-            if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
-            {
-                if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
-                {
-                    scrapvaluemultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName];
-                }
-                else
-                {
-                    scrapvaluemultiplier *= 1f;
-                }
-            }
-            else if (WRCompatibility.enabled)
-            {
-                scrapvaluemultiplier *= WRCompatibility.GetWRWeatherMultiplier(LevelManager.CurrentExtendedLevel.SelectableLevel);
-            }
-            RoundManager.Instance.scrapValueMultiplier = scrapvaluemultiplier;
+            RoundManager.Instance.scrapValueMultiplier = ShareScrapValue.Instance.CalculateScrapValueMultiplier();
 
             if (CentralConfig.SyncConfig.LogEnemies && NetworkManager.Singleton.IsHost)
             {
@@ -1164,6 +1135,56 @@ namespace CentralConfig
             // CentralConfig.instance.mls.LogInfo(ScrapInLevels);
             // CentralConfig.instance.mls.LogInfo(ScrapNotInLevels);
             // CentralConfig.instance.mls.LogInfo(ScrapInFewLevels);
+        }
+    }
+    [HarmonyPatch(typeof(LungProp), "Start")]
+    public static class IncreaseLungValue
+    {
+        static void Prefix(LungProp __instance)
+        {
+            ShareScrapValue.Instance.DetermineMultiplier((CurrentMultiplier) =>
+            {
+                if (!FMCompatibility.enabled)
+                    __instance.scrapValue = Mathf.RoundToInt(80 * CurrentMultiplier * 2.5f);
+                else if (FMCompatibility.enabled && WRCompatibility.enabled)
+                    __instance.scrapValue = Mathf.RoundToInt(__instance.scrapValue * CurrentMultiplier * 2.5f / WRCompatibility.GetWRWeatherMultiplier(LevelManager.CurrentExtendedLevel.SelectableLevel));
+                else if (FMCompatibility.enabled && !WRCompatibility.enabled)
+                    __instance.scrapValue = Mathf.RoundToInt(__instance.scrapValue * CurrentMultiplier * 2.5f);
+                ScanNodeProperties LungScanNode = __instance.gameObject.GetComponentInChildren<ScanNodeProperties>();
+                LungScanNode.subText = $"Value: ${__instance.scrapValue}";
+                LungScanNode.scrapValue = __instance.scrapValue;
+            });
+        }
+    }
+    [HarmonyPatch(typeof(RedLocustBees), "Start"), HarmonyPriority(Priority.Last)]
+    public static class IncreaseHiveValue
+    {
+        public static int Counter = 0;
+        public static Dictionary<RedLocustBees, int> BeeCount = new Dictionary<RedLocustBees, int>();
+        static void Postfix(RedLocustBees __instance)
+        {
+            if (!BeeCount.ContainsKey(__instance))
+                BeeCount.Add(__instance, Counter);
+            __instance.StartCoroutine(WaitForHive(__instance));
+            Counter++;
+        }
+
+        private static IEnumerator WaitForHive(RedLocustBees instance)
+        {
+            while (instance.hive == null)
+            {
+                yield return null;
+            }
+            yield return new WaitForSeconds(BeeCount[instance]);
+
+            ShareScrapValue.Instance.DetermineMultiplier((CurrentMultiplier) =>
+            {
+                // CentralConfig.instance.mls.LogInfo($"Applying CurrentMultiplier: {CurrentMultiplier} to hive");
+                instance.hive.scrapValue = Mathf.RoundToInt(instance.hive.scrapValue * CurrentMultiplier * 2.5f);
+                ScanNodeProperties HiveScanNode = instance.hive.gameObject.GetComponentInChildren<ScanNodeProperties>();
+                HiveScanNode.subText = $"Value: ${instance.hive.scrapValue}";
+                HiveScanNode.scrapValue = instance.hive.scrapValue;
+            });
         }
     }
 }

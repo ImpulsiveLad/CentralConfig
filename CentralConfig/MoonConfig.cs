@@ -138,7 +138,7 @@ namespace CentralConfig
 
                 if (CentralConfig.HarmonyTouch)
                 {
-                    if (NetworkManager.Singleton.IsHost && CentralConfig.SyncConfig.ShuffleSave) // sets the string versions of the dicts to the saved ones
+                    if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // sets the string versions of the dicts to the saved ones
                     {
                         if (CentralConfig.SyncConfig.ScrapShuffle && ES3.KeyExists("ScrapAppearanceString", GameNetworkManager.Instance.currentSaveFileName))
                         {
@@ -670,10 +670,7 @@ namespace CentralConfig
                     string scrapStr = WaitForMoonsToRegister.CreateMoonConfig.ScrapListOverrides[level]; // Ok so the lists kinda suck
                     Vector2 clamprarity = new Vector2(-99999, 99999);
                     List<SpawnableItemWithRarity> scrap = ConfigAider.ConvertStringToItemList(scrapStr, clamprarity); // This method turns the string back into a list
-                    if (scrap.Count > 0)
-                    {
-                        level.SelectableLevel.spawnableScrap = scrap;
-                    }
+                    level.SelectableLevel.spawnableScrap = scrap;
                 }
 
                 // Enemies
@@ -920,6 +917,18 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoDunSizeOverrides)
                 {
                     level.SelectableLevel.factorySizeMultiplier = WaitForMoonsToRegister.CreateMoonConfig.FaciltySizeOverride[level];
+                }
+
+                // tags
+
+                if ((CentralConfig.SyncConfig.DoEnemyTagInjections || CentralConfig.SyncConfig.DoScrapTagInjections) && NetworkManager.Singleton.IsHost)
+                {
+                    string TagStr = WaitForMoonsToRegister.CreateMoonConfig.AddTags[level];
+                    List<ContentTag> MoonTags = ConfigAider.ConvertStringToTagList(TagStr);
+                    if (MoonTags.Count > 0)
+                    {
+                        level.ContentTags.AddRange(MoonTags);
+                    }
                 }
             }
             if (CentralConfig.SyncConfig.BigEnemyList && NetworkManager.Singleton.IsHost)
