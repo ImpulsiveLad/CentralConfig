@@ -244,17 +244,18 @@ namespace CentralConfig
             {
                 string TagName = ConfigAider.CauterizeString(tag.contentTagName);
 
-                if (CentralConfig.SyncConfig.EnemyShuffle && MiscConfig.CreateMiscConfig.ShuffleFirst)
-                {
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                if (MiscConfig.CreateMiscConfig.ShuffleFirst != null)
+                    if (CentralConfig.SyncConfig.EnemyShuffle && MiscConfig.CreateMiscConfig.ShuffleFirst)
+                    {
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
 
-                    ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
-                }
+                        ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                        LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                    }
 
                 if (CentralConfig.SyncConfig.DoEnemyTagInjections)
                 {

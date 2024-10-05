@@ -136,7 +136,7 @@ namespace CentralConfig
                 }
                 CentralConfig.HarmonyTouch7 = true;
 
-                if (CentralConfig.HarmonyTouch)
+                if (CentralConfig.HarmonyTouch && MiscConfig.CreateMiscConfig.ShuffleSave != null)
                 {
                     if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // sets the string versions of the dicts to the saved ones
                     {

@@ -47,6 +47,9 @@
     <Reference Include="BepInEx">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="com.adibtw.loadstone-publicized">
+      <HintPath>..\..\..\..\Downloads\com.adibtw.loadstone-publicized.dll</HintPath>
+    </Reference>
     <Reference Include="com.sigurd.csync, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\com.sigurd.csync.dll</HintPath>

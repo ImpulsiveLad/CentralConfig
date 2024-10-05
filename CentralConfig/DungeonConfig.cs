@@ -619,7 +619,11 @@ namespace CentralConfig
                 return false;
             }
 
-            __instance.dungeonGenerator.Generator.GenerateAsynchronously = false;
+            if (DungeonName == "Black Mesa (Black Mesa)")
+                __instance.dungeonGenerator.Generator.GenerateAsynchronously = false;
+            /*else if (LoadstoneCompatibility.enabled)
+                if (LoadstoneCompatibility.IsLoadStoneAsyncing())
+                    __instance.dungeonGenerator.Generator.GenerateAsynchronously = true;*/
 
             try
             {
@@ -999,25 +1003,27 @@ namespace CentralConfig
             }
             LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveLowerRarityDuplicateItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
 
-            if (MiscConfig.CreateMiscConfig.RemoveZeros)
-            {
-                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveZeroRarityItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
-            }
+            if (MiscConfig.CreateMiscConfig.RemoveZeros != null)
+                if (MiscConfig.CreateMiscConfig.RemoveZeros)
+                {
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.RemoveZeroRarityEnemies(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.RemoveZeroRarityItems(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
+                }
             if (CentralConfig.SyncConfig.ScrapShuffle)
             {
                 ShuffleSaver.scraprandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                 LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap = ConfigAider.IncreaseScrapRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap);
             }
-            if (CentralConfig.SyncConfig.EnemyShuffle && !MiscConfig.CreateMiscConfig.ShuffleFirst)
-            {
-                ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
-                LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
-            }
+            if (MiscConfig.CreateMiscConfig.ShuffleFirst != null)
+                if (CentralConfig.SyncConfig.EnemyShuffle && !MiscConfig.CreateMiscConfig.ShuffleFirst)
+                {
+                    ShuffleSaver.enemyrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.Enemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.DaytimeEnemies);
+                    LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
+                }
 
             RoundManager.Instance.scrapValueMultiplier = ShareScrapValue.Instance.CalculateScrapValueMultiplier();
 

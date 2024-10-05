@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LethalUtilities;
+using Loadstone.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,30 @@ namespace CentralConfig
             }
         }
     }
+    /*public static class LoadstoneCompatibility
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.adibtw.loadstone");
+                }
+                return (bool)_enabled;
+            }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static bool IsLoadStoneAsyncing()
+        {
+            if (LoadstoneConfig.AsyncDungeon.Value)
+                return true;
+            else
+                return false;
+        }
+    }*/
     public static class NPLCompatibility
     {
         private static bool? _enabled;

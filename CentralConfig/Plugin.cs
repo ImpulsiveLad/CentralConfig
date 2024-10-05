@@ -20,6 +20,9 @@ using static CentralConfig.WaitForWeathersToRegister;
 namespace CentralConfig
 {
     [BepInPlugin(modGUID, modName, modVersion)]
+    [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("evaisa.lethallib", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.sigurd.csync", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Xilef.LethalBestiary", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Kittenji.FootballEntity", BepInDependency.DependencyFlags.SoftDependency)]
@@ -33,11 +36,12 @@ namespace CentralConfig
     [BepInDependency("Bob123.LCM_KeepScrap", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Kirpichyov.SaveShipItemsOnDeath", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("LCNoPropsLost", BepInDependency.DependencyFlags.SoftDependency)]
+    //[BepInDependency("com.adibtw.loadstone", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.15.1";
+        private const string modVersion = "0.15.2";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;

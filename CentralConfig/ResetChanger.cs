@@ -73,29 +73,30 @@ namespace CentralConfig
                     lastpossibledungeons.Clear();
                 }
 
-                if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // save data again on dc
-                {
-                    if (CentralConfig.SyncConfig.ScrapShuffle)
+                if (MiscConfig.CreateMiscConfig.ShuffleSave != null)
+                    if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // save data again on dc
                     {
-                        ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        ScrapAppearanceString.Clear();
-                    }
-                    if (CentralConfig.SyncConfig.EnemyShuffle)
-                    {
-                        ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        EnemyAppearanceString.Clear();
-                    }
-                    if (CentralConfig.SyncConfig.DungeonShuffler)
-                    {
-                        ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                        DungeonAppearanceString.Clear();
-                        if (LastGlorp != -1)
+                        if (CentralConfig.SyncConfig.ScrapShuffle)
                         {
-                            ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
-                            LastGlorp = -1;
+                            ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                            ScrapAppearanceString.Clear();
+                        }
+                        if (CentralConfig.SyncConfig.EnemyShuffle)
+                        {
+                            ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                            EnemyAppearanceString.Clear();
+                        }
+                        if (CentralConfig.SyncConfig.DungeonShuffler)
+                        {
+                            ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                            DungeonAppearanceString.Clear();
+                            if (LastGlorp != -1)
+                            {
+                                ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                                LastGlorp = -1;
+                            }
                         }
                     }
-                }
 
                 if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
                 {
@@ -419,29 +420,32 @@ namespace CentralConfig
         {
             static void Postfix()
             {
-                if (!MiscConfig.CreateMiscConfig.ShuffleSave || !NetworkManager.Singleton.IsHost)
+                if (MiscConfig.CreateMiscConfig.ShuffleSave != null)
                 {
-                    return;
-                }
-
-                if (CentralConfig.SyncConfig.ScrapShuffle)
-                {
-                    ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                    CentralConfig.instance.mls.LogInfo("Saved Scrap Shuffle Data");
-                }
-                if (CentralConfig.SyncConfig.EnemyShuffle)
-                {
-                    ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                    CentralConfig.instance.mls.LogInfo("Saved Enemy Shuffle Data");
-                }
-                if (CentralConfig.SyncConfig.DungeonShuffler)
-                {
-                    ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
-                    if (LastGlorp != -1)
+                    if (!MiscConfig.CreateMiscConfig.ShuffleSave || !NetworkManager.Singleton.IsHost)
                     {
-                        ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                        return;
                     }
-                    CentralConfig.instance.mls.LogInfo("Saved Dungeon Shuffle Data");
+
+                    if (CentralConfig.SyncConfig.ScrapShuffle)
+                    {
+                        ES3.Save("ScrapAppearanceString", ScrapAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        CentralConfig.instance.mls.LogInfo("Saved Scrap Shuffle Data");
+                    }
+                    if (CentralConfig.SyncConfig.EnemyShuffle)
+                    {
+                        ES3.Save("EnemyAppearanceString", EnemyAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        CentralConfig.instance.mls.LogInfo("Saved Enemy Shuffle Data");
+                    }
+                    if (CentralConfig.SyncConfig.DungeonShuffler)
+                    {
+                        ES3.Save("DungeonAppearanceString", DungeonAppearanceString, GameNetworkManager.Instance.currentSaveFileName);
+                        if (LastGlorp != -1)
+                        {
+                            ES3.Save("LastGlorp", LastGlorp, GameNetworkManager.Instance.currentSaveFileName);
+                        }
+                        CentralConfig.instance.mls.LogInfo("Saved Dungeon Shuffle Data");
+                    }
                 }
             }
         }
