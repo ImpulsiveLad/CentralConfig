@@ -37,7 +37,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.15.0";
+        private const string modVersion = "0.15.1";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;

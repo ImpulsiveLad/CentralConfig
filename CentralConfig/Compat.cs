@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LethalUtilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -388,6 +389,12 @@ namespace CentralConfig
         {
             float num = scrapCollected + ShipleaveCalc.RemainingScrapInLevel;
             __instance.statsUIElements.quotaDenominator.text = num.ToString();
+        }
+        [HarmonyPrefix]
+        public static void UpdateTotalScrap(HUDManager __instance, int scrapCollected)
+        {
+            float num = scrapCollected + ShipleaveCalc.RemainingScrapInLevel;
+            RoundManager.Instance.totalScrapValueInLevel = num;
         }
     }
 }
