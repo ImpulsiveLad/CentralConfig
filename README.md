@@ -1,3 +1,5 @@
+![icon](https://github.com/user-attachments/assets/73472794-220b-44ad-92f9-57ede5151c72)
+
 CentralConfig is a mod for Lethal Company designed to help organize and set config values in one place. Initially intended as a backup for when/if LLL removes its config, it now includes numerous requested functions and miscellaneous fixes and tweaks for both the base game and LLL.
 
 This mod purposefully avoids heavier settings that could lead to bugs being birthed. I.E. how other mods may allow players to change enemy mortality which is bound to cause problems.
@@ -112,11 +114,10 @@ Sets the `randonMapSeed`, leave at -1 to randomize. This is usually not set unti
 
 **Log Current Enemy/Scrap Tables? (Host Only)** -
 The console will log the current indoor, daytime, and nighttime enemy spawn pools as well as the current scrap pool 10 seconds after loading into the level.\nOnly accurate on the host, as enemy and scrap pools are ultimately decided by the host
-
-**Enable Fine Overrides? (All Players)** -
+## Enable Fine Overrides? (All Players)
 Allows altering the fine for dead players, the reduction to the fine for recovering bodies, and if you want the fine value to be proportional to the players (if half the lobby is dead, you will be fined half of the fine amount). The company has its own fine values (No fines there by default).
-
-**Enable Scan Node Extensions? (All Players)** - 
+You can also set rewards based on your performance during the cycle.
+## Enable Scan Node Extensions? (All Players)
 Allows you to set the min/max ranges for the scan nodes on the ship, main entrance, and fire exits (if you have ScannableFireExit installed).
 ## Shufflers (Host Only)
 Several settings to boost the chances of spawning a specific scrap or enemy compounded for every day they could have, but did not spawn. Boosts reset whenever any amount of that scrap/enemy is spawned.
