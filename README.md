@@ -1,3 +1,5 @@
+![icon](https://github.com/user-attachments/assets/73472794-220b-44ad-92f9-57ede5151c72)
+
 CentralConfig is a mod for Lethal Company designed to help organize and set config values in one place. Initially intended as a backup for when/if LLL removes its config, it now includes numerous requested functions and miscellaneous fixes and tweaks for both the base game and LLL.
 
 This mod purposefully avoids heavier settings that could lead to bugs being birthed. I.E. how other mods may allow players to change enemy mortality which is bound to cause problems.
