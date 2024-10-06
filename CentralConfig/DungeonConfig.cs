@@ -620,10 +620,19 @@ namespace CentralConfig
             }
 
             if (DungeonName == "Black Mesa (Black Mesa)")
+            {
                 __instance.dungeonGenerator.Generator.GenerateAsynchronously = false;
-            /*else if (LoadstoneCompatibility.enabled)
+            }
+            else if (LoadstoneCompatibility.enabled)
+            {
                 if (LoadstoneCompatibility.IsLoadStoneAsyncing())
-                    __instance.dungeonGenerator.Generator.GenerateAsynchronously = true;*/
+                    __instance.dungeonGenerator.Generator.GenerateAsynchronously = true;
+            }
+            else if (LoadstoneNCompatibility.enabled)
+            {
+                if (LoadstoneNCompatibility.IsLoadStoneNAsyncing())
+                    __instance.dungeonGenerator.Generator.GenerateAsynchronously = true;
+            }
 
             try
             {

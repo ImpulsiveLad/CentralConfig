@@ -36,12 +36,13 @@ namespace CentralConfig
     [BepInDependency("Bob123.LCM_KeepScrap", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Kirpichyov.SaveShipItemsOnDeath", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("LCNoPropsLost", BepInDependency.DependencyFlags.SoftDependency)]
-    //[BepInDependency("com.adibtw.loadstone", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.adibtw.loadstone", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.adibtw.loadstone.Nightly", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.15.2";
+        private const string modVersion = "0.15.3";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
