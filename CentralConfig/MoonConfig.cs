@@ -1029,6 +1029,12 @@ namespace CentralConfig
             {
                 return true;
             }
+            if (ImperiumCompatibility.enabled)
+                if (ImperiumCompatibility.ImperiumTimePaused())
+                {
+                    return false;
+                }
+
             StartOfRound startOfRound = StartOfRound.Instance;
 
             if (WaitForMoonsToRegister.CreateMoonConfig.WatiForShipToLandBeforeTimeMoves.ContainsKey(LevelManager.CurrentExtendedLevel))

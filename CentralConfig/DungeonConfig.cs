@@ -554,10 +554,10 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
                 }
             }
-            /*if (DungeonName == "MineComplex (MineComplex)")
+            if (DungeonName == "MineComplex (MineComplex)")
             {
                 NewMultiplier = 0.15f;
-            }*/
+            }
 
             if (NewMultiplier < 0)
             {

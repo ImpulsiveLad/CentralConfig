@@ -65,6 +65,9 @@
     <Reference Include="FootballEntity" Publicize="true">
       <HintPath>..\..\..\..\Downloads\FootballEntity.dll</HintPath>
     </Reference>
+    <Reference Include="giosuel.Imperium-publicized">
+      <HintPath>..\..\..\..\Downloads\giosuel.Imperium-publicized.dll</HintPath>
+    </Reference>
     <Reference Include="LethalBestiary">
       <HintPath>..\..\..\..\Downloads\LethalBestiary.dll</HintPath>
     </Reference>

@@ -46,6 +46,30 @@ namespace CentralConfig
             }
         }
     }
+    public static class ImperiumCompatibility
+    {
+        private static bool? _enabled;
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("giosuel.Imperium");
+                }
+                return (bool)_enabled;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static bool ImperiumTimePaused()
+        {
+            if (Imperium.Imperium.MoonManager.TimeIsPaused.Value)
+                return true;
+            else
+                return false;
+        }
+    }
     public static class LoadstoneCompatibility
     {
         private static bool? _enabled;
@@ -64,10 +88,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static bool IsLoadStoneAsyncing()
         {
-            if (Loadstone.Config.LoadstoneConfig.AsyncDungeon.Value)
-                return true;
-            else
-                return false;
+            return Loadstone.Config.LoadstoneConfig.AsyncDungeon.Value;
         }
     }
     public static class LoadstoneNCompatibility
@@ -88,10 +109,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static bool IsLoadStoneNAsyncing()
         {
-            if (Loadstone.Config.LoadstoneConfig.AsyncDungeon.Value)
-                return true;
-            else
-                return false;
+            return Loadstone.Config.LoadstoneConfig.AsyncDungeon.Value;
         }
     }
     public static class NPLCompatibility

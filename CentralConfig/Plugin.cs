@@ -38,6 +38,7 @@ namespace CentralConfig
     [BepInDependency("LCNoPropsLost", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.adibtw.loadstone", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.adibtw.loadstone.Nightly", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("giosuel.Imperium", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
