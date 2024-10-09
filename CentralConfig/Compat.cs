@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using LethalUtilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -64,10 +63,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static bool ImperiumTimePaused()
         {
-            if (Imperium.Imperium.MoonManager.TimeIsPaused.Value)
-                return true;
-            else
-                return false;
+            return Imperium.Imperium.MoonManager.TimeIsPaused.Value;
         }
     }
     public static class LoadstoneCompatibility
@@ -209,7 +205,7 @@ namespace CentralConfig
         }
         public static bool ReturnLUScrapKeeper()
         {
-            if (RoundSettings.LoseUponDeath.Value == UponDeathShipLoses.Nothing)
+            if (LethalUtilities.RoundSettings.LoseUponDeath.Value == LethalUtilities.UponDeathShipLoses.Nothing)
                 return true;
             else
                 return false;
@@ -434,7 +430,7 @@ namespace CentralConfig
 
         public static int CalculateRemainingScrapInLevel()
         {
-            GrabbableObject[] array = UnityEngine.Object.FindObjectsOfType<GrabbableObject>();
+            GrabbableObject[] array = UnityEngine.Object.FindObjectsByType<GrabbableObject>(UnityEngine.FindObjectsSortMode.None);
             int num = 0;
             for (int i = 0; i < array.Length; i++)
             {

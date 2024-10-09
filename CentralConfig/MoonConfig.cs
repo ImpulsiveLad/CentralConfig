@@ -988,19 +988,19 @@ namespace CentralConfig
     {
         static void Postfix(RoundManager __instance)
         {
-            var landmines = UnityEngine.Object.FindObjectsOfType<Landmine>();
+            var landmines = UnityEngine.Object.FindObjectsByType<Landmine>(FindObjectsSortMode.None);
 
             CentralConfig.instance.mls.LogInfo("Number of landmines in the level: " + landmines.Length);
 
-            var turrets = UnityEngine.Object.FindObjectsOfType<Turret>();
+            var turrets = UnityEngine.Object.FindObjectsByType<Turret>(FindObjectsSortMode.None);
 
             CentralConfig.instance.mls.LogInfo("Number of turrets in the level: " + turrets.Length);
 
-            var spikes = UnityEngine.Object.FindObjectsOfType<SpikeRoofTrap>();
+            var spikes = UnityEngine.Object.FindObjectsByType<SpikeRoofTrap>(FindObjectsSortMode.None);
 
             CentralConfig.instance.mls.LogInfo("Number of spike traps in the level: " + spikes.Length);
 
-            MoldSpreadManager moldManager = UnityEngine.Object.FindObjectOfType<MoldSpreadManager>();
+            MoldSpreadManager moldManager = UnityEngine.Object.FindFirstObjectByType<MoldSpreadManager>();
             CentralConfig.instance.mls.LogInfo("Generated Mold Count: " + moldManager.generatedMold.Count);
         }
     }
@@ -1112,7 +1112,7 @@ namespace CentralConfig
             {
                 HUDManager.Instance.DisplayDaysLeft((int)Mathf.Floor(TimeOfDay.Instance.timeUntilDeadline / TimeOfDay.Instance.totalTime));
             }
-            UnityEngine.Object.FindObjectOfType<Terminal>().SetItemSales();
+            UnityEngine.Object.FindFirstObjectByType<Terminal>().SetItemSales();
             __instance.SetMapScreenInfoToCurrentLevel();
             if (TimeOfDay.Instance.timeUntilDeadline > 0f && TimeOfDay.Instance.daysUntilDeadline <= 0 && TimeOfDay.Instance.timesFulfilledQuota <= 0)
             {

@@ -268,10 +268,10 @@ namespace CentralConfig
                 Grungus = MiscConfig.CreateMiscConfig.FineAmount / 100f;
                 Shmunguss = 1 / (MiscConfig.CreateMiscConfig.InsuranceReduction / 100f);
             }
-            Terminal terminal = Object.FindObjectOfType<Terminal>();
+            Terminal terminal = Object.FindFirstObjectByType<Terminal>();
             int groupCredits = terminal.groupCredits;
-            bodiesInsured = Mathf.Max(bodiesInsured, 0);
-            for (int i = 0; i < playersDead - bodiesInsured; i++)
+            int AdjustedbodiesInsured = Mathf.Max(bodiesInsured, 0);
+            for (int i = 0; i < playersDead - AdjustedbodiesInsured; i++)
             {
                 if (MiscConfig.CreateMiscConfig.ProportionalFine)
                 {
@@ -282,7 +282,7 @@ namespace CentralConfig
                     terminal.groupCredits -= (int)(groupCredits * Grungus);
                 }
             }
-            for (int j = 0; j < bodiesInsured; j++)
+            for (int j = 0; j < AdjustedbodiesInsured; j++)
             {
                 if (MiscConfig.CreateMiscConfig.ProportionalFine)
                 {
@@ -300,15 +300,15 @@ namespace CentralConfig
             int totalFinePercentage;
             if (MiscConfig.CreateMiscConfig.ProportionalFine)
             {
-                int uninsuredBodies = playersDead - bodiesInsured;
+                int uninsuredBodies = playersDead - AdjustedbodiesInsured;
                 float uninsuredProportion = uninsuredBodies / totalPlayers;
-                float insuredProportion = bodiesInsured / (Shmunguss * totalPlayers);
+                float insuredProportion = AdjustedbodiesInsured / (Shmunguss * totalPlayers);
 
                 totalFinePercentage = (int)Mathf.Round(Grungus * 100 * (uninsuredProportion + insuredProportion));
             }
             else
             {
-                totalFinePercentage = (int)Mathf.Round((Grungus * 100f) * (playersDead - bodiesInsured) + ((Grungus * 100f / Shmunguss)) * bodiesInsured);
+                totalFinePercentage = (int)Mathf.Round((Grungus * 100f) * (playersDead - AdjustedbodiesInsured) + ((Grungus * 100f / Shmunguss)) * AdjustedbodiesInsured);
             }
             if (playersDead > 1)
             {
@@ -318,13 +318,13 @@ namespace CentralConfig
             {
                 Bodies = "There was " + playersDead + " casualty, ";
             }
-            if (bodiesInsured > 0)
+            if (AdjustedbodiesInsured > 0)
             {
-                Recovered = "but " + bodiesInsured + " bodies were recovered.";
+                Recovered = "but " + AdjustedbodiesInsured + " bodies were recovered.";
             }
             else
             {
-                Recovered = "and " + bodiesInsured + " bodies were recovered.";
+                Recovered = "and " + AdjustedbodiesInsured + " bodies were recovered.";
             }
             if (totalFinePercentage > 0)
                 __instance.statsUIElements.penaltyAddition.text = Bodies + Recovered + "\nA fine of " + totalFinePercentage + "% will be extracted from the crew.";
@@ -367,7 +367,7 @@ namespace CentralConfig
             if (!CentralConfig.SyncConfig.DoFineOverrides)
                 return;
 
-            Terminal terminal = Object.FindObjectOfType<Terminal>();
+            Terminal terminal = Object.FindFirstObjectByType<Terminal>();
 
             string[] boostArray = MiscConfig.CreateMiscConfig.BoostString.Value.Split(',');
             if (boostArray.Length != 6)
@@ -461,7 +461,7 @@ namespace CentralConfig
                 return;
             }
 
-            List<EntranceTeleport> entranceTeleports = Object.FindObjectsOfType<EntranceTeleport>().ToList();
+            List<EntranceTeleport> entranceTeleports = Object.FindObjectsByType<EntranceTeleport>(FindObjectsSortMode.None).ToList();
             int numFireExits = (entranceTeleports.Count / 2) - 1;
             // CentralConfig.instance.mls.LogInfo("Doing it lol");
 
@@ -519,7 +519,7 @@ namespace CentralConfig
             System.Random rand = new System.Random(StartOfRound.Instance.randomMapSeed + 42);
             string randomSubText = subTexts[rand.Next(subTexts.Count)];
 
-            ScanNodeProperties[] allScanNodes = GameObject.FindObjectsOfType<ScanNodeProperties>();
+            ScanNodeProperties[] allScanNodes = Object.FindObjectsByType<ScanNodeProperties>(FindObjectsSortMode.None);
             foreach (ScanNodeProperties scanNode in allScanNodes)
             {
                 if (scanNode.headerText.ToLower() == "main entrance" || scanNode.headerText.ToLower() == "mainentrance")
@@ -590,14 +590,14 @@ namespace CentralConfig
         }
         static IEnumerator PerformActionsWithDelay(EntranceTeleport __instance, int playerObj)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(3);
 
-            StartOfRound startOfRound = Object.FindObjectOfType<StartOfRound>();
+            StartOfRound startOfRound = Object.FindFirstObjectByType<StartOfRound>();
             PlayerControllerB player = startOfRound.allPlayerScripts[playerObj];
 
             PlayerScanNodeProperties scanNodeProperties = PlayerScanNodeProperties.playerScanNodeProperties[player];
 
-            ScanNodeProperties[] allScanNodes = GameObject.FindObjectsOfType<ScanNodeProperties>();
+            ScanNodeProperties[] allScanNodes = Object.FindObjectsByType<ScanNodeProperties>(FindObjectsSortMode.None);
 
             if (player.isInsideFactory)
             {

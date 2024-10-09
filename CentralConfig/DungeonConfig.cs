@@ -554,10 +554,10 @@ namespace CentralConfig
                     CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
                 }
             }
-            if (DungeonName == "MineComplex (MineComplex)")
+            /*if (DungeonName == "MineComplex (MineComplex)")
             {
                 NewMultiplier = 0.15f;
-            }
+            }*/
 
             if (NewMultiplier < 0)
             {
@@ -886,7 +886,7 @@ namespace CentralConfig
         public static void CountTiles()
         {
             tiles = new Tile[0];
-            tiles = UnityEngine.Object.FindObjectsOfType<Tile>();
+            tiles = UnityEngine.Object.FindObjectsByType<Tile>(FindObjectsSortMode.None);
             TileCounts.Add(tiles.Length);
             BigLog += "\nThere are: " + tiles.Length + " tiles.";
             CallNumber++;

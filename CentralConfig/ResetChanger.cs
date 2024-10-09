@@ -138,7 +138,7 @@ namespace CentralConfig
                 CapturedScrapToSpawn.Clear();
                 LogScrapUpdate = "\n";
 
-                List<GrabbableObject> ScrapInLevel = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
+                List<GrabbableObject> ScrapInLevel = UnityEngine.Object.FindObjectsByType<GrabbableObject>(UnityEngine.FindObjectsSortMode.None).ToList();
                 foreach (GrabbableObject obj in ScrapInLevel)
                 {
                     if (!CatchItemsInShip.ItemsInShip.Contains(obj))
@@ -204,7 +204,7 @@ namespace CentralConfig
             }
 
             ItemsInShip.Clear();
-            ItemsInShip = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
+            ItemsInShip = UnityEngine.Object.FindObjectsByType<GrabbableObject>(UnityEngine.FindObjectsSortMode.None).ToList();
         }
     }
 
@@ -223,7 +223,7 @@ namespace CentralConfig
                     return;
                 }
 
-                List<EnemyAI> SpawnedEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
+                List<EnemyAI> SpawnedEnemies = UnityEngine.Object.FindObjectsByType<EnemyAI>(UnityEngine.FindObjectsSortMode.None).ToList();
                 foreach (EnemyAI enemy in SpawnedEnemies)
                 {
                     if (!DidSpawnYet.ContainsKey(enemy.enemyType))
