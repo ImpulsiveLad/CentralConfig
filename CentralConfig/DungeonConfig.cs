@@ -1034,6 +1034,8 @@ namespace CentralConfig
                     LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies = ConfigAider.IncreaseEnemyRarities(LevelManager.CurrentExtendedLevel.SelectableLevel.OutsideEnemies);
                 }
 
+            if (WRCompatibility.enabled)
+                WRCompatibility.RemoveWRScrapMultiplierHardSet();
             RoundManager.Instance.scrapValueMultiplier = ShareScrapValue.Instance.CalculateScrapValueMultiplier();
 
             if (CentralConfig.SyncConfig.LogEnemies && NetworkManager.Singleton.IsHost)

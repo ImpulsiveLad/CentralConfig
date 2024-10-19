@@ -60,7 +60,7 @@
     <Reference Include="RollingGiant">
       <HintPath>..\..\..\..\Downloads\RollingGiant.dll</HintPath>
     </Reference>
-    <Reference Include="WeatherRegistry">
+    <Reference Include="WeatherRegistry" Publicize="true">
       <HintPath>..\..\..\..\Downloads\WeatherRegistry.dll</HintPath>
     </Reference>
   </ItemGroup>

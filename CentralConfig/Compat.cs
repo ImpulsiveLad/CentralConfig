@@ -35,14 +35,20 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static float GetWRWeatherMultiplier(SelectableLevel level)
         {
-            if (WeatherManager.CurrentWeathers.ContainsKey(level))
+            if (WeatherManager.currentWeathers._currentWeathers.ContainsKey(level))
             {
-                return WeatherManager.CurrentWeathers[level].ScrapValueMultiplier;
+                Weather currentweather = WeatherManager.GetWeather(level.currentWeather);
+                return currentweather.ScrapAmountMultiplier;
             }
             else
             {
                 return 1f;
             }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static void RemoveWRScrapMultiplierHardSet()
+        {
+            ConfigManager.UseScrapMultipliers.Value = false;
         }
     }
     public static class ImperiumCompatibility
