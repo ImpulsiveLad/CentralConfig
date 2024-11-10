@@ -280,7 +280,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static List<EnemyType> AddWalker(List<EnemyType> enemies)
         {
-            EnemyType Walker = Diversity.Diversity.longBoiType;
+            EnemyType Walker = DiversityRemastered.ContentLoader.MainAssets.LoadAsset<EnemyType>("Assets/custom/diversity/walker/WalkerType.asset");
             if (!enemies.Contains(Walker))
             {
                 enemies.Add(Walker);

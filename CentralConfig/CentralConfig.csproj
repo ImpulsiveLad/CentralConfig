@@ -31,8 +31,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\com.sigurd.csync.dll</HintPath>
     </Reference>
-    <Reference Include="Diversity">
-      <HintPath>..\..\..\..\Downloads\Diversity.dll</HintPath>
+    <Reference Include="Diversity Remastered" Publicize="true">
+      <HintPath>..\..\..\..\Downloads\Diversity Remastered.dll</HintPath>
     </Reference>
     <Reference Include="FootballEntity">
       <HintPath>..\..\..\..\Downloads\FootballEntity.dll</HintPath>
