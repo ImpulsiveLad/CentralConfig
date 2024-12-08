@@ -25,25 +25,13 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static List<string> GetAllWeathersWithWR()
         {
-            List<string> weatherlist = WeatherManager.RegisteredWeathers.Cast<Weather>().Select(w => w.ToString()).ToList();
-            for (int i = 0; i < weatherlist.Count; i++)
-            {
-                weatherlist[i] = weatherlist[i].Replace(" (WeatherRegistry.Weather)", "");
-            }
-            return weatherlist;
+            return WeatherManager.Weathers.Select(weather => weather.Name).ToList();
         }
+
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public static float GetWRWeatherMultiplier(SelectableLevel level)
+        public static float GetWRWeatherMultiplier()
         {
-            if (WeatherManager.currentWeathers._currentWeathers.ContainsKey(level))
-            {
-                Weather currentweather = WeatherManager.GetWeather(level.currentWeather);
-                return currentweather.ScrapAmountMultiplier;
-            }
-            else
-            {
-                return 1f;
-            }
+            return WeatherManager.GetCurrentLevelWeather().ScrapAmountMultiplier;
         }
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void RemoveWRScrapMultiplierHardSet()
