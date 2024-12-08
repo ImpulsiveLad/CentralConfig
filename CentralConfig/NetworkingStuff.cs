@@ -132,7 +132,7 @@ namespace CentralConfig
             }
             else if (WRCompatibility.enabled)
             {
-                scrapvaluemultiplier *= WRCompatibility.GetWRWeatherMultiplier(LevelManager.CurrentExtendedLevel.SelectableLevel);
+                scrapvaluemultiplier *= WRCompatibility.GetWRWeatherMultiplier();
             }
             if (CentralConfig.SyncConfig.ScaleScrapValueByPlayers)
             {

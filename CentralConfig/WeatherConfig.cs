@@ -69,7 +69,7 @@ namespace CentralConfig
                 List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList(); ;
                 if (WRCompatibility.enabled)
                 {
-                    AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
+                    AllWeatherTypes = WRCompatibility.GetAllWeathersWithWR();
                 }
                 List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistWeathers.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 
@@ -184,7 +184,7 @@ namespace CentralConfig
             List<string> AllWeatherTypes = Enum.GetValues(typeof(LevelWeatherType)).Cast<LevelWeatherType>().Select(w => w.ToString()).ToList(); ;
             if (WRCompatibility.enabled)
             {
-                AllWeatherTypes.AddRange(WRCompatibility.GetAllWeathersWithWR());
+                AllWeatherTypes = WRCompatibility.GetAllWeathersWithWR();
             }
             List<string> ignoreListEntries = ConfigAider.SplitStringsByDaComma(CentralConfig.SyncConfig.BlacklistWeathers.Value).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
 

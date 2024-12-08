@@ -1164,7 +1164,7 @@ namespace CentralConfig
                 if (!FMCompatibility.enabled)
                     __instance.scrapValue = Mathf.RoundToInt(80 * CurrentMultiplier * 2.5f);
                 else if (FMCompatibility.enabled && WRCompatibility.enabled)
-                    __instance.scrapValue = Mathf.RoundToInt(__instance.scrapValue * CurrentMultiplier * 2.5f / WRCompatibility.GetWRWeatherMultiplier(LevelManager.CurrentExtendedLevel.SelectableLevel));
+                    __instance.scrapValue = Mathf.RoundToInt(__instance.scrapValue * CurrentMultiplier * 2.5f / WRCompatibility.GetWRWeatherMultiplier());
                 else if (FMCompatibility.enabled && !WRCompatibility.enabled)
                     __instance.scrapValue = Mathf.RoundToInt(__instance.scrapValue * CurrentMultiplier * 2.5f);
                 ScanNodeProperties LungScanNode = __instance.gameObject.GetComponentInChildren<ScanNodeProperties>();
