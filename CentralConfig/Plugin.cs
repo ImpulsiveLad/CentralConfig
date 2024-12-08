@@ -43,7 +43,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.15.6";
+        private const string modVersion = "0.15.7";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -107,6 +107,7 @@ namespace CentralConfig
             harmony.PatchAll(typeof(TimeFix)); // MoveGlobalTime (Prefix)
             harmony.PatchAll(typeof(DayTimePassFix)); // PassTimeToNextDay (Prefix)
             harmony.PatchAll(typeof(UpdateTimeFaster)); // MoveGlobalTime (Postfix)
+            harmony.PatchAll(typeof(FixTimeUntilDeadlineonDC)); // Disconnect (Postfix)
 
             // Dungeon Generation
             harmony.PatchAll(typeof(NewDungeonGenerator)); // GenerateNewFloor (Prefix)

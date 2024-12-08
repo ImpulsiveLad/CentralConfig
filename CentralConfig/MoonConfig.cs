@@ -502,13 +502,10 @@ namespace CentralConfig
                             level.IsRouteHidden,
                         "Set to true to hide the moon in the terminal.");
 
-                        if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
-                        {
-                            LockedOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
-                                PlanetName + " - Should The Moon Be Locked?",
-                                level.IsRouteLocked,
-                                "Set to true to prevent visiting the moon.");
-                        }
+                        LockedOverride[level] = cfg.BindSyncedEntry("Moon: " + PlanetName,
+                            PlanetName + " - Should The Moon Be Locked?",
+                            level.IsRouteLocked,
+                            "Set to true to prevent visiting the moon.");
                     }
                     if (CentralConfig.SyncConfig.TimeSettings)
                     {
@@ -902,10 +899,7 @@ namespace CentralConfig
                 if (CentralConfig.SyncConfig.DoDangerBools)
                 {
                     level.IsRouteHidden = WaitForMoonsToRegister.CreateMoonConfig.VisibleOverride[level];
-                    if (level.NumberlessPlanetName != "Penumbra" && level.NumberlessPlanetName != "Sector-0")
-                    {
-                        level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[level];
-                    }
+                    level.IsRouteLocked = WaitForMoonsToRegister.CreateMoonConfig.LockedOverride[level];
                 }
                 if (CentralConfig.SyncConfig.TimeSettings)
                 {
@@ -1057,6 +1051,19 @@ namespace CentralConfig
             // CentralConfig.instance.mls.LogInfo("shid is now : " + CentralConfig.shid);
 
             return false;
+        }
+    }
+    [HarmonyPatch(typeof(GameNetworkManager), "Disconnect")]
+    public static class FixTimeUntilDeadlineonDC
+    {
+        static void Postfix()
+        {
+            TimeOfDay timeOfDay = UnityEngine.Object.FindFirstObjectByType<TimeOfDay>();
+            if (timeOfDay != null)
+            {
+                timeOfDay.timeUntilDeadline += CentralConfig.shid;
+            }
+            CentralConfig.shid = 0;
         }
     }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
