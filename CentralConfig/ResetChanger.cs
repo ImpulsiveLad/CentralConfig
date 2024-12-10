@@ -374,6 +374,7 @@ namespace CentralConfig
                     }
                     lastdungeon = null;
                     lastpossibledungeons.Clear();
+                    dungeonrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
                     foreach (ExtendedDungeonFlow flow in PatchedContent.ExtendedDungeonFlows)
                     {
                         flow.LevelMatchingProperties.planetNames = DungeonMoonMatches[flow];
@@ -384,8 +385,6 @@ namespace CentralConfig
                         string gen = flow.DungeonName + " (" + flow.name + ")";
                         gen = gen.Replace("13Exits", "3Exits").Replace("1ExtraLarge", "ExtraLarge");
                         string FlowName = gen.Replace("ExtendedDungeonFlow", "").Replace("Level", "");
-
-                        dungeonrandom = new System.Random(StartOfRound.Instance.randomMapSeed);
 
                         flow.LevelMatchingProperties.planetNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.planetNames, flow, FlowName);
                         flow.LevelMatchingProperties.modNames = ConfigAider.IncreaseDungeonRarities(flow.LevelMatchingProperties.modNames, flow, FlowName);

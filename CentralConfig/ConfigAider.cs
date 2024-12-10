@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -1086,6 +1087,7 @@ namespace CentralConfig
             foreach (StringWithRarity String in strings)
             {
                 int multiplier = ShuffleSaver.dungeonrandom.Next(MiscConfig.CreateMiscConfig.DungeonShuffleRandomMin, MiscConfig.CreateMiscConfig.DungeonShuffleRandomMax + 1);
+                // CentralConfig.instance.mls.LogInfo($"Dungeon: {flowName} Multiplier: {multiplier} selected between {MiscConfig.CreateMiscConfig.DungeonShuffleRandomMin} and {MiscConfig.CreateMiscConfig.DungeonShuffleRandomMax}");
 
                 if (LastAppearance == 0)
                 {
