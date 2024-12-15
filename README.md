@@ -131,6 +131,13 @@ Alternatively the multiplier can act as an increase by percent.
 You can also choose whether or not the boosts are reset when leaving a session or remain commit to the save file (picks up when you rejoin).
 
 The Shuffler has its own scrap and enemy blacklists.
+## Player Count Scaling
+**Scrap Value (Host Only)** -
+Several variables that allow you to alter scrap value based on the current player count. Having less players increases scrap value, having more players decreases scrap value.
+(These changes also effect the apparatus and beehives in addition to the regularly spawned scrap).
+
+**Dungeon Size (All Players)** -
+Several variables that allow you to alter the dungeon size based on the current player count. Having less players decreases dungeon size, having more players increases dungeon size.
 # Miscellaneous Fixes
 **Dungeon Generation: (All Players)** Optional setting that enacts safeguards for the dungeon generation process.
 
