@@ -111,24 +111,12 @@ namespace CentralConfig
             if (CentralConfig.SyncConfig.DoScrapOverrides)
             {
                 if (WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier.ContainsKey(LevelManager.CurrentExtendedLevel))
-                {
                     scrapvaluemultiplier *= WaitForMoonsToRegister.CreateMoonConfig.ScrapValueMultiplier[LevelManager.CurrentExtendedLevel];
-                }
-                else
-                {
-                    scrapvaluemultiplier *= 1f;
-                }
             }
             if (CentralConfig.SyncConfig.DoScrapWeatherInjections)
             {
                 if (WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier.ContainsKey(weatherName))
-                {
                     scrapvaluemultiplier *= WaitForWeathersToRegister.CreateWeatherConfig.WeatherScrapValueMultiplier[weatherName];
-                }
-                else
-                {
-                    scrapvaluemultiplier *= 1f;
-                }
             }
             else if (WRCompatibility.enabled)
             {
@@ -136,8 +124,13 @@ namespace CentralConfig
             }
             if (CentralConfig.SyncConfig.ScaleScrapValueByPlayers)
             {
-                float PlayerDiff = StartOfRound.Instance.connectedPlayersAmount + 1 - (float)MiscConfig.CreateMiscConfig.SSSBPThreshold;
-                scrapvaluemultiplier *= Mathf.Clamp(Mathf.Pow(1f + (MiscConfig.CreateMiscConfig.SSSBPPercentIncrease + MiscConfig.CreateMiscConfig.SSSBPIncreaseChange * Mathf.Abs(PlayerDiff)) / 100f, -PlayerDiff), MiscConfig.CreateMiscConfig.SSSBPMinIncrease, MiscConfig.CreateMiscConfig.SSSBPMaxIncrease);
+                float PlayerDiff = StartOfRound.Instance.connectedPlayersAmount + 1 - (float)MiscConfig.CreateMiscConfig.SSVBPThreshold;
+                scrapvaluemultiplier *= Mathf.Clamp(Mathf.Pow(1f + (MiscConfig.CreateMiscConfig.SSVBPPercentIncrease + MiscConfig.CreateMiscConfig.SSVBPIncreaseChange * Mathf.Abs(PlayerDiff)) / 100f, -PlayerDiff), MiscConfig.CreateMiscConfig.SSVBPMinIncrease, MiscConfig.CreateMiscConfig.SSVBPMaxIncrease);
+            }
+            if (scrapvaluemultiplier < 0)
+            {
+                CentralConfig.instance.mls.LogWarning("Scrap Multiplier is negative, changing to 1x");
+                scrapvaluemultiplier = 1f;
             }
             CentralConfig.instance.mls.LogInfo($"Scrap Multiplier: {scrapvaluemultiplier}");
             return scrapvaluemultiplier;

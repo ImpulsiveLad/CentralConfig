@@ -527,7 +527,7 @@ namespace CentralConfig
                     {
                         if (NetworkManager.Singleton.IsHost)
                         {
-                            CentralConfig.instance.mls.LogInfo("The size was within the clamp range. The size value is: " + NewMultiplier);
+                            CentralConfig.instance.mls.LogInfo("The size was within the clamp range.");
                         }
                     }
                 }
@@ -539,7 +539,7 @@ namespace CentralConfig
 
                     if (NetworkManager.Singleton.IsHost)
                     {
-                        CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied. The size value is: " + NewMultiplier);
+                        CentralConfig.instance.mls.LogInfo("The current dungeon is blacklisted. No clamping will be applied.");
                     }
                 }
             }
@@ -548,17 +548,14 @@ namespace CentralConfig
                 NewMultiplier /= DungeonManager.CurrentExtendedDungeonFlow.MapTileSize;
                 NewMultiplier *= __instance.mapSizeMultiplier;
                 NewMultiplier = (float)((double)Mathf.Round(NewMultiplier * 100f) / 100.0);
-
-                if (NetworkManager.Singleton.IsHost)
-                {
-                    CentralConfig.instance.mls.LogInfo("Size overrides are false. The size value is: " + NewMultiplier);
-                }
             }
-            /*if (DungeonName == "MineComplex (MineComplex)")
+            if (CentralConfig.SyncConfig.ScaleDungeonSizeByPlayers)
             {
-                NewMultiplier = 0.15f;
-            }*/
-
+                float PlayerDiff = StartOfRound.Instance.connectedPlayersAmount + 1 - (float)MiscConfig.CreateMiscConfig.SDSBPThreshold;
+                float DSBP = Mathf.Clamp(Mathf.Pow(1f + (MiscConfig.CreateMiscConfig.SDSBPPercentIncrease + MiscConfig.CreateMiscConfig.SDSBPIncreaseChange * Mathf.Abs(PlayerDiff)) / 100f, PlayerDiff), MiscConfig.CreateMiscConfig.SDSBPMinIncrease, MiscConfig.CreateMiscConfig.SDSBPMaxIncrease);
+                CentralConfig.instance.mls.LogInfo($"Dungeon Size Scaler by PlayerCount: {DSBP}x");
+                NewMultiplier *= DSBP;
+            }
             if (NewMultiplier < 0)
             {
                 NewMultiplier = 1f;
@@ -573,7 +570,7 @@ namespace CentralConfig
             {
                 if (NetworkManager.Singleton.IsHost)
                 {
-                    CentralConfig.instance.mls.LogInfo("Generation safeguards are disabled, generating without them:");
+                    CentralConfig.instance.mls.LogInfo($"Generation safeguards are disabled, generating without them... The dungeon has a final size multiplier of {NewMultiplier}x.");
                 }
                 __instance.dungeonGenerator.Generate();
                 /*for (int i = 0; i < 100; i++)

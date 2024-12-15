@@ -130,6 +130,23 @@ namespace CentralConfig
             public static string LogScrapUpdate = "\n";
             static void Postfix()
             {
+                GrabbableObject CrownObject = UnityEngine.Object.FindObjectsByType<GrabbableObject>(UnityEngine.FindObjectsSortMode.None).FirstOrDefault(obj => obj.itemProperties.itemName == "Crown");
+                if (CrownObject != null)
+                {
+                    ShareScrapValue.Instance.DetermineMultiplier((CurrentMultiplier) =>
+                    {
+                        if (!FMCompatibility.enabled)
+                            CrownObject.scrapValue = UnityEngine.Mathf.RoundToInt(100 * CurrentMultiplier * 2.5f);
+                        else if (FMCompatibility.enabled && WRCompatibility.enabled)
+                            CrownObject.scrapValue = UnityEngine.Mathf.RoundToInt(CrownObject.scrapValue * CurrentMultiplier * 2.5f / WRCompatibility.GetWRWeatherMultiplier());
+                        else if (FMCompatibility.enabled && !WRCompatibility.enabled)
+                            CrownObject.scrapValue = UnityEngine.Mathf.RoundToInt(CrownObject.scrapValue * CurrentMultiplier * 2.5f);
+                        ScanNodeProperties CrownScanNode = CrownObject.gameObject.GetComponentInChildren<ScanNodeProperties>();
+                        CrownScanNode.subText = $"Value: ${CrownObject.scrapValue}";
+                        CrownScanNode.scrapValue = CrownObject.scrapValue;
+                    });
+                }
+
                 if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
                 {
                     return;

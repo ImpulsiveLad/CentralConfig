@@ -43,7 +43,7 @@ namespace CentralConfig
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.15.8";
+        private const string modVersion = "0.16.0";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -215,6 +215,7 @@ namespace CentralConfig
         [DataMember] public SyncedEntry<bool> FlattenCurves { get; private set; }
         [DataMember] public SyncedEntry<string> OoO { get; private set; }
         [DataMember] public SyncedEntry<bool> ScaleScrapValueByPlayers { get; private set; }
+        [DataMember] public SyncedEntry<bool> ScaleDungeonSizeByPlayers { get; private set; }
         public GeneralConfig(ConfigFile cfg) : base("CentralConfig") // This config generates on opening the game
         {
             ConfigManager.Register(this);
@@ -468,6 +469,11 @@ namespace CentralConfig
                 "Adjust Scrap Value for PlayerCount? (Host Only)",
                 false,
                 "If set to true, the value of scrap will be adjusted based on the number of players in the lobby, !!This happens at the START of the match and only affects newly spawned scrap!!\nPlayerDiff = PlayerCount - PlayerThreshold Then ScrapValuePercent *= (1 + Percent / 100) ^ -PlayerDiff\nDefault Example: (1.1) ^ -(4-2) = 82.6% of the multiplier.\nAnother Example: (1.05) ^ -(6-3) = 86.4% of the multiplier.");
+
+            ScaleDungeonSizeByPlayers = cfg.BindSyncedEntry("<Player Count Scaling>",
+                "Adjust Dungeon Size for PlayerCount? (All Players)",
+                false,
+                "If set to true, the size multiplier will scale with the number of players in the lobby. More players will result in a larger interior.\nThe same formula used to calculate the scrap value adjustment is used again here, but with a positive exponent, which creates a direct relationship between player count and dungeon size.\nDefault Example: (1.1) ^ (4-2) = 21% dungeon size increase.\nAnother Example: (1.15) ^ (3-4) = 13% dungeon size decrease.");
         }
     }
 }

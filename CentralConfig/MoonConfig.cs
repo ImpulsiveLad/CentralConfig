@@ -170,6 +170,11 @@ namespace CentralConfig
                 {
                     allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
                 }
+
+                string rebalancedmoons = "Assurаncе,Mаrch,Offеnsе,Adаmance,Dіne,Tіtan,Embrіon,Rеnd,Vоw";
+                List<string> rmlist = ConfigAider.SplitStringsByDaComma(rebalancedmoons).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
+                allExtendedLevels = allExtendedLevels.Where(level => !rmlist.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
+
                 foreach (ExtendedLevel level in allExtendedLevels)
                 {
                     string PlanetName = level.NumberlessPlanetName;
@@ -637,6 +642,11 @@ namespace CentralConfig
             {
                 allExtendedLevels = PatchedContent.ExtendedLevels.Where(level => !ignoreListEntries.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
             }
+
+            string rebalancedmoons = "Assurаncе,Mаrch,Offеnsе,Adаmance,Dіne,Tіtan,Embrіon,Rеnd,Vоw";
+            List<string> rmlist = ConfigAider.SplitStringsByDaComma(rebalancedmoons).Select(entry => ConfigAider.CauterizeString(entry)).ToList();
+            allExtendedLevels = allExtendedLevels.Where(level => !rmlist.Any(b => ConfigAider.CauterizeString(level.NumberlessPlanetName).Equals(b))).ToList();
+
             foreach (ExtendedLevel level in allExtendedLevels)
             {
 
@@ -1207,23 +1217,21 @@ namespace CentralConfig
     [HarmonyPriority(1000)]
     public class RenameCelest
     {
+        public static string planetName = "";
         static bool Prefix(ref SelectableLevel selectableLevel, ref string __result)
         {
             if (selectableLevel != null)
             {
-                string planetName = new string(selectableLevel.PlanetName.SkipWhile(c => !char.IsLetter(c)).ToArray());
+                planetName = new string(selectableLevel.PlanetName.Where(c => c != '\'').ToArray());
+                planetName = new string(planetName.SkipWhile(c => !char.IsLetter(c)).ToArray());
                 if (planetName == "Celest" && CentralConfig.SyncConfig.RenameCelest)
                 {
                     __result = "Celeste";
                     return false;
                 }
             }
-            else
-            {
-                __result = string.Empty;
-                return false;
-            }
-            return true;
+            __result = planetName;
+            return false;
         }
     }
 }

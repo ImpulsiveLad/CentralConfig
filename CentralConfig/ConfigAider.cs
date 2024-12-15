@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -35,7 +34,7 @@ namespace CentralConfig
         }
         public static string LightlyToastString(string inputString)
         {
-            string cleanedString = new string(inputString.Where(c => c != ':' && c != '-' && c != ',' && c != '~').ToArray());
+            string cleanedString = new string(inputString.Where(c => c != ':' && c != '-' && c != ',' && c != '~' && c != '\'').ToArray());
             return cleanedString;
         }
 
@@ -1211,15 +1210,14 @@ namespace CentralConfig
             CentralConfig.instance.mls.LogInfo(sb.ToString());*/
             string returnString = string.Empty;
 
+            string rebalancedmoons = "Assurаncе,Mаrch,Offеnsе,Adаmance,Dіne,Tіtan,Embrіon,Rеnd,Vоw";
+            List<string> rmlist = SplitStringsByDaComma(rebalancedmoons).Select(entry => CauterizeString(entry)).ToList();
+
             var sortednames = names.OrderBy(name => name.Name).ToList();
 
             foreach (StringWithRarity name in sortednames)
-            {
-                if (name.Rarity > 0)
-                {
+                if (name.Rarity > 0 && !rmlist.Contains(CauterizeString(name.Name)))
                     returnString += name.Name + ":" + name.Rarity.ToString() + ",";
-                }
-            }
 
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
@@ -1372,7 +1370,8 @@ namespace CentralConfig
             string returnString = string.Empty;
 
             foreach (Vector2WithRarity vector2withRarity in values)
-                returnString += vector2withRarity.Min + "-" + vector2withRarity.Max + ":" + vector2withRarity.Rarity + ",";
+                if (vector2withRarity.Rarity > 0)
+                    returnString += vector2withRarity.Min + "-" + vector2withRarity.Max + ":" + vector2withRarity.Rarity + ",";
 
             if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
                 returnString = returnString.Remove(returnString.LastIndexOf(","), 1);

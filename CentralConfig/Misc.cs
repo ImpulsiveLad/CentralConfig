@@ -35,11 +35,16 @@ namespace CentralConfig
             [DataMember] public static SyncedEntry<int> FEMaxScan { get; private set; }
             [DataMember] public static SyncedEntry<string> BoostString { get; private set; }
             [DataMember] public static SyncedEntry<int> BoostCreditThreshold { get; private set; }
-            [DataMember] public static SyncedEntry<int> SSSBPThreshold { get; private set; }
-            [DataMember] public static SyncedEntry<float> SSSBPPercentIncrease { get; private set; }
-            [DataMember] public static SyncedEntry<float> SSSBPMinIncrease { get; private set; }
-            [DataMember] public static SyncedEntry<float> SSSBPMaxIncrease { get; private set; }
-            [DataMember] public static SyncedEntry<float> SSSBPIncreaseChange { get; private set; }
+            [DataMember] public static SyncedEntry<int> SSVBPThreshold { get; private set; }
+            [DataMember] public static SyncedEntry<float> SSVBPPercentIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SSVBPMinIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SSVBPMaxIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SSVBPIncreaseChange { get; private set; }
+            [DataMember] public static SyncedEntry<int> SDSBPThreshold { get; private set; }
+            [DataMember] public static SyncedEntry<float> SDSBPPercentIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SDSBPMinIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SDSBPMaxIncrease { get; private set; }
+            [DataMember] public static SyncedEntry<float> SDSBPIncreaseChange { get; private set; }
             [DataMember] public static SyncedEntry<int> ScrapShuffleRandomMin { get; private set; }
             [DataMember] public static SyncedEntry<int> ScrapShuffleRandomMax { get; private set; }
             [DataMember] public static SyncedEntry<bool> ScrapShufflerPercent { get; private set; }
@@ -130,30 +135,57 @@ namespace CentralConfig
 
                 if (CentralConfig.SyncConfig.ScaleScrapValueByPlayers)
                 {
-                    SSSBPThreshold = cfg.BindSyncedEntry("<Player Count Scaling>",
+                    SSVBPThreshold = cfg.BindSyncedEntry("<Player Count Scaling>",
                         "Scale Scrap Value PlayerCount Threshold",
                         3,
                         "Defines the 'standard' lobby size. If there are fewer players than this, scrap will be worth more. If there are more players, scrap will be worth less.");
 
-                    SSSBPPercentIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                    SSVBPPercentIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
                         "Scale Scrap Value Percent",
                         10f,
-                        "Percentage factor to apply to the scrap value multiplier based on the difference between the actual player count and the threshold above.\nThis adjustment is exponential/logarithmic, so applying a 10% factor twice results in approximately 82.6% (i.e., (1.1)^-1 = 0.909, then (1.1)^-2 = 0.826).");
+                        "Percentage factor to apply to the scrap value multiplier based on the difference between the actual player count and the threshold above.\nThis adjustment is exponential/logarithmic, so applying a 10% factor twice results in approximately 82.6% (i.e., (1.1)^-1 = 0.909, and (1.1)^-2 = 0.826).");
 
-                    SSSBPIncreaseChange = cfg.BindSyncedEntry("<Player Count Scaling>",
+                    SSVBPIncreaseChange = cfg.BindSyncedEntry("<Player Count Scaling>",
                         "Scale Scrap Value Percent Change",
                         5f,
-                        "The absolute difference between the PlayerCount and Threshold is multiplied by this value before being added to the Scale Scrap Value Percent.\nExample: If this setting is 5, setting above is 10% and there is 1 player the lobby with a threshold of 3, it will increment by 44% instead of 21%.\nExample 2: If this setting is 10, setting above is 25% and there is 6 player the lobby with a threshold of 2, it will increment by -86.5% instead of -41%");
+                        "The absolute difference between the PlayerCount and Threshold is multiplied by this value before being added to the Scale Scrap Value Percent.\nExample: If this setting is 5, setting above is 10% and there is 1 player the lobby with a threshold of 3, it will increment by 44% instead of 21%.\nExample 2: If this setting is 10, setting above is 25% and there is 6 player the lobby with a threshold of 2, it will decrease by 86.5% instead of 41%");
 
-                    SSSBPMinIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                    SSVBPMinIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
                         "Scale Scrap Value Min",
                         0.5f,
                         "The Scrap Value Adjustment for player count will never multiply the global scrap value by less than this value.");
 
-                    SSSBPMaxIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                    SSVBPMaxIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
                         "Scale Scrap Value Max",
                         1.5f,
                         "The Scrap Value Adjustment for player count will never multiply the global scrap value by more than this value.");
+                }
+                if (CentralConfig.SyncConfig.ScaleDungeonSizeByPlayers)
+                {
+                    SDSBPThreshold = cfg.BindSyncedEntry("<Player Count Scaling>",
+                        "Scale Dungeon Size PlayerCount Threshold",
+                        4,
+                        "Defines the 'standard' lobby size. If there are fewer players than this, the dungeon will be smaller. If there are more players, the dungeon will be larger.");
+
+                    SDSBPPercentIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                        "Scale Dungeon Size Percent",
+                        5f,
+                        "Percentage factor to apply to the dungeon size multiplier based on the difference between the actual player count and the threshold above.\nThis adjustment is exponential/logarithmic, so applying a 20% factor twice results in approximately 144% (i.e., (1.2)^1 = 1.20, and (1.2)^2 = 1.44).");
+
+                    SDSBPIncreaseChange = cfg.BindSyncedEntry("<Player Count Scaling>",
+                        "Scale Dungeon Size Percent Change",
+                        2.5f,
+                        "The absolute difference between the PlayerCount and Threshold is multiplied by this value before being added to the Scale Dungeon Size Percent.\nExample: If this setting is 5, setting above is 20% and there is 1 player the lobby with a threshold of 3, it will increment by 69% instead of 44%.\nExample 2: If this setting is 7, setting above is 8% and there is 6 player the lobby with a threshold of 2, it will decrease by 70.8% instead of 26.5%");
+
+                    SDSBPMinIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                        "Scale Dungeon Size Min",
+                        0.5f,
+                        "The Dungeon Size Adjustment for player count will never multiply the dungeon size by less than this value.");
+
+                    SDSBPMaxIncrease = cfg.BindSyncedEntry("<Player Count Scaling>",
+                        "Scale Dungeon Size Max",
+                        1.5f,
+                        "The Dungeon Size Adjustment for player count will never multiply the dungeon size by more than this value.");
                 }
 
                 if (CentralConfig.SyncConfig.ScrapShuffle)
@@ -302,13 +334,13 @@ namespace CentralConfig
             {
                 int uninsuredBodies = playersDead - AdjustedbodiesInsured;
                 float uninsuredProportion = uninsuredBodies / totalPlayers;
-                float insuredProportion = AdjustedbodiesInsured / (Shmunguss * totalPlayers);
+                float insuredProportion = AdjustedbodiesInsured / totalPlayers;
 
-                totalFinePercentage = (int)Mathf.Round(Grungus * 100 * (uninsuredProportion + insuredProportion));
+                totalFinePercentage = (int)Mathf.Round(Grungus * 100f * (uninsuredProportion + insuredProportion / Shmunguss));
             }
             else
             {
-                totalFinePercentage = (int)Mathf.Round((Grungus * 100f) * (playersDead - AdjustedbodiesInsured) + ((Grungus * 100f / Shmunguss)) * AdjustedbodiesInsured);
+                totalFinePercentage = (int)Mathf.Round((Grungus * (playersDead - AdjustedbodiesInsured) + Grungus / Shmunguss * AdjustedbodiesInsured) * 100f);
             }
             if (playersDead > 1)
             {
@@ -326,11 +358,16 @@ namespace CentralConfig
             {
                 Recovered = "and " + AdjustedbodiesInsured + " bodies were recovered.";
             }
-            if (totalFinePercentage > 0)
-                __instance.statsUIElements.penaltyAddition.text = Bodies + Recovered + "\nA fine of " + totalFinePercentage + "% will be extracted from the crew.";
-            else
+            if (totalFinePercentage == 0)
                 __instance.statsUIElements.penaltyAddition.text = Bodies + Recovered + "\nNo fine will be extracted from the crew.";
-            __instance.statsUIElements.penaltyTotal.text = $"DUE: ${groupCredits - terminal.groupCredits}";
+            else if (totalFinePercentage < 0)
+                __instance.statsUIElements.penaltyAddition.text = Bodies + Recovered + "\nThe crew shall be rewarded for their valiant sacrifice.";
+            else
+                __instance.statsUIElements.penaltyAddition.text = Bodies + Recovered + "\nA fine of " + totalFinePercentage + "% will be extracted from the crew.";
+            if (groupCredits - terminal.groupCredits < 0)
+                __instance.statsUIElements.penaltyTotal.text = $"PAID: ${Mathf.Abs(groupCredits - terminal.groupCredits)}";
+            else
+                __instance.statsUIElements.penaltyTotal.text = $"DUE: ${groupCredits - terminal.groupCredits}";
             return false;
         }
     }
@@ -447,6 +484,8 @@ namespace CentralConfig
 
             if (terminal.groupCredits <= 0)
                 terminal.groupCredits = 0;
+
+            __instance.statsUIElements.quotaNumerator.text = StartOfRound.Instance.GetValueOfAllScrap(onlyScrapCollected: true, onlyNewScrap: true).ToString();
         }
     }
     [HarmonyPatch(typeof(TimeOfDay), "MoveGlobalTime")]
