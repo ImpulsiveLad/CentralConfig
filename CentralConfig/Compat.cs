@@ -36,7 +36,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void RemoveWRScrapMultiplierHardSet()
         {
-            ConfigManager.UseScrapMultipliers.Value = false;
+            WeatherRegistry.Settings.ScrapMultipliers = false;
         }
     }
     public static class ImperiumCompatibility
