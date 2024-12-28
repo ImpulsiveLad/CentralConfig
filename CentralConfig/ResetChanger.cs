@@ -37,9 +37,21 @@ namespace CentralConfig
         {
             public static List<ExtendedDungeonFlow> AllDungeons = new List<ExtendedDungeonFlow>();
             public static List<ExtendedLevel> AllLevels = new List<ExtendedLevel>();
-            static void Postfix()
+            public static bool WasLastHost = false;
+            static void Prefix()
             {
                 if (NetworkManager.Singleton.IsHost)
+                    WasLastHost = true;
+                else
+                    WasLastHost = false;
+            }
+            static void Postfix()
+            {
+                if (WasLastHost)
+                    CentralConfig.instance.mls.LogInfo("You hosted last game");
+                else
+                    CentralConfig.instance.mls.LogInfo("You did not host last game");
+                if (WasLastHost)
                 {
                     foreach (ExtendedLevel level in AllLevels)
                     {
@@ -55,18 +67,18 @@ namespace CentralConfig
                     AllLevels.Clear();
                 }
 
-                if (CentralConfig.SyncConfig.ScrapShuffle && NetworkManager.Singleton.IsHost)
+                if (CentralConfig.SyncConfig.ScrapShuffle && WasLastHost)
                 {
                     ScrapAppearances.Clear();
                     IncreaseScrapAppearances.CapturedScrapToSpawn.Clear();
                     CatchItemsInShip.ItemsInShip.Clear();
                 }
-                if (CentralConfig.SyncConfig.EnemyShuffle && NetworkManager.Singleton.IsHost)
+                if (CentralConfig.SyncConfig.EnemyShuffle && WasLastHost)
                 {
                     EnemyAppearances.Clear();
                     DidSpawnYet.Clear();
                 }
-                if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
+                if (CentralConfig.SyncConfig.DungeonShuffler && WasLastHost)
                 {
                     lastdungeon = null;
                     DungeonAppearances.Clear();
@@ -74,7 +86,7 @@ namespace CentralConfig
                 }
 
                 if (MiscConfig.CreateMiscConfig.ShuffleSave != null)
-                    if (NetworkManager.Singleton.IsHost && MiscConfig.CreateMiscConfig.ShuffleSave) // save data again on dc
+                    if (WasLastHost && MiscConfig.CreateMiscConfig.ShuffleSave) // save data again on dc
                     {
                         if (CentralConfig.SyncConfig.ScrapShuffle)
                         {
@@ -98,7 +110,7 @@ namespace CentralConfig
                         }
                     }
 
-                if (CentralConfig.SyncConfig.DungeonShuffler && NetworkManager.Singleton.IsHost)
+                if (CentralConfig.SyncConfig.DungeonShuffler && WasLastHost)
                 {
                     foreach (ExtendedDungeonFlow flow in AllDungeons)
                     {
@@ -146,6 +158,9 @@ namespace CentralConfig
                         CrownScanNode.scrapValue = CrownObject.scrapValue;
                     });
                 }
+                var allBeehives = UnityEngine.Object.FindObjectsByType<GrabbableObject>(UnityEngine.FindObjectsSortMode.None).Where(obj => obj.itemProperties.itemName == "Hive");
+                foreach (var beehive in allBeehives)
+                    beehive.itemProperties.isConductiveMetal = false;
 
                 if (!CentralConfig.SyncConfig.ScrapShuffle || !NetworkManager.Singleton.IsHost)
                 {

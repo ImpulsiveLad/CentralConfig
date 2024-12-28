@@ -1199,6 +1199,8 @@ namespace CentralConfig
                 HiveScanNode.subText = $"Value: ${instance.hive.scrapValue}";
                 HiveScanNode.scrapValue = instance.hive.scrapValue;
             });
+            if (instance.hive.isInFactory)
+                instance.hive.itemProperties.isConductiveMetal = false;
         }
     }
 }

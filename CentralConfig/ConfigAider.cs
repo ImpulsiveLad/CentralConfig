@@ -54,45 +54,33 @@ namespace CentralConfig
                 allEnemies = new List<EnemyType>();
 
                 foreach (EnemyType enemy in OriginalContent.Enemies)
-                {
                     if (!allEnemies.Contains(enemy))
                     {
                         allEnemies.Add(enemy);
                         // CentralConfig.instance.mls.LogMessage($"Added enemy: {enemy.enemyName} from OriginalContent");
                     }
-                }
                 foreach (ExtendedEnemyType extendedEnemy in PatchedContent.ExtendedEnemyTypes)
-                {
                     if (!allEnemies.Contains(extendedEnemy.EnemyType))
                     {
                         allEnemies.Add(extendedEnemy.EnemyType);
                         // CentralConfig.instance.mls.LogMessage($"Added enemy: {extendedEnemy.EnemyType.enemyName} from PatchedContent");
                     }
-                }
                 foreach (LethalLib.Modules.Enemies.SpawnableEnemy spawnableEnemy in LethalLib.Modules.Enemies.spawnableEnemies)
-                {
                     if (!allEnemies.Contains(spawnableEnemy.enemy))
                     {
                         allEnemies.Add(spawnableEnemy.enemy);
                         // CentralConfig.instance.mls.LogMessage($"Added enemy: {spawnableEnemy.enemy.enemyName} from LethalLib");
                     }
-                }
                 if (LBCompatability.enabled)
-                {
                     allEnemies = LBCompatability.AddLBEnemies(allEnemies);
-                }
                 if (DiversityCompat.enabled)
-                {
                     allEnemies = DiversityCompat.AddWalker(allEnemies);
-                }
                 if (FootBallCompat.enabled)
-                {
                     allEnemies = FootBallCompat.AddFootball(allEnemies);
-                }
                 if (RollingGiantCompat.enabled)
-                {
                     allEnemies = RollingGiantCompat.AddRollingGiant(allEnemies);
-                }
+                if (PeeperCompat.enabled)
+                    allEnemies = PeeperCompat.AddPeeper(allEnemies);
                 /*foreach (EnemyType enemy in Resources.FindObjectsOfTypeAll<EnemyType>())
                 {
                     if (!allEnemies.Contains(enemy))

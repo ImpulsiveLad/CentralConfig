@@ -36,7 +36,7 @@ namespace CentralConfig
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void RemoveWRScrapMultiplierHardSet()
         {
-            WeatherRegistry.Settings.ScrapMultipliers = false;
+            Settings.ScrapMultipliers = false;
         }
     }
     public static class ImperiumCompatibility
@@ -341,6 +341,33 @@ namespace CentralConfig
             {
                 enemies.Add(Football);
                 // CentralConfig.instance.mls.LogMessage($"Added enemy: {Football.enemyName} from FootBall");
+            }
+            return enemies;
+        }
+    }
+    public static class PeeperCompat
+    {
+        private static bool? _enabled;
+
+        public static bool enabled
+        {
+            get
+            {
+                if (_enabled == null)
+                {
+                    _enabled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("x753.Peepers");
+                }
+                return (bool)_enabled;
+            }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static List<EnemyType> AddPeeper(List<EnemyType> enemies)
+        {
+            EnemyType Peeper = LCPeeper.Peeper.PeeperType;
+            if (!enemies.Contains(Peeper))
+            {
+                enemies.Add(Peeper);
+                // CentralConfig.instance.mls.LogMessage($"Added enemy: {Peeper.enemyName} from Peepers");
             }
             return enemies;
         }

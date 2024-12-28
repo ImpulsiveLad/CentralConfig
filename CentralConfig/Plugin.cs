@@ -39,11 +39,12 @@ namespace CentralConfig
     [BepInDependency("com.adibtw.loadstone", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.adibtw.loadstone.Nightly", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("giosuel.Imperium", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Peepers", BepInDependency.DependencyFlags.SoftDependency)]
     public class CentralConfig : BaseUnityPlugin
     {
         private const string modGUID = "impulse.CentralConfig";
         private const string modName = "CentralConfig";
-        private const string modVersion = "0.16.0";
+        private const string modVersion = "0.16.1";
         public static Harmony harmony = new Harmony(modGUID);
 
         public ManualLogSource mls;
@@ -77,6 +78,7 @@ namespace CentralConfig
         void Awake()
         {
             instance = this;
+            DontDestroyOnLoad(this);
 
             SyncConfig = new GeneralConfig(base.Config);
 
